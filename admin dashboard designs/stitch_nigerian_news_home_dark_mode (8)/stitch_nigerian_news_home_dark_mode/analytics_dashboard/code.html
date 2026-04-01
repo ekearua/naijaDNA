@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin | Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#ccd6ff",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "inverse-primary": "#86d7af",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container": "#f3ede7",
+              "surface-container-low": "#f9f2ed",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-surface": "#1d1b18",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "on-background": "#1d1b18",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "outline-variant": "#bec9c1",
+              "primary-container": "#0f6b4b",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700",
+              "inverse-on-surface": "#f6f0ea",
+              "on-primary-container": "#97e9c0",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "tertiary-fixed": "#dbe1ff",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#3f4943",
+              "tertiary": "#003da6",
+              "surface": "#fff8f3",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fff8f3;
+        color: #1d1b18;
+      }
+      .serif { font-family: 'Newsreader', serif; }
+      .glass {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-stone-50 flex flex-col h-full py-8 border-r-0">
+<div class="px-6 mb-10">
+<h1 class="font-['Newsreader'] italic text-xl text-[#005137]">The Digital Curator</h1>
+<p class="text-[11px] uppercase tracking-widest text-stone-500 font-semibold mt-1">Newsroom Operations</p>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out cursor-pointer font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out cursor-pointer font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">article</span>
+<span>Editorial Queue</span>
+</a>
+<!-- Active Tab: Analytics -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#005137] font-bold border-r-4 border-[#005137] bg-emerald-50/50 transition-all duration-200 ease-in-out cursor-pointer font-['Inter'] text-[15px]" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out cursor-pointer font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">perm_media</span>
+<span>Multimedia</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out cursor-pointer font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Staff Directory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out cursor-pointer font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Archive</span>
+</a>
+</nav>
+<div class="px-8 mb-6">
+<button class="w-full bg-primary text-on-primary py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all active:scale-95">
+                Quick Draft
+            </button>
+</div>
+<div class="mt-auto px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-stone-600 hover:bg-stone-100 transition-all font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar Component -->
+<header class="fixed top-0 right-0 left-64 z-50 flex justify-between items-center px-8 py-4 bg-[#fff8f3]/80 backdrop-blur-md shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-['Newsreader'] font-black text-[#005137]">NaijaPulse Admin</span>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-lowest border-none rounded-full w-64 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search insights..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg font-semibold text-sm hover:opacity-90 transition-all">
+                Create Article
+            </button>
+<div class="flex items-center gap-4 text-stone-500">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">settings</span>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-stone-200">
+<img class="w-full h-full object-cover" data-alt="Professional editor portrait in studio lighting with soft focused background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgQzNyrWW0TeIZfnX0pAkUN_0DrBIpDipnxOmc2Bntt9xdrKaCWAVfyDwxOXn1K63KXW452liZ7o8C-TQzEcpZ9Cfl-gkVYKmfJvMv6rjQS5g0WVwf6va7dtXyB4dYOe-50IaBfQx7ioCsdqSmjKpgAOe2ulc7IfMwwrgJGQNauKFxGbysx_NSDyAUoMuJKE0COsIt4-wHPECNZEPeeP6OIsUZKDHC_lMo9vckms2ShNhOP8__2gjS7nLv6eaEefwFcq5Zr08m38UI"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-24 px-8 pb-12">
+<div class="max-w-7xl mx-auto">
+<!-- Page Header -->
+<div class="mb-10 flex justify-between items-end">
+<div>
+<h2 class="serif text-5xl font-extrabold text-on-surface tracking-tight mb-2">Operational Insights</h2>
+<p class="text-on-surface-variant font-medium">Real-time engagement and newsroom health metrics.</p>
+</div>
+<div class="flex gap-3">
+<div class="flex bg-surface-container-low p-1 rounded-xl">
+<button class="px-4 py-2 text-sm font-semibold rounded-lg bg-surface-container-lowest shadow-sm">24 Hours</button>
+<button class="px-4 py-2 text-sm font-semibold text-stone-500">7 Days</button>
+<button class="px-4 py-2 text-sm font-semibold text-stone-500">30 Days</button>
+</div>
+</div>
+</div>
+<!-- Bento Grid - Analytics Sections -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Section: Content Performance -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Top Articles List -->
+<div class="bg-surface-container-low p-8 rounded-3xl">
+<div class="flex justify-between items-center mb-8">
+<h3 class="serif text-2xl font-bold">Content Performance</h3>
+<button class="text-primary font-semibold text-sm flex items-center gap-1">Full Report <span class="material-symbols-outlined text-sm">north_east</span></button>
+</div>
+<div class="space-y-4">
+<!-- Article Row -->
+<div class="flex items-center gap-6 p-4 rounded-2xl bg-surface-container-lowest hover:bg-stone-50 transition-colors group">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="High angle view of Nigerian currency stacks on a dark surface with sharp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAziq7TTNQpLyzXX54cYIVcy_hyGHoTg9UEbhjr1GcaWwSA2avSZmZ9sfbcGbkgfgahVWNYjlN4SfuP_OfinHJ5P3cNTciJYuU8_6D_W5CT6z-eh7sQ_Kv1qytJm0OGZnbq1V5pGrCYiSHa_0NaDq1dUKOHl74qrha3KhY5ORMjkD_aPNwC5QvaWoCmegWG62cOMcVoDOxf_MNQABzDKNDgNimSBeamObPa8HZuwKRAKpcgxz6BMq9vg6o7O3OUUczOFQqD-Npw8qtg"/>
+</div>
+<div class="flex-1">
+<p class="text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Economy</p>
+<h4 class="serif text-lg font-bold leading-tight group-hover:text-primary transition-colors">The Naira's Resilience: Analyzing Q3 Fiscal Trends in Lagos</h4>
+</div>
+<div class="flex gap-12 items-center">
+<div class="text-center">
+<p class="text-xs text-stone-400 font-medium">Views</p>
+<p class="font-bold text-on-surface">128k</p>
+</div>
+<div class="text-center">
+<p class="text-xs text-stone-400 font-medium">Avg. Read</p>
+<p class="font-bold text-on-surface">4:22</p>
+</div>
+<div class="text-right w-16">
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">+12%</span>
+</div>
+</div>
+</div>
+<!-- Article Row -->
+<div class="flex items-center gap-6 p-4 rounded-2xl bg-surface-container-lowest hover:bg-stone-50 transition-colors group">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Vibrant night scene of a Lagos street with neon lights and motion blur of city traffic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSbRLv0mdqaJUFTHOi5JSOHnDA7pEO8aK01haMYTdNI8b22HHaA5v_-nPPVna3aPtUhYCA_tSpnd9swrsJAfxC6iwB7_alIsGPo6guxRcG-JEueqkLrrc8LH7aK_nZdeGSLL-KAyZBULOvcAWkK27r7dkOFCyN_71Am-V7-Zj4uLyDLhl0tp7Tq93dFDhecm47KpAH1uzMVZcUALh47DeldfBlSy16f4Pc8Tg-7ZIPtwJYV_3hkkSugcuyfKgh-cUDXXpEUaTvtcQg"/>
+</div>
+<div class="flex-1">
+<p class="text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Culture</p>
+<h4 class="serif text-lg font-bold leading-tight group-hover:text-primary transition-colors">Afrobeats Global Takeover: The Digital Streaming Frontier</h4>
+</div>
+<div class="flex gap-12 items-center">
+<div class="text-center">
+<p class="text-xs text-stone-400 font-medium">Views</p>
+<p class="font-bold text-on-surface">94k</p>
+</div>
+<div class="text-center">
+<p class="text-xs text-stone-400 font-medium">Avg. Read</p>
+<p class="font-bold text-on-surface">3:45</p>
+</div>
+<div class="text-right w-16">
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">+8%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual Data: Category Distribution -->
+<div class="grid grid-cols-2 gap-8">
+<div class="bg-surface-container-low p-8 rounded-3xl h-64 relative overflow-hidden">
+<h3 class="serif text-xl font-bold mb-6">Category Distribution</h3>
+<div class="flex items-end gap-3 h-32">
+<div class="flex-1 bg-primary rounded-t-lg" style="height: 80%"></div>
+<div class="flex-1 bg-primary/60 rounded-t-lg" style="height: 45%"></div>
+<div class="flex-1 bg-primary/40 rounded-t-lg" style="height: 65%"></div>
+<div class="flex-1 bg-primary/20 rounded-t-lg" style="height: 30%"></div>
+<div class="flex-1 bg-primary/80 rounded-t-lg" style="height: 55%"></div>
+</div>
+<div class="flex justify-between text-[10px] uppercase tracking-tighter font-bold text-stone-400 mt-4">
+<span>Pol</span>
+<span>Eco</span>
+<span>Tech</span>
+<span>Ent</span>
+<span>Spo</span>
+</div>
+</div>
+<div class="bg-primary text-on-primary p-8 rounded-3xl flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-4xl opacity-50">auto_awesome</span>
+<h3 class="serif text-2xl font-bold mt-4">Velocity Index</h3>
+<p class="text-sm opacity-80">Articles are gaining traction 14% faster than last week.</p>
+</div>
+<div class="text-4xl font-black italic">142.8</div>
+</div>
+</div>
+</div>
+<!-- Section: Sidebar Analytics -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Community Activity Card -->
+<div class="bg-surface-container-highest p-8 rounded-3xl">
+<h3 class="serif text-2xl font-bold mb-8">Community Activity</h3>
+<div class="space-y-6">
+<div class="flex justify-between items-center">
+<div>
+<p class="text-xs font-bold text-stone-500 uppercase tracking-widest">Comments / Day</p>
+<p class="text-2xl font-bold">1,429</p>
+</div>
+<span class="material-symbols-outlined text-emerald-600 bg-emerald-100 p-2 rounded-lg">trending_up</span>
+</div>
+<div class="flex justify-between items-center">
+<div>
+<p class="text-xs font-bold text-stone-500 uppercase tracking-widest">Reports / Day</p>
+<p class="text-2xl font-bold">42</p>
+</div>
+<span class="material-symbols-outlined text-error p-2 bg-error-container/30 rounded-lg">flag</span>
+</div>
+<div class="pt-6 border-t border-stone-300/30">
+<p class="text-xs font-bold text-stone-500 uppercase tracking-widest mb-4">Moderation Turnaround</p>
+<div class="flex items-center gap-4">
+<div class="flex-1 h-3 bg-stone-300 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 88%"></div>
+</div>
+<span class="text-sm font-bold">14m</span>
+</div>
+<p class="text-xs text-stone-400 mt-2">Target: &lt; 20m • <span class="text-emerald-600 font-bold">Efficient</span></p>
+</div>
+</div>
+</div>
+<!-- Source Performance Card -->
+<div class="bg-surface-container-low p-8 rounded-3xl">
+<h3 class="serif text-2xl font-bold mb-8">Source Performance</h3>
+<div class="space-y-8">
+<div class="relative pt-1">
+<div class="flex mb-2 items-center justify-between">
+<div>
+<span class="text-xs font-bold inline-block py-1 px-2 uppercase rounded-full text-primary bg-primary-fixed">
+                                            Content Yield
+                                        </span>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold inline-block text-primary">
+                                            74%
+                                        </span>
+</div>
+</div>
+<div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-stone-200">
+<div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary" style="width:74%"></div>
+</div>
+</div>
+<div class="relative pt-1">
+<div class="flex mb-2 items-center justify-between">
+<div>
+<span class="text-xs font-bold inline-block py-1 px-2 uppercase rounded-full text-on-secondary-container bg-secondary-container">
+                                            Duplicate Rate
+                                        </span>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold inline-block text-on-secondary-container">
+                                            4.2%
+                                        </span>
+</div>
+</div>
+<div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-stone-200">
+<div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-secondary" style="width:4.2%"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 p-4 bg-surface-container-lowest rounded-2xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-stone-100 rounded-lg">
+<span class="material-symbols-outlined text-stone-600">verified_user</span>
+</div>
+<span class="text-xs font-bold text-stone-600">Trust Score</span>
+</div>
+<span class="serif font-bold text-lg">9.4/10</span>
+</div>
+</div>
+</div>
+<!-- Footer Stats Row -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-4 gap-6 pt-4">
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex items-center gap-4 border-l-4 border-primary">
+<div class="bg-emerald-50 p-3 rounded-full text-primary">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div>
+<p class="text-xs font-bold text-stone-400 uppercase tracking-tighter">Active Authors</p>
+<p class="text-xl font-black">28</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex items-center gap-4 border-l-4 border-secondary">
+<div class="bg-amber-50 p-3 rounded-full text-secondary">
+<span class="material-symbols-outlined">edit_note</span>
+</div>
+<div>
+<p class="text-xs font-bold text-stone-400 uppercase tracking-tighter">Articles Pending</p>
+<p class="text-xl font-black">12</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex items-center gap-4 border-l-4 border-stone-400">
+<div class="bg-stone-50 p-3 rounded-full text-stone-600">
+<span class="material-symbols-outlined">update</span>
+</div>
+<div>
+<p class="text-xs font-bold text-stone-400 uppercase tracking-tighter">Avg. Post Frequency</p>
+<p class="text-xl font-black">14m</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm flex items-center gap-4 border-l-4 border-primary">
+<div class="bg-emerald-50 p-3 rounded-full text-primary">
+<span class="material-symbols-outlined">language</span>
+</div>
+<div>
+<p class="text-xs font-bold text-stone-400 uppercase tracking-tighter">Global Reach</p>
+<p class="text-xl font-black">4.2m</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Analytics Primary Action) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">download</span>
+</button>
+</body></html>

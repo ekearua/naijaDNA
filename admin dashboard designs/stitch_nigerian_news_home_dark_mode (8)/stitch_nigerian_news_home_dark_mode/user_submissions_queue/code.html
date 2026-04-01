@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin - User Submissions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1d1b18",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary": "#855300",
+                        "inverse-surface": "#32302d",
+                        "surface-container-low": "#f9f2ed",
+                        "surface-container-highest": "#e7e1dc",
+                        "tertiary": "#003da6",
+                        "on-secondary-fixed": "#2a1700",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#734700",
+                        "on-tertiary-fixed": "#00174b",
+                        "secondary-fixed": "#ffddb8",
+                        "surface-container-high": "#ede7e2",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "surface-bright": "#fff8f3",
+                        "tertiary-container": "#0052d9",
+                        "on-primary-fixed": "#002114",
+                        "primary-fixed-dim": "#86d7af",
+                        "secondary-container": "#feb557",
+                        "inverse-on-surface": "#f6f0ea",
+                        "on-tertiary-container": "#ccd6ff",
+                        "on-background": "#1d1b18",
+                        "surface-tint": "#106c4b",
+                        "on-surface-variant": "#3f4943",
+                        "surface-container": "#f3ede7",
+                        "outline": "#6f7a72",
+                        "surface-variant": "#e7e1dc",
+                        "tertiary-fixed": "#dbe1ff",
+                        "inverse-primary": "#86d7af",
+                        "surface-dim": "#dfd9d4",
+                        "on-primary-fixed-variant": "#005137",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fff8f3",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "background": "#fff8f3",
+                        "on-primary-container": "#97e9c0",
+                        "primary-container": "#0f6b4b",
+                        "outline-variant": "#bec9c1",
+                        "primary-fixed": "#a1f4cb",
+                        "primary": "#005137",
+                        "on-secondary": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Newsreader"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .serif { font-family: 'Newsreader', serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex min-h-screen overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden md:flex flex-col h-screen w-[264px] border-r-0 bg-[#fff8f3] dark:bg-stone-950 py-6 space-y-2 z-20 sticky top-0">
+<div class="px-6 mb-8">
+<h1 class="font-['Newsreader'] text-xl font-bold text-[#005137] dark:text-emerald-400">NaijaPulse</h1>
+<p class="font-['Inter'] font-medium text-[11px] uppercase tracking-wider text-stone-500">Editorial Platform</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-6 py-3 hover:bg-[#0f6b4b]/5 transition-all group translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Dashboard</span>
+</a>
+<!-- Content Tab Active -->
+<a class="flex items-center gap-3 bg-[#0f6b4b]/10 text-[#005137] border-l-4 border-[#005137] font-bold px-6 py-3 transition-all translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">article</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Content</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-6 py-3 hover:bg-[#0f6b4b]/5 transition-all group translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">verified</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Trust</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-6 py-3 hover:bg-[#0f6b4b]/5 transition-all group translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">forum</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Community</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-6 py-3 hover:bg-[#0f6b4b]/5 transition-all group translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Operations</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-6 py-3 hover:bg-[#0f6b4b]/5 transition-all group translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">People</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-6 py-3 hover:bg-[#0f6b4b]/5 transition-all group translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Analytics</span>
+</a>
+</nav>
+<div class="px-6 pt-6 mt-auto border-t border-surface-container">
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-2 hover:bg-[#0f6b4b]/5 transition-all mb-1" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] font-medium text-[13px] uppercase tracking-wider">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-2 hover:bg-[#0f6b4b]/5 transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-['Inter'] font-medium text-[13px] uppercase tracking-wider">Logout</span>
+</a>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0 bg-background">
+<!-- TopAppBar (Shared Component) -->
+<header class="flex items-center justify-between w-full px-8 bg-gradient-to-r from-[#005137] to-[#0f6b4b] dark:from-emerald-950 dark:to-emerald-900 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] h-[72px] z-10 sticky top-0">
+<div class="flex items-center gap-8">
+<span class="font-['Newsreader'] italic tracking-tight text-white text-2xl font-bold">NaijaPulse Admin</span>
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-white font-semibold transition-colors" href="#">Editorial Platform</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 text-white/90 hover:bg-white/10 transition-colors rounded-lg active:opacity-80 active:scale-95 duration-200">
+<span class="material-symbols-outlined">refresh</span>
+<span class="hidden sm:inline">Refresh</span>
+</button>
+<button class="p-2 text-white/90 hover:bg-white/10 transition-colors rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary-container rounded-full border-2 border-[#005137]"></span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a senior editor with a focused expression and grey hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdYstRnrrBPkBuzASFoISoOmVzVZA2oiYpMUXqUYYw45q7ypf7Zx9_grbNfyObsqP-a-Affx0GFFMPzju0W-PwEcksoq4pqqRH80hZp6sx9SIMlRsjshxjo6kVc2PxSiOa8C9J0uMT5okp9EGhbxHXee_NA3E-QSqEXJxpaEmKzyPKVX2U6tQ3jhm57qXvNcAH7IbP7SwNrdjDhyGZOfKFRsSNbUWxMspLmXWuzuUiV8yDklsSwHZRmxlRXeFr2sFRl3-dEbkqxhU-"/>
+</div>
+<button class="bg-white text-primary px-5 py-2 rounded-xl font-bold text-sm shadow-sm hover:bg-surface-container-low transition-colors active:scale-95 duration-200">
+                    Create Article
+                </button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex overflow-hidden">
+<div class="flex-1 overflow-y-auto p-8 space-y-8">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<nav class="flex items-center gap-2 text-xs text-outline mb-2 font-medium uppercase tracking-widest">
+<span>Content</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary">Submissions</span>
+</nav>
+<h2 class="text-4xl font-['Newsreader'] font-bold text-on-surface">User Submissions</h2>
+</div>
+<!-- Filter Chips -->
+<div class="flex flex-wrap gap-2">
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-primary text-on-primary shadow-sm">Pending</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:bg-surface-container-high transition-colors">Approved</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:bg-surface-container-high transition-colors">Rejected</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:bg-surface-container-high transition-colors">Published</button>
+</div>
+</div>
+<!-- Submission Grid -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Submission Card 1 (Active/Focused) -->
+<div class="group bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] border border-transparent hover:border-primary/10 transition-all flex flex-col lg:flex-row gap-8 relative overflow-hidden">
+<!-- Left Decoration -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+<div class="flex-1 space-y-4">
+<div class="flex items-center gap-3">
+<span class="bg-secondary-container/20 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Economy</span>
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">warning</span>
+                                    Duplicate Found
+                                </span>
+<span class="text-outline text-xs font-medium ml-auto">2 hours ago</span>
+</div>
+<h3 class="text-2xl font-['Newsreader'] font-bold leading-tight group-hover:text-primary transition-colors cursor-pointer">
+                                Digital Naira: The Implications for Local Retailers and the Informal Sector
+                            </h3>
+<p class="text-on-surface-variant font-['Inter'] text-[15px] leading-relaxed max-w-2xl">
+                                "A deep dive into how small-scale merchants are adapting to the central bank's digital currency shift, exploring the barriers to entry and the potential for financial inclusion in rural markets..."
+                            </p>
+<div class="flex items-center gap-4 pt-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a young West African man with a friendly smile wearing a linen shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_-e_BFGQnnP8GzDh8zdHPGaGfho0d0ylh4v1dKNVxjJFdmnEBfAr2G4ySjHbGIZhA3zPyQBE-dGutwjqQaI_9tEHqCrDXQqcTkI3TOokazt5q8o0YX3ed9vmgB9xAuvWWrh82YLjL4R48qk7l0EnvU2c9TbrpDAftQY4niHhIQZBSzRSM3Suh0O4oESTancHQoWEvJiU9KOaffLj67wAL8MaqWlE29w0jTNZ2CwiUo6qcrjMolcTTnIPh_LkJHyXvth0rBzbljAn6"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Chidi Okoro</p>
+<p class="text-[10px] text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                            VERIFIED CONTRIBUTOR
+                                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Card Actions -->
+<div class="flex flex-col sm:flex-row lg:flex-col justify-center gap-3 lg:min-w-[180px]">
+<button class="bg-primary-container text-on-primary-container font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">rate_review</span>
+                                Open Review
+                            </button>
+<div class="grid grid-cols-2 gap-2">
+<button class="bg-surface-container-high text-on-surface font-semibold py-2 px-3 rounded-xl text-xs hover:bg-surface-container-highest transition-colors">
+                                    Source
+                                </button>
+<button class="bg-surface-container-high text-on-surface font-semibold py-2 px-3 rounded-xl text-xs hover:bg-surface-container-highest transition-colors">
+                                    Revision
+                                </button>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-on-primary font-bold py-2.5 px-4 rounded-xl text-xs hover:opacity-90 transition-opacity">
+                                    Approve
+                                </button>
+<button class="flex-1 bg-surface-container-highest text-error font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-error-container transition-colors">
+                                    Reject
+                                </button>
+</div>
+</div>
+</div>
+<!-- Submission Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_12px_rgba(29,27,24,0.03)] border-l-4 border-transparent hover:border-primary/10 transition-all flex flex-col lg:flex-row gap-8">
+<div class="flex-1 space-y-4">
+<div class="flex items-center gap-3">
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Culture</span>
+<span class="text-outline text-xs font-medium ml-auto">5 hours ago</span>
+</div>
+<h3 class="text-xl font-['Newsreader'] font-bold leading-tight">
+                                The Renaissance of Afro-Fusion: Lagos' Underground Sound Goes Global
+                            </h3>
+<p class="text-on-surface-variant font-['Inter'] text-[15px] leading-relaxed max-w-2xl opacity-80">
+                                Exploring the sonic textures of new-age artists blending traditional Highlife with contemporary electronic influences...
+                            </p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="vibrant portrait of a woman with braided hair and colorful artistic earrings in a soft sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFyMn__wsq6cpCXQNwfjL9_Sx_I7HW4SZrRZ89W9ae6dUtcApTHgKZzb55OwQz1RQel6uly5ss-_ZQ_VEFKo-ec0y8GhF1BWxxGuQQRYAmW9_kvA75RQkCOTRCzkVatdJqAE4GsLP0hqmz-rWqvEZ-mCmql13lEcXsOYHskXHETCeiIl-qGbgEJSMmqS3T6V8DdF5IFw8gj-tih7pe_5VdxEB7i1Vkc6D6VwoFUgdR0i2KOulWV_peR6ONocCOwmLROvDHR_rh_C0v"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Amara Nwosu</p>
+<p class="text-[10px] text-outline font-medium">New Contributor</p>
+</div>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col justify-center gap-3 lg:min-w-[180px]">
+<button class="flex-1 lg:flex-none bg-surface-container-high text-on-surface font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-surface-container-highest transition-colors">
+                                Open Review
+                            </button>
+<button class="flex-1 lg:flex-none border border-outline/20 text-on-surface font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-surface transition-colors">
+                                Quick Reject
+                            </button>
+</div>
+</div>
+<!-- Submission Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_12px_rgba(29,27,24,0.03)] border-l-4 border-transparent hover:border-primary/10 transition-all flex flex-col lg:flex-row gap-8 opacity-90">
+<div class="flex-1 space-y-4">
+<div class="flex items-center gap-3">
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Tech</span>
+<span class="text-outline text-xs font-medium ml-auto">8 hours ago</span>
+</div>
+<h3 class="text-xl font-['Newsreader'] font-bold leading-tight">
+                                Solar Grids in Kano: A Decentralized Future for Energy
+                            </h3>
+<p class="text-on-surface-variant font-['Inter'] text-[15px] leading-relaxed max-w-2xl opacity-80">
+                                Analyzing the success of localized solar initiatives in Northern Nigeria and the policy hurdles for national scaling...
+                            </p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="portrait of a man in traditional Hausa attire with a thoughtful expression in a bright courtyard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD92JXhlmOzrUHCVCP-GgElT6VHP5j_Jq5HIeyTOZGVEtOqGRBPntTg7rIyJ4glNZMRJzUkKKkLNljWFySaTArC1Edd1Z1y_L5lZbRowvTRWFBywgWCmSKoJC84jdmqCt6qCxa0Q4QND3IeFyD36UXIHKUIwmOl-pmUgHcGJhaV-TYEmym8PuS2QUDUFUeQswJSV6Yn1vGsd5gTfygCmqz-DZl-94KXZZ5RkyMskjrIpKkgMhCIY1eYkmvYznHprG3vOeL2_fw9dd2b"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Ibrahim Musa</p>
+<p class="text-[10px] text-primary font-bold">VERIFIED</p>
+</div>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col justify-center gap-3 lg:min-w-[180px]">
+<button class="flex-1 lg:flex-none bg-surface-container-high text-on-surface font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-surface-container-highest transition-colors">
+                                Open Review
+                            </button>
+<button class="flex-1 lg:flex-none border border-outline/20 text-on-surface font-bold py-2.5 px-4 rounded-xl text-xs hover:bg-surface transition-colors">
+                                Quick Reject
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right-side Inspector Drawer (Fixed Position) -->
+<aside class="hidden xl:flex w-[380px] flex-col border-l-0 bg-surface-container-low shadow-[-12px_0_32px_-4px_rgba(29,27,24,0.04)] h-full overflow-y-auto">
+<div class="p-8 space-y-8">
+<!-- User Profile Header -->
+<div class="text-center space-y-4">
+<div class="relative inline-block">
+<div class="w-24 h-24 rounded-full overflow-hidden mx-auto border-4 border-white shadow-md">
+<img class="w-full h-full object-cover" data-alt="full profile portrait of Chidi Okoro with a professional backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxKYBIEmlX2zwrPb48Lr8v3FCB4rxRnZgxPYUWlWwwp6-N-a-ex3NwuLPgahBmqV_w0f8cBSJDcsksGHofG4v8nR2OXysJeG8P64y6tv810sN946fvQZ9yq11Xt31rvYsn0acSesbxYMqpTKK4ArXMbt29wilfB1EhWqsynepnp-NUBNRtjJ2kQ3OUArHoOrLe0BckxSzbkhMbsUrzfCQDo834nujESUUADbenkCqGyZ9U4kfngDaLeKrgpShF5ZFTCPYMDAkihWPD"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full border-2 border-surface-container-low">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h4 class="text-2xl font-['Newsreader'] font-bold text-on-surface">Chidi Okoro</h4>
+<p class="text-sm text-outline font-medium">Lagos, Nigeria • Contributor since 2022</p>
+</div>
+<button class="w-full bg-white text-on-surface font-bold py-3 px-4 rounded-xl text-sm border border-outline-variant hover:bg-surface-container transition-colors shadow-sm">
+                            View Full Submitter Bio
+                        </button>
+</div>
+<!-- Statistics Bento Section -->
+<div class="space-y-4">
+<h5 class="text-[11px] font-bold uppercase tracking-[0.2em] text-outline">Submission Statistics</h5>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-white p-4 rounded-xl shadow-sm border border-black/[0.02]">
+<p class="text-2xl font-['Newsreader'] font-bold text-primary">12</p>
+<p class="text-[10px] font-bold text-outline uppercase tracking-wider">Approved</p>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-black/[0.02]">
+<p class="text-2xl font-['Newsreader'] font-bold text-secondary">3</p>
+<p class="text-[10px] font-bold text-outline uppercase tracking-wider">Pending</p>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-black/[0.02]">
+<p class="text-2xl font-['Newsreader'] font-bold text-error">1</p>
+<p class="text-[10px] font-bold text-outline uppercase tracking-wider">Rejected</p>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm border border-black/[0.02] flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">bar_chart</span>
+</div>
+</div>
+</div>
+<!-- Recent Activity Section -->
+<div class="space-y-4">
+<h5 class="text-[11px] font-bold uppercase tracking-[0.2em] text-outline">Recent Activity</h5>
+<div class="space-y-6">
+<!-- Timeline Item -->
+<div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-[-24px] before:w-[2px] before:bg-outline-variant/30">
+<div class="absolute left-[-4px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<p class="text-sm font-bold text-on-surface leading-tight">Submitted: "Digital Naira..."</p>
+<p class="text-xs text-outline mt-1 italic">Today at 10:24 AM</p>
+</div>
+<!-- Timeline Item -->
+<div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-[-24px] before:w-[2px] before:bg-outline-variant/30">
+<div class="absolute left-[-4px] top-1.5 w-2.5 h-2.5 rounded-full bg-outline-variant"></div>
+<p class="text-sm font-medium text-on-surface leading-tight">Article Published: "Oil Prices and Local Transport"</p>
+<p class="text-xs text-outline mt-1 italic">3 days ago</p>
+</div>
+<!-- Timeline Item -->
+<div class="relative pl-6">
+<div class="absolute left-[-4px] top-1.5 w-2.5 h-2.5 rounded-full bg-outline-variant"></div>
+<p class="text-sm font-medium text-on-surface leading-tight">Account Verified by Editorial Board</p>
+<p class="text-xs text-outline mt-1 italic">2 weeks ago</p>
+</div>
+</div>
+</div>
+<!-- Guidelines Hint -->
+<div class="p-6 rounded-2xl bg-gradient-to-br from-[#005137] to-[#0f6b4b] text-white space-y-3">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<h6 class="font-bold text-sm">Review Tip</h6>
+<p class="text-xs leading-relaxed opacity-90">Verified contributors have a 92% historical accuracy rate. Prioritize fact-checking for external sources over style for this submitter.</p>
+</div>
+</div>
+</aside>
+</main>
+</div>
+<!-- Mobile Navigation (Shared Component Placeholder) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white h-16 flex items-center justify-around px-4 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">article</span>
+<span class="text-[10px] font-bold uppercase">Content</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-outline">
+<span class="material-symbols-outlined">forum</span>
+<span class="text-[10px] font-bold uppercase">Community</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-outline">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold uppercase">Profile</span>
+</button>
+</nav>
+</body></html>

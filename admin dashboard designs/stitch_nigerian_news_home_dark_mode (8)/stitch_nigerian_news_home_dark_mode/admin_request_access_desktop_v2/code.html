@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Request Access | The Digital Curator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:opsz,wght@6..72,400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-container": "#734700",
+              "tertiary-container": "#0052d9",
+              "surface-dim": "#dfd9d4",
+              "primary": "#005137",
+              "surface-bright": "#fff8f3",
+              "secondary": "#855300",
+              "inverse-primary": "#86d7af",
+              "outline": "#6f7a72",
+              "on-primary": "#ffffff",
+              "secondary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed": "#00174b",
+              "inverse-on-surface": "#f6f0ea",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "secondary-container": "#feb557",
+              "on-tertiary-container": "#ccd6ff",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container-highest": "#e7e1dc",
+              "surface-tint": "#106c4b",
+              "surface-container-low": "#f9f2ed",
+              "on-primary-fixed": "#002114",
+              "surface-container": "#f3ede7",
+              "primary-container": "#0f6b4b",
+              "on-surface": "#1d1b18",
+              "primary-fixed": "#a1f4cb",
+              "surface-container-lowest": "#ffffff",
+              "on-error": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed": "#ffddb8",
+              "on-error-container": "#93000a",
+              "surface": "#fff8f3",
+              "tertiary-fixed-dim": "#b4c5ff",
+              "primary-fixed-dim": "#86d7af",
+              "on-surface-variant": "#3f4943",
+              "on-primary-container": "#97e9c0",
+              "tertiary": "#003da6",
+              "inverse-surface": "#32302d",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "on-secondary-fixed-variant": "#653e00",
+              "tertiary-fixed": "#dbe1ff",
+              "surface-container-high": "#ede7e2",
+              "on-background": "#1d1b18",
+              "error-container": "#ffdad6",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "outline-variant": "#bec9c1",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Newsreader", "serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fff8f3; }
+        .serif-headline { font-family: 'Newsreader', serif; }
+        .glass-panel {
+            background: rgba(255, 248, 243, 0.8);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 32px -4px rgba(29, 27, 24, 0.06);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- Top Navigation (Shell Suppressed per Rule for Transactional Page, but following JSON structure for branding) -->
+<header class="bg-[#fff8f3] dark:bg-stone-950 flex justify-between items-center w-full px-8 py-4 max-w-full docked full-width top-0">
+<div class="text-2xl font-bold font-['Newsreader'] text-[#005137] dark:text-[#1a7a5a] tracking-tight">
+            The Digital Curator
+        </div>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-stone-600 dark:text-stone-400 font-sans text-sm hover:text-[#0f6b4b] transition-colors duration-200" href="#">Help</a>
+<a class="text-stone-600 dark:text-stone-400 font-sans text-sm hover:text-[#0f6b4b] transition-colors duration-200" href="#">Guidelines</a>
+<a class="text-stone-600 dark:text-stone-400 font-sans text-sm hover:text-[#0f6b4b] transition-colors duration-200" href="#">Support</a>
+</nav>
+</header>
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+<div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-xl bg-surface-container-lowest shadow-2xl shadow-on-surface/5">
+<!-- Left Side: Aesthetic/Branding -->
+<div class="hidden lg:flex lg:col-span-5 relative bg-primary-container overflow-hidden p-12 flex-col justify-between">
+<div class="absolute inset-0 z-0">
+<img alt="Editorial Desk" class="w-full h-full object-cover mix-blend-overlay opacity-30 scale-110" data-alt="Black and white close up of a vintage typewriter and morning newspaper on a wooden desk with soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOSNkssyuH2cWkxI-snweIw6-76qF-fjJrlUa2QF6LmLMUHa6Dh6cXfVtrdVORm2fM0bhiqNy764vxUiED0mwIOAqUdTGzIdl1LoOVO4ksnIzAtHObnmNHrG1r9kJ7cc9b2I062_dVQk1CeMdXRaCHSUjC0Ce-EOZOl07LkzFnNAH7SQtbCdjFPDnpeHhSubxQKAQcekA2puUMmg1jZQ6M1u2WVoNH1zpl8RXe7mlDns1O89qJ4qTxjXw4Fd_nbU1_7pvOYiyfgMc0"/>
+</div>
+<div class="relative z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-on-primary-container text-[11px] font-bold uppercase tracking-widest mb-6">
+<span class="material-symbols-outlined text-sm">shield_person</span>
+                        Secure Administration
+                    </div>
+<h2 class="serif-headline text-4xl text-white font-medium leading-tight mb-4">
+                        Defining the pulse of digital narrative.
+                    </h2>
+<p class="text-on-primary-container/80 text-sm leading-relaxed max-w-xs">
+                        Access to the NaijaPulse editorial suite is restricted to verified newsroom staff and administrative partners.
+                    </p>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-4 text-white/60">
+<div class="h-[1px] w-8 bg-white/30"></div>
+<span class="text-[10px] uppercase tracking-widest font-semibold">Editorial Integrity First</span>
+</div>
+</div>
+</div>
+<!-- Right Side: Request Access Form -->
+<div class="lg:col-span-7 p-8 md:p-16 flex flex-col justify-center bg-white">
+<div class="max-w-md mx-auto w-full">
+<header class="mb-10">
+<h1 class="serif-headline text-3xl md:text-4xl text-on-surface font-semibold mb-3 tracking-tight">Request newsroom access</h1>
+<p class="text-on-surface-variant text-sm font-body">Complete the verification form below. Our platform administrator will review your credentials within 24 hours.</p>
+</header>
+<form action="#" class="space-y-6" method="POST">
+<div class="space-y-1.5">
+<label class="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 ml-1" for="full_name">Full name</label>
+<input class="w-full px-5 py-3.5 rounded-xl border-none bg-surface-container-low text-on-surface placeholder:text-stone-400 focus:ring-2 focus:ring-primary/40 transition-all outline-none text-sm" id="full_name" name="full_name" placeholder="e.g. Chinua Achebe" required="" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 ml-1" for="email">Work email</label>
+<input class="w-full px-5 py-3.5 rounded-xl border-none bg-surface-container-low text-on-surface placeholder:text-stone-400 focus:ring-2 focus:ring-primary/40 transition-all outline-none text-sm" id="email" name="email" placeholder="name@naijapulse.com" required="" type="email"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 ml-1" for="role">Role / team</label>
+<select class="w-full px-5 py-3.5 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary/40 transition-all outline-none text-sm appearance-none" id="role" name="role" required="">
+<option disabled="" selected="" value="">Select position</option>
+<option value="editor">Senior Editor</option>
+<option value="journalist">Staff Journalist</option>
+<option value="contributor">External Contributor</option>
+<option value="admin">Technical Admin</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 ml-1" for="location">Bureau</label>
+<input class="w-full px-5 py-3.5 rounded-xl border-none bg-surface-container-low text-on-surface placeholder:text-stone-400 focus:ring-2 focus:ring-primary/40 transition-all outline-none text-sm" id="location" name="location" placeholder="Lagos HQ" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 ml-1" for="reason">Reason for access</label>
+<textarea class="w-full px-5 py-3.5 rounded-xl border-none bg-surface-container-low text-on-surface placeholder:text-stone-400 focus:ring-2 focus:ring-primary/40 transition-all outline-none text-sm resize-none" id="reason" name="reason" placeholder="Briefly describe your editorial focus or project requirements..." required="" rows="3"></textarea>
+</div>
+<div class="pt-4">
+<button class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white font-semibold text-sm tracking-wide shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
+                                Submit request
+                                <span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</form>
+<div class="mt-8 p-4 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="text-[12px] text-on-surface-variant leading-normal">
+<span class="font-bold text-on-surface block mb-0.5">Note:</span>
+                            Your request has been sent to the platform administrator. Access is granted based on departmental clearance.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer as defined in Shared Components JSON -->
+<footer class="bg-transparent flex justify-center gap-8 py-6 w-full fixed bottom-0">
+<div class="font-sans text-[0.75rem] uppercase tracking-wider text-stone-500 opacity-80 transition-opacity flex gap-8">
+<span class="text-stone-400">© 2024 The Digital Curator Editorial Group. All rights reserved.</span>
+<a class="hover:underline hover:text-stone-700 dark:hover:text-stone-200" href="#">Privacy Policy</a>
+<a class="hover:underline hover:text-stone-700 dark:hover:text-stone-200" href="#">Terms of Service</a>
+<a class="hover:underline hover:text-stone-700 dark:hover:text-stone-200" href="#">Security</a>
+<a class="hover:underline hover:text-stone-700 dark:hover:text-stone-200" href="#">Newsroom Ethics</a>
+</div>
+</footer>
+</body></html>

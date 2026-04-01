@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin | Scheduled Articles</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#fff8f3",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f3ede7",
+                        "primary-fixed-dim": "#86d7af",
+                        "inverse-on-surface": "#f6f0ea",
+                        "tertiary-fixed": "#dbe1ff",
+                        "surface-container-high": "#ede7e2",
+                        "primary": "#005137",
+                        "on-surface-variant": "#3f4943",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e7e1dc",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "surface-container-low": "#f9f2ed",
+                        "primary-fixed": "#a1f4cb",
+                        "tertiary": "#003da6",
+                        "outline": "#6f7a72",
+                        "on-surface": "#1d1b18",
+                        "on-secondary-fixed": "#2a1700",
+                        "secondary": "#855300",
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "surface-container-highest": "#e7e1dc",
+                        "on-tertiary-fixed": "#00174b",
+                        "secondary-container": "#feb557",
+                        "on-primary-fixed": "#002114",
+                        "on-background": "#1d1b18",
+                        "outline-variant": "#bec9c1",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fff8f3",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dfd9d4",
+                        "primary-container": "#0f6b4b",
+                        "secondary-fixed": "#ffddb8",
+                        "inverse-surface": "#32302d",
+                        "on-secondary-container": "#734700",
+                        "on-primary-fixed-variant": "#005137",
+                        "background": "#fff8f3",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#ccd6ff",
+                        "inverse-primary": "#86d7af",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#106c4b",
+                        "on-primary-container": "#97e9c0",
+                        "tertiary-container": "#0052d9"
+                    },
+                    fontFamily: {
+                        "headline": ["Newsreader"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .font-newsreader { font-family: 'Newsreader', serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-[#005137] dark:bg-[#003d29] text-emerald-50 dark:text-emerald-100 font-['Newsreader'] tracking-tight docked full-width top-0 z-50 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold font-['Newsreader'] text-white">NaijaPulse Admin</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-emerald-100/80 hover:text-white transition-colors" href="#">Live View</a>
+<a class="text-emerald-100/80 hover:text-white transition-colors" href="#">Alerts</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 hover:bg-white/10 transition-all rounded-full">notifications</button>
+<button class="material-symbols-outlined p-2 hover:bg-white/10 transition-all rounded-full">settings</button>
+<div class="h-8 w-8 rounded-full bg-surface-container overflow-hidden">
+<img alt="Editor Profile" data-alt="close-up portrait of a professional male editor in a modern office setting with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCODT_uh0KMLW_ekF-TZFDNKGheLEyei_zA5r7kdm4e8l_TwxUs4hfP9LrTtSTORhifB1r0FxY3tgLxuWZPuExXO8VtLyolnuwdVx1mU8O-dU9rxgtRGQctHhbxJpH-PekEoOFv8JmRoM3I9ldFCvr2X4bc3JIxJNpB7CSjJTNlLHCIvcyYneveXwYH9z1Wgiqwb4-2jyhpa4kJPlwBKVIlmRzg02EtifnRGutxiwdjE53Nvgl7ixmndrceaIRzUxPmvNWKKiTcQbhR"/>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-1.5 rounded-lg font-medium text-sm transition-transform scale-95 active:opacity-80">Publish</button>
+</div>
+</header>
+<div class="flex pt-16">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-[#fff8f3] dark:bg-[#1a1c1e] text-[#005137] flex flex-col py-4 border-r-0 surface-container-low">
+<div class="px-6 mb-8">
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 font-bold">Editorial Desk</p>
+<p class="text-[10px] text-slate-400">High-End Admin</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span> Articles Queue
+                </a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">check_circle</span> Published
+                </a>
+<!-- Active Tab -->
+<a class="flex items-center gap-3 px-6 py-2.5 text-[#005137] dark:text-emerald-400 font-bold bg-[#005137]/5 dark:bg-emerald-500/10 rounded-r-full translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">schedule</span> Scheduled
+                </a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">send</span> Submissions
+                </a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">verified</span> Verification Desk
+                </a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span> Analytics
+                </a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg mb-6 transition-all hover:bg-primary-container">
+<span class="material-symbols-outlined">add</span> New Story
+                </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-xs text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">help</span> Support
+                    </a>
+<a class="flex items-center gap-3 px-4 py-2 text-xs text-slate-500 hover:text-error transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">logout</span> Sign Out
+                    </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 p-8">
+<div class="max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-12">
+<div>
+<h1 class="text-5xl font-bold text-on-surface mb-2 font-headline tracking-tight">Scheduled Articles</h1>
+<p class="text-on-surface-variant font-medium">Managing the pulse of future narratives.</p>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-1.5 rounded-xl">
+<button class="px-6 py-2 rounded-lg bg-surface-container-lowest text-primary font-semibold shadow-sm text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">list</span> List
+                        </button>
+<button class="px-6 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors font-medium text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">calendar_month</span> Calendar
+                        </button>
+</div>
+</div>
+<!-- Bento Statistics / Quick View -->
+<div class="grid grid-cols-12 gap-6 mb-12">
+<div class="col-span-12 md:col-span-8 bg-surface-container-low rounded-2xl p-8 flex justify-between items-center overflow-hidden relative">
+<div>
+<span class="text-[10px] uppercase tracking-widest font-bold text-primary mb-2 block">Weekly Forecast</span>
+<h2 class="text-3xl font-headline font-bold text-on-surface mb-1">24 Articles Pending</h2>
+<p class="text-on-surface-variant text-sm">You are 12% ahead of last week's publication velocity.</p>
+</div>
+<div class="flex gap-4">
+<div class="h-16 w-1 bg-primary/20 rounded-full flex items-end">
+<div class="h-8 w-full bg-primary rounded-full"></div>
+</div>
+<div class="h-16 w-1 bg-primary/20 rounded-full flex items-end">
+<div class="h-12 w-full bg-primary rounded-full"></div>
+</div>
+<div class="h-16 w-1 bg-primary/20 rounded-full flex items-end">
+<div class="h-10 w-full bg-primary rounded-full"></div>
+</div>
+<div class="h-16 w-1 bg-primary/20 rounded-full flex items-end">
+<div class="h-14 w-full bg-primary rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-primary text-white rounded-2xl p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<span class="text-[10px] uppercase tracking-widest font-bold text-primary-fixed mb-2 block">Next Release</span>
+<h3 class="text-xl font-headline font-bold mb-1">Energy Transition in Lagos</h3>
+<p class="text-emerald-100/70 text-sm">In 2 hours, 14 minutes</p>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:scale-110 transition-transform">auto_stories</span>
+</div>
+</div>
+<!-- Articles Table/List -->
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+<div class="p-6 border-b border-surface-container flex justify-between items-center">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="Filter by title or editor..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low rounded-xl transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span> Category
+                            </button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[11px] uppercase tracking-widest text-slate-400 font-bold border-b border-surface-container">
+<th class="px-8 py-5 w-12"><input class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/></th>
+<th class="px-4 py-5">Article Details</th>
+<th class="px-4 py-5">Scheduled Date</th>
+<th class="px-4 py-5">Category</th>
+<th class="px-4 py-5">Assigned Editor</th>
+<th class="px-8 py-5 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container/50">
+<!-- Article Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-8 py-6"><input class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/></td>
+<td class="px-4 py-6">
+<div class="flex items-center gap-4">
+<div class="h-12 w-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Article Thumbnail" data-alt="vibrant architectural photo of modern buildings in Lagos under a bright blue sky with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLO7jupVnVS7xgZCyPXk_lbsPncOGwux0J7Mtri9QuXc-GJajrVUq94BctP7gyrNTxV1ZBi9FbQ-0_Zqi-QxGZNjZjV-806eUUFaT9Luxm3Z8ABiI9xyCc-jG3CvKPXkGn6ecyDYBMV3Z7AJHnw50w-LJnq0Gits1clK75GG7uELzedzbNKUZdRM3nM5ar-Av9LUBoTR0C-d31SJBdUjg8CE3c8UMTkaMwJy0AUJ9MNYAdkvz8Wqlow_rOWPU_C3xK8RvN7behn1pY"/>
+</div>
+<div>
+<p class="font-headline font-bold text-lg leading-tight group-hover:text-primary transition-colors">The Digital Naira: One Year On</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-[10px] px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-bold uppercase tracking-tighter">Scheduled</span>
+<span class="text-[10px] text-slate-400 font-medium">ID: NP-8821</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Oct 24, 2023</span>
+<span class="text-xs text-slate-500 italic">09:00 AM WAT</span>
+</div>
+</td>
+<td class="px-4 py-6">
+<span class="text-xs font-medium px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant">Economy</span>
+</td>
+<td class="px-4 py-6">
+<div class="flex items-center gap-2">
+<img alt="Editor Avatar" class="h-6 w-6 rounded-full" data-alt="professional headshot of a female editor with glasses smiling warmly against a soft grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDieT54OdeYEVu0cuM0DKEOYz9aDRgZyYD-vCz0UMDpwXDMy04vAQxq5VXe0WfKei6M1lYqiak1GDCcmq9W3QmcFPJVEEdFGQo-TtkiHhnqSGMjLxOMJltQ5JuNitObwAnb5OeQO8mE4ZYTuHrju8oeS-obFAaDu2t78ZXbbn2dc8ATK6EadGrH9Ruujb1o2UbkAEsfslJZzfSaPmxsUfO497sHooKcP_ioiMw6KwYsKKFaVDMxdTqFxx1ZfurutESVVwvFdXy5qI6l"/>
+<span class="text-sm font-medium">Bilikiss Adebiyi</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-slate-600" title="Edit Schedule"><span class="material-symbols-outlined text-xl">event_note</span></button>
+<button class="p-2 hover:bg-primary-container hover:text-white rounded-lg text-slate-600" title="Publish Now"><span class="material-symbols-outlined text-xl">rocket_launch</span></button>
+<button class="p-2 hover:bg-error-container hover:text-error rounded-lg text-slate-600" title="Cancel"><span class="material-symbols-outlined text-xl">cancel</span></button>
+</div>
+</td>
+</tr>
+<!-- Article Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-8 py-6"><input class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/></td>
+<td class="px-4 py-6">
+<div class="flex items-center gap-4">
+<div class="h-12 w-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Article Thumbnail" data-alt="fashion photography of colorful Nigerian textiles and patterns draped elegantly in a bright studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbChCwuXZyy-ExaOhmuwomCBkY1zdJBDVQrLrNmnEuAjZI9CQpJg6KTDAJuQsr231Lu8CTSd9sAr-_nkNlobZEyXJkk-NtKqJM_Xxbq3c4t8KrFbif8-Q6VNzCcSjPb0MGP7fXPl-ulpdr7_Nnz7frjl-GGYKAJ3Qh3h6u_lXD7F4tyfLOTqHkQdGINwl1rQn9HJzgoxh9eRAbAh2f30jUPbufL3SUTCBt_Nd5IDSFtOmPiTiqFrKQEQtklGXHjlKJsC-NiZQvT31V"/>
+</div>
+<div>
+<p class="font-headline font-bold text-lg leading-tight group-hover:text-primary transition-colors">Sustainable Fashion: The Adire Renaissance</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-[10px] px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-bold uppercase tracking-tighter">Scheduled</span>
+<span class="text-[10px] text-slate-400 font-medium">ID: NP-8822</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Oct 25, 2023</span>
+<span class="text-xs text-slate-500 italic">02:30 PM WAT</span>
+</div>
+</td>
+<td class="px-4 py-6">
+<span class="text-xs font-medium px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant">Culture</span>
+</td>
+<td class="px-4 py-6">
+<div class="flex items-center gap-2">
+<img alt="Editor Avatar" class="h-6 w-6 rounded-full" data-alt="close-up portrait of a male journalist looking thoughtful in a creative workspace with warm overhead lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2o_kfpNwPZdRpCtqXginNF2K0dis3jr3NMGbh70nMLtc7fGG4f24zAWz72THIlL7NDVjHsOOhc1xtUSRJaIwGORnvzGSM7m9gYRVgSdjq38QxMSMz96ZhzTSeSpS2sXEhrMgXqhjyHGpN5y7Lp-f9lmhZX0WO2rrXL4F_FrN1IBU8O1H9UhzLLpvzmiil9bZGU6mc3lkmRwiKIGItvowyZm5nSH92xAe281Pvfd5M9oAnk_N8TZZ2OqqdHZbyr1G4QKORmYkc4ChV"/>
+<span class="text-sm font-medium">Tunde Folawiyo</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-slate-600" title="Edit Schedule"><span class="material-symbols-outlined text-xl">event_note</span></button>
+<button class="p-2 hover:bg-primary-container hover:text-white rounded-lg text-slate-600" title="Publish Now"><span class="material-symbols-outlined text-xl">rocket_launch</span></button>
+<button class="p-2 hover:bg-error-container hover:text-error rounded-lg text-slate-600" title="Cancel"><span class="material-symbols-outlined text-xl">cancel</span></button>
+</div>
+</td>
+</tr>
+<!-- Article Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group border-b-0">
+<td class="px-8 py-6"><input class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/></td>
+<td class="px-4 py-6">
+<div class="flex items-center gap-4">
+<div class="h-12 w-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container">
+<img alt="Article Thumbnail" data-alt="close-up of a high-end recording studio microphone with soft bokeh lights in a dark moody atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHPjXHRXF3AE8B-72WzbhKeE39L2mWIEveqclkrngHZORrUbVZV48x3I-Su2M131UowgAJ4Ve0NbaGCPVo2q32qWs5EAs2ZJfq-mVVpFqmYDEWcKmQJhMSe4UqVIiCUIrBjmpf3wDeJy0NyVCt7xcRi5hDOpv2zjznwHJZDMegqF2rEseEkEtp1yFZHTq8mTEFWa519HsAUDgrLKp9766U0ii8PtsHE9no-v7w07OY2HBdVeKhAXiNJ9RvzuZdtjSWR550o1Hu3ykJ"/>
+</div>
+<div>
+<p class="font-headline font-bold text-lg leading-tight group-hover:text-primary transition-colors">Afrobeats Global: The Streaming Data Depth</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-[10px] px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-bold uppercase tracking-tighter">Scheduled</span>
+<span class="text-[10px] text-slate-400 font-medium">ID: NP-8823</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Oct 26, 2023</span>
+<span class="text-xs text-slate-500 italic">08:00 AM WAT</span>
+</div>
+</td>
+<td class="px-4 py-6">
+<span class="text-xs font-medium px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant">Entertainment</span>
+</td>
+<td class="px-4 py-6">
+<div class="flex items-center gap-2">
+<img alt="Editor Avatar" class="h-6 w-6 rounded-full" data-alt="headshot of a young professional woman with a bright smile in a clean, minimalist office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAChlYr_X_7c4PL5ki8dH5HRGO14hOzitmlkRdM4LWWvmiR9OtiYXrggK2lxgfz1ichjU3B7qEDoNlk_1KoSInN3y6jHC5JWD-ezRPMY-OTsy2hk9JnzoD1Q04GJS8O6dcO7iT5mjIjLPDZPx1aTENYGy4qo4QjxJxkbB_E6iBOD4eahTAUQFLpXQ_1OseK0B-0DqdwZ0FD6Rm-Iy2pFUCqFiVJSeY3_2as2zX5KLfUuzYA5W312KogiBL4wsZYjXIKaFApfn94vE91"/>
+<span class="text-sm font-medium">Chioma Akpotha</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-slate-600" title="Edit Schedule"><span class="material-symbols-outlined text-xl">event_note</span></button>
+<button class="p-2 hover:bg-primary-container hover:text-white rounded-lg text-slate-600" title="Publish Now"><span class="material-symbols-outlined text-xl">rocket_launch</span></button>
+<button class="p-2 hover:bg-error-container hover:text-error rounded-lg text-slate-600" title="Cancel"><span class="material-symbols-outlined text-xl">cancel</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-8 bg-surface-container-low/30 border-t border-surface-container flex items-center justify-between">
+<span class="text-xs text-slate-500 font-medium">Showing 3 of 24 scheduled articles</span>
+<div class="flex gap-2">
+<button class="px-4 py-1.5 rounded-lg border border-outline-variant text-xs font-bold hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">Previous</button>
+<button class="px-4 py-1.5 rounded-lg border border-outline-variant text-xs font-bold hover:bg-surface-container transition-colors">Next</button>
+</div>
+</div>
+</div>
+<!-- Secondary Calendar Preview Section (Asymmetric Layout) -->
+<div class="mt-16 grid grid-cols-12 gap-8">
+<div class="col-span-12 lg:col-span-4">
+<h3 class="text-2xl font-headline font-bold text-on-surface mb-4">Production Rhythm</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Your editorial calendar is currently optimized for morning peak traffic in the Lagos and Abuja metropolitan areas.</p>
+<div class="space-y-4">
+<div class="p-4 bg-surface-container-low rounded-xl">
+<div class="flex justify-between items-center mb-1">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Peak Load</span>
+<span class="text-xs font-bold text-primary">Wednesdays</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[85%] rounded-full"></div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<div class="flex justify-between items-center mb-1">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Slot Availability</span>
+<span class="text-xs font-bold text-secondary">Fridays (High)</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[40%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-8 bg-surface-container-high/30 rounded-3xl p-1 border border-surface-container-high">
+<div class="bg-surface rounded-[22px] p-6 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<span class="font-headline font-bold text-xl">Weekly View</span>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined p-1 text-slate-400">chevron_left</button>
+<span class="text-sm font-bold">Oct 22 — Oct 28</span>
+<button class="material-symbols-outlined p-1 text-slate-400">chevron_right</button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-4">
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase">Sun</span></div>
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase">Mon</span></div>
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase">Tue</span></div>
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase text-primary">Wed</span></div>
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase">Thu</span></div>
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase">Fri</span></div>
+<div class="text-center pb-2 border-b border-surface-container-high"><span class="text-[10px] font-bold text-slate-400 uppercase">Sat</span></div>
+<!-- Dummy Calendar Slots -->
+<div class="h-24 bg-surface-container-low rounded-lg opacity-30"></div>
+<div class="h-24 bg-surface-container-low rounded-lg p-2">
+<div class="h-full w-full bg-tertiary/10 rounded-md border-l-4 border-tertiary flex items-end p-2">
+<span class="text-[10px] font-bold text-tertiary">4 Slots</span>
+</div>
+</div>
+<div class="h-24 bg-surface-container-low rounded-lg p-2">
+<div class="h-full w-full bg-primary/10 rounded-md border-l-4 border-primary flex items-end p-2">
+<span class="text-[10px] font-bold text-primary">6 Slots</span>
+</div>
+</div>
+<div class="h-24 bg-surface-container-low rounded-lg p-2 ring-2 ring-primary ring-offset-2">
+<div class="h-full w-full bg-primary rounded-md flex items-end p-2">
+<span class="text-[10px] font-bold text-white">8 Slots</span>
+</div>
+</div>
+<div class="h-24 bg-surface-container-low rounded-lg p-2">
+<div class="h-full w-full bg-secondary/10 rounded-md border-l-4 border-secondary flex items-end p-2">
+<span class="text-[10px] font-bold text-secondary">3 Slots</span>
+</div>
+</div>
+<div class="h-24 bg-surface-container-low rounded-lg p-2">
+<div class="h-full w-full bg-surface-container-high rounded-md flex items-end p-2">
+<span class="text-[10px] font-bold text-slate-500">2 Slots</span>
+</div>
+</div>
+<div class="h-24 bg-surface-container-low rounded-lg opacity-30"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Quick Actions (FAB) Suppressed per instructions for Admin Details/Grid Views -->
+<!-- Status Quills and Audit Rails are integrated within the bento/list components -->
+</body></html>

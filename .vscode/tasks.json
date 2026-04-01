@@ -1,0 +1,128 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "naijapulse-api: uvicorn",
+            "type": "shell",
+            "command": "uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+            "options": {
+                "cwd": "${workspaceFolder}/naijapulse-api"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "naijapulse-services",
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "^(.*)\\b\\B$",
+                    "file": 1,
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "(Uvicorn running on|Application startup complete|Started server process|Started reloader process)"
+                }
+            }
+        },
+        {
+            "label": "naijapulse: ngrok static tunnel",
+            "type": "shell",
+            "command": "ngrok http --url=${input:ngrokDomain} 8000",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "naijapulse-services",
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "^(.*)\\b\\B$",
+                    "file": 1,
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "(started tunnel|Forwarding https://|url=https://|Session Status|Web Interface)"
+                }
+            }
+        },
+        {
+            "label": "naijapulse: services up",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "naijapulse-api: uvicorn",
+                "naijapulse: ngrok static tunnel"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "naijapulse: flutter web",
+            "type": "shell",
+            "command": "flutter run -d chrome --web-port=7357 --web-launch-url=http://localhost:7357/admin/login --dart-define=API_BASE_URL=https://${input:ngrokDomain}/api/v1",
+            "options": {
+                "cwd": "${workspaceFolder}/naijapulse"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "naijapulse-services",
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "^(.*)\\b\\B$",
+                    "file": 1,
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "(A Dart VM Service on Chrome is available at:|The Flutter DevTools debugger and profiler on Chrome is available at:|Flutter run key commands\\.|Debug service listening on)"
+                }
+            }
+        },
+        {
+            "label": "naijapulse: full stack web",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "naijapulse-api: uvicorn",
+                "naijapulse: ngrok static tunnel",
+                "naijapulse: flutter web"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "naijapulse: admin local",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "naijapulse-api: uvicorn",
+                "naijapulse: flutter web"
+            ],
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "ngrokDomain",
+            "type": "promptString",
+            "description": "Reserved ngrok domain (no protocol)",
+            "default": "countless-lahoma-uncontemporaneously.ngrok-free.dev"
+        }
+    ]
+}

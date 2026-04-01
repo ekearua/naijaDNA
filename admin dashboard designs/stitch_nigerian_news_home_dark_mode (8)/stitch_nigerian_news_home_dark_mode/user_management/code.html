@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin | User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,wght@0,400;0,700;0,800;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#ccd6ff",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "inverse-primary": "#86d7af",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container": "#f3ede7",
+              "surface-container-low": "#f9f2ed",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-surface": "#1d1b18",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "on-background": "#1d1b18",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "outline-variant": "#bec9c1",
+              "primary-container": "#0f6b4b",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700",
+              "inverse-on-surface": "#f6f0ea",
+              "on-primary-container": "#97e9c0",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "tertiary-fixed": "#dbe1ff",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#3f4943",
+              "tertiary": "#003da6",
+              "surface": "#fff8f3",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .serif-title { font-family: 'Newsreader', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-stone-50 flex flex-col h-full py-8 border-r-0">
+<div class="px-6 mb-10">
+<h2 class="font-['Newsreader'] italic text-xl text-[#005137]">The Digital Curator</h2>
+<p class="text-xs uppercase tracking-widest text-stone-400 mt-1 font-semibold">Newsroom Operations</p>
+</div>
+<nav class="flex-1 space-y-1 px-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span>Editorial Queue</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#005137] font-bold border-r-4 border-[#005137] bg-emerald-50/50 font-['Inter'] text-[15px]" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Staff Directory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="perm_media">perm_media</span>
+<span>Multimedia</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-stone-600 hover:bg-stone-100 transition-all duration-200 ease-in-out font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Archive</span>
+</a>
+</nav>
+<div class="mt-auto px-4 space-y-1">
+<button class="w-full bg-primary text-on-primary py-3 px-4 rounded-xl font-semibold mb-6 shadow-lg shadow-primary/20 flex items-center justify-center gap-2 scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="add_circle">add_circle</span>
+                Quick Draft
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 font-['Inter'] text-[15px] font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full z-50 bg-[#fff8f3]/80 backdrop-blur-md shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] flex justify-between items-center px-8 py-4">
+<div class="flex items-center gap-8">
+<h1 class="font-['Newsreader'] font-black text-[#005137] text-2xl">NaijaPulse Admin</h1>
+<div class="relative group">
+<span class="absolute inset-y-0 left-3 flex items-center text-stone-400">
+<span class="material-symbols-outlined text-xl" data-icon="search">search</span>
+</span>
+<input class="pl-10 pr-4 py-2 bg-stone-100 border-none rounded-full w-64 focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="Search staff or contributors..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined text-stone-600" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined text-stone-600" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-px bg-stone-200 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface leading-tight">Chinua Adebayo</p>
+<p class="text-[10px] text-stone-500 uppercase tracking-tighter">Managing Editor</p>
+</div>
+<img alt="Editor Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10" data-alt="Close-up professional portrait of a male editor with glasses in a modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUiI7bJuvV85FIkgvYbvoNrADZy_fWwEW6Nf3bOMTeFEBEJ-9jnznNUnEpk5p9fW8ZTmQU2D7JJHZqOjOFN78Cef8lqTizRBtHYBWLn1o5NjLPGLOhWVC0T0fAiReY49VtkaRXARBuZWsU-WUwprcHKzXlIPd7oAVthYhO6kcp5KHBHau5Vdv8YNc1Rx5fVcO4c9sk5TNL-aCYBZViI06LG3duSymSTh1DUzIGQpOXauQNVF5hF2BD6xzxHge2BjJU6GSO8EAr9i1N"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-8 flex-1 grid grid-cols-12 gap-8">
+<!-- Table Section -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<div class="flex items-end justify-between">
+<div>
+<h2 class="serif-title text-4xl font-extrabold text-on-surface tracking-tight">Staff Directory</h2>
+<p class="text-stone-500 mt-2 font-medium">Oversee your editorial team, contributors, and field reporters.</p>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-highest text-on-surface font-semibold text-sm hover:bg-stone-200 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="person_add">person_add</span>
+                            Add Member
+                        </button>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-3xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[11px] uppercase tracking-widest text-stone-400 font-bold border-b border-stone-200/50">
+<th class="px-6 py-5">Name &amp; Email</th>
+<th class="px-6 py-5">Role</th>
+<th class="px-6 py-5">Status</th>
+<th class="px-6 py-5 text-center">Stats</th>
+<th class="px-6 py-5 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-stone-100">
+<!-- User Row 1 -->
+<tr class="hover:bg-white/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-xl object-cover" data-alt="Professional headshot of a smiling woman with natural lighting and soft background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5Xs36F4X1cqWLo5EOQTKtQROVxEGsXSI5WiS6zJDlsN-yOeDf1NDiUhsW3S0banu9peB8FbJ3oBZWjDDeTwRI_JIUAau1fB4l_GI6p1Ain_kQ5HaSpoFdT6WFUYdaBl8n9YyutZvLSiSNz-rNiasu1TeJm3UZXu_rNXathuLkMSdWds3TgkPT9d6IzqT-wkqvghekU7-l5K6WpwSD-FfgucP_gA_A7w0IoDDXbH5sdXMgwJ6vlVGnIxh2J9JdlOxY8v4F9Tie7J0u"/>
+<div>
+<p class="font-bold text-on-surface text-[15px]">Amara Okafor</p>
+<p class="text-xs text-stone-500">amara.o@naijapulse.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-semibold px-2 py-1 bg-stone-200/50 text-stone-700 rounded-md">Senior Reporter</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-bold text-emerald-700 uppercase">Active</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-4 text-center">
+<div>
+<p class="text-xs font-bold">142</p>
+<p class="text-[9px] text-stone-400 uppercase">Articles</p>
+</div>
+<div>
+<p class="text-xs font-bold">1.2k</p>
+<p class="text-[9px] text-stone-400 uppercase">Comments</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 rounded-lg text-stone-400 hover:text-primary hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- User Row 2 -->
+<tr class="hover:bg-white/50 transition-colors bg-white/20">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-xl object-cover" data-alt="Portrait of a focused man in a casual shirt against a neutral grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYbVyA_aSgGqefjdTZ2w90kOeWS7zuxmz3DSmqRBME_MORT5Tt0_QLWI2z5a2KxkUBN1EcZztTg1NGMslhhbAm3AYw0EILu2adazhYK4mTGp8go5eI0OUZZCMoOt7FRbcgnXoTUZvp5o6tx0bP_sjn5PjErfvTRc3Pf0dyjJwF_cLb4J7qMKd00aLv4NOp6f9zBfCMTSRIMMdkK8NnsxIvgZPu3ubw0FMHmAqc-YWKgCPNlKTSU45IhW8UGEL1J0-dCDVSOLL6qv_c"/>
+<div>
+<p class="font-bold text-on-surface text-[15px]">Tunde Balogun</p>
+<p class="text-xs text-stone-500">t.balogun@naijapulse.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-semibold px-2 py-1 bg-stone-200/50 text-stone-700 rounded-md">Contributor</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-xs font-bold text-on-secondary-container uppercase">Reviewing</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-4 text-center">
+<div>
+<p class="text-xs font-bold">28</p>
+<p class="text-[9px] text-stone-400 uppercase">Articles</p>
+</div>
+<div>
+<p class="text-xs font-bold">410</p>
+<p class="text-[9px] text-stone-400 uppercase">Comments</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 rounded-lg text-stone-400 hover:text-primary hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- User Row 3 -->
+<tr class="hover:bg-white/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-xl object-cover" data-alt="High-end fashion portrait of a young woman with dramatic lighting and vibrant colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx-P1moQqGGO96pesIK2GDMjC1efrw1Qiw0pFs9nwqS87OJCEpFYzqHlyXy9H2UJ6tAvQekgdWOMAtuLj-JnI3-Xu8wHQqpMs_qoqUAjP8LstrnCfGZXOGJ0NP8sVyevRT9G6RJc5qxVZBxLR8mDVWXiE8Q9AmvDNpJcjiSmNUb3FsH4kSYCxcV_Y0QJNx0FVSlUwGcQeSYbfKPAe5aUUld-WUVSfXoLGFvVyfXxBj3cgCJjb4FFobxKJ99BpCapj9tUiBF4EcQZnc"/>
+<div>
+<p class="font-bold text-on-surface text-[15px]">Ngozi Eze</p>
+<p class="text-xs text-stone-500">n.eze@naijapulse.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-semibold px-2 py-1 bg-stone-200/50 text-stone-700 rounded-md">Field Video Journalist</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-xs font-bold text-error uppercase">Suspended</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-4 text-center">
+<div>
+<p class="text-xs font-bold">64</p>
+<p class="text-[9px] text-stone-400 uppercase">Articles</p>
+</div>
+<div>
+<p class="text-xs font-bold">92</p>
+<p class="text-[9px] text-stone-400 uppercase">Reports</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 rounded-lg text-stone-400 hover:text-primary hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- User Row 4 -->
+<tr class="hover:bg-white/50 transition-colors bg-white/20">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-xl object-cover" data-alt="Charismatic man laughing in an outdoor sun-drenched setting with lush greenery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVdtgwKmC5fyOQd9hS46JHOZHp88b8pnOwnH2YD48dGFxLME_v9VohjKrZHxAX3WeuyqOBC1-1pbzdhCq0gvQnyS_DFl-QGcVOkML0s5dRYXS-Biym0Aff3BuIFNsNYlTXDu9c_QtduqCSP2Uv1ufLqaA_F7xqFIJABk4bBChzMJYEmieLNn1Xr-5hM-1ppk9Y-2IxzVlMlJkK3lfAp2Xkzne7xX7E3kNGcUg8KRUsbkn6azm-BJOHZQ098VRU2u38hk5DgKXarIW1"/>
+<div>
+<p class="font-bold text-on-surface text-[15px]">Femi Adeboye</p>
+<p class="text-xs text-stone-500">femi.a@naijapulse.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs font-semibold px-2 py-1 bg-stone-200/50 text-stone-700 rounded-md">Editor</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-bold text-emerald-700 uppercase">Active</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<div class="flex justify-center gap-4 text-center">
+<div>
+<p class="text-xs font-bold">512</p>
+<p class="text-[9px] text-stone-400 uppercase">Articles</p>
+</div>
+<div>
+<p class="text-xs font-bold">4.8k</p>
+<p class="text-[9px] text-stone-400 uppercase">Comments</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 rounded-lg text-stone-400 hover:text-primary hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 flex items-center justify-between bg-stone-100/30 border-t border-stone-200/50">
+<p class="text-xs text-stone-500 font-medium italic">Showing 1-12 of 148 team members</p>
+<div class="flex gap-1">
+<button class="p-2 rounded-lg hover:bg-white transition-all"><span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span></button>
+<button class="w-8 h-8 rounded-lg bg-primary text-on-primary text-xs font-bold">1</button>
+<button class="w-8 h-8 rounded-lg hover:bg-white text-xs font-bold">2</button>
+<button class="w-8 h-8 rounded-lg hover:bg-white text-xs font-bold">3</button>
+<button class="p-2 rounded-lg hover:bg-white transition-all"><span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Profile Details Drawer (Right-aligned Column) -->
+<div class="col-span-12 lg:col-span-4">
+<div class="sticky top-24 space-y-6">
+<!-- Detail Header -->
+<div class="bg-surface-container-highest rounded-3xl p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
+<div class="relative z-10 flex flex-col items-center text-center">
+<img class="w-24 h-24 rounded-2xl object-cover shadow-2xl ring-4 ring-white mb-4" data-alt="High resolution detailed headshot of a smiling woman with warm studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADSati52OpMk_Bs1jHUhP_UGGE3FogIwqmzelaeynNX4MsoMcSSOExVegmzYDA72x1brbrGFA9UzE76GyjqUhXwXrCBrSXGoHT_nhX8Zmts3S2CEvkdu1RpH1LClBPvk1quO2QHZRX27442mwkkWYMByE_r4nB9Q7aW17WxDFrreHGnL7UxqA3q6HN6j5AiVnLooRFxTbgEr-SvxXx8Y_TobNM3hUl1pMX5uMrImwQDip235EG5JZ7BKlNgFHMUn7rtmz-GVdiBisG"/>
+<h3 class="serif-title text-2xl font-bold">Amara Okafor</h3>
+<p class="text-primary font-semibold text-sm">amara.o@naijapulse.com</p>
+<div class="mt-6 w-full grid grid-cols-3 gap-2">
+<div class="bg-white/50 p-3 rounded-2xl">
+<p class="text-lg font-bold">142</p>
+<p class="text-[9px] uppercase tracking-tight text-stone-500">Posts</p>
+</div>
+<div class="bg-white/50 p-3 rounded-2xl">
+<p class="text-lg font-bold">4.9</p>
+<p class="text-[9px] uppercase tracking-tight text-stone-500">Rating</p>
+</div>
+<div class="bg-white/50 p-3 rounded-2xl">
+<p class="text-lg font-bold">8.2k</p>
+<p class="text-[9px] uppercase tracking-tight text-stone-500">Reach</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Role Selector & Status -->
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+<p class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-4">Account Configuration</p>
+<div class="space-y-4">
+<div>
+<label class="text-xs font-bold text-on-surface mb-1.5 block">Access Role</label>
+<select class="w-full bg-surface-container-low border-none rounded-xl text-sm font-medium py-2.5 focus:ring-2 focus:ring-primary/20">
+<option>Senior Reporter</option>
+<option>Editor</option>
+<option>Contributor</option>
+<option>Moderator</option>
+<option>Administrator</option>
+</select>
+</div>
+<div class="flex items-center justify-between p-3 bg-primary-fixed/30 rounded-2xl">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+<span class="text-sm font-bold text-on-primary-fixed-variant">Verified Contributor</span>
+</div>
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Activity Summary -->
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+<p class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-4">Recent Activity</p>
+<div class="space-y-4">
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-emerald-600 text-sm" data-icon="history_edu">history_edu</span>
+</div>
+<div>
+<p class="text-xs font-bold leading-tight">Published "Sustainable Energy in Lagos"</p>
+<p class="text-[10px] text-stone-400">2 hours ago</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-amber-600 text-sm" data-icon="edit">edit</span>
+</div>
+<div>
+<p class="text-xs font-bold leading-tight">Edited draft: "Tech Hub Expansion"</p>
+<p class="text-[10px] text-stone-400">Yesterday at 4:22 PM</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="stars">stars</span>
+</div>
+<div>
+<p class="text-xs font-bold leading-tight">Earned "Fact Checker" Badge</p>
+<p class="text-[10px] text-stone-400">Nov 12, 2023</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 text-xs font-bold text-stone-400 hover:text-primary transition-colors flex items-center justify-center gap-1">
+                            View Full Audit Log
+                            <span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Action Footer -->
+<div class="flex gap-3">
+<button class="flex-1 py-4 bg-primary text-on-primary rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="upgrade">upgrade</span>
+                            Promote
+                        </button>
+<button class="flex-1 py-4 bg-error-container text-on-error-container rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-error/10 transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="block">block</span>
+                            Suspend
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

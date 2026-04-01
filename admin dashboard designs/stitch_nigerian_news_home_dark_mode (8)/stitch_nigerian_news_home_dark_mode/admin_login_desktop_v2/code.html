@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | NaijaPulse Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-container": "#734700",
+              "tertiary-container": "#0052d9",
+              "surface-dim": "#dfd9d4",
+              "primary": "#005137",
+              "surface-bright": "#fff8f3",
+              "secondary": "#855300",
+              "inverse-primary": "#86d7af",
+              "outline": "#6f7a72",
+              "on-primary": "#ffffff",
+              "secondary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed": "#00174b",
+              "inverse-on-surface": "#f6f0ea",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "secondary-container": "#feb557",
+              "on-tertiary-container": "#ccd6ff",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container-highest": "#e7e1dc",
+              "surface-tint": "#106c4b",
+              "surface-container-low": "#f9f2ed",
+              "on-primary-fixed": "#002114",
+              "surface-container": "#f3ede7",
+              "primary-container": "#0f6b4b",
+              "on-surface": "#1d1b18",
+              "primary-fixed": "#a1f4cb",
+              "surface-container-lowest": "#ffffff",
+              "on-error": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed": "#ffddb8",
+              "on-error-container": "#93000a",
+              "surface": "#fff8f3",
+              "tertiary-fixed-dim": "#b4c5ff",
+              "primary-fixed-dim": "#86d7af",
+              "on-surface-variant": "#3f4943",
+              "on-primary-container": "#97e9c0",
+              "tertiary": "#003da6",
+              "inverse-surface": "#32302d",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "on-secondary-fixed-variant": "#653e00",
+              "tertiary-fixed": "#dbe1ff",
+              "surface-container-high": "#ede7e2",
+              "on-background": "#1d1b18",
+              "error-container": "#ffdad6",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "outline-variant": "#bec9c1",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Newsreader", "serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .editorial-shadow {
+            box-shadow: 0 12px 32px -4px rgba(29, 27, 24, 0.06);
+        }
+        .glass-panel {
+            background: rgba(255, 248, 243, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface min-h-screen flex flex-col items-center justify-center p-6 selection:bg-primary-fixed selection:text-on-primary-fixed">
+<div class="w-full max-w-[460px] flex flex-col items-center">
+<!-- Brand Header Section -->
+<header class="text-center mb-10 w-full">
+<div class="mb-4 inline-block px-3 py-1 bg-surface-container-low rounded-full">
+<span class="text-[10px] uppercase tracking-[0.2em] font-semibold text-primary font-label">NaijaPulse Admin</span>
+</div>
+<h1 class="font-headline text-5xl font-medium text-on-surface tracking-tight leading-none mb-3 italic">Log in</h1>
+<p class="text-on-surface-variant text-base font-light max-w-[320px] mx-auto leading-relaxed">
+                Access the editorial dashboard and moderation tools
+            </p>
+</header>
+<!-- Main Auth Card -->
+<main class="w-full bg-surface-container-lowest rounded-xl p-8 editorial-shadow relative overflow-hidden">
+<!-- Asymmetric Accent -->
+<div class="absolute top-0 right-0 w-24 h-1 bg-primary-container opacity-20"></div>
+<!-- Error State Banner -->
+<div class="mb-8 p-4 bg-error-container rounded-[14px] flex items-start gap-3 border border-error/10">
+<span class="material-symbols-outlined text-error text-lg" data-icon="error">error</span>
+<p class="text-sm text-on-error-container font-medium leading-tight">
+                    We couldn’t sign you in. Check your credentials and try again.
+                </p>
+</div>
+<form class="space-y-6" onsubmit="return false;">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block text-[11px] uppercase tracking-widest font-bold text-on-surface-variant ml-1" for="email">Email Address</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-xl" data-icon="mail">mail</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3.5 bg-surface-container-low border-0 rounded-[14px] text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/40 transition-all text-sm font-medium" id="email" name="email" placeholder="editor@naijapulse.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-end px-1">
+<label class="block text-[11px] uppercase tracking-widest font-bold text-on-surface-variant" for="password">Password</label>
+<a class="text-[11px] font-bold text-primary hover:text-primary-container transition-colors tracking-tight" href="#">Forgot password?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-xl" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-11 pr-12 py-3.5 bg-surface-container-low border-0 rounded-[14px] text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/40 transition-all text-sm font-medium" id="password" name="password" placeholder="••••••••••••" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-white py-4 px-6 rounded-[12px] font-bold text-sm tracking-wide shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 mt-2" type="submit">
+                    Log in
+                </button>
+</form>
+<div class="mt-8 pt-6 border-t border-surface-variant flex flex-col items-center gap-4">
+<a class="text-[13px] font-medium text-on-surface-variant hover:text-primary transition-colors" href="#">
+                    Need an account? <span class="text-primary font-bold">Request access</span>
+</a>
+</div>
+</main>
+<!-- Footer Meta Section -->
+<footer class="mt-10 w-full flex flex-col items-center gap-6">
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-low/50 border border-outline-variant/20">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="shield_person">shield_person</span>
+<span class="text-[11px] uppercase tracking-widest font-semibold text-on-surface-variant">Protected newsroom access</span>
+</div>
+<p class="text-[12px] text-stone-500/80 font-sans tracking-tight text-center leading-relaxed">
+                Use your assigned editorial credentials.<br/>
+                © 2024 The Digital Curator Editorial Group. All rights reserved.
+            </p>
+<div class="flex gap-6 opacity-60">
+<a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors font-bold" href="#">Privacy Policy</a>
+<a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors font-bold" href="#">Terms of Service</a>
+</div>
+</footer>
+</div>
+<!-- Background Decoration -->
+<div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary/5 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[30vw] h-[30vw] rounded-full bg-secondary-container/5 blur-[100px]"></div>
+</div>
+</body></html>

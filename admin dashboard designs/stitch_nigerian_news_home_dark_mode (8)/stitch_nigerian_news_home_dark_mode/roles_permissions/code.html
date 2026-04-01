@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin - Roles &amp; Permissions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,700;0,800;1,400&amp;family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#ccd6ff",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "inverse-primary": "#86d7af",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container": "#f3ede7",
+              "surface-container-low": "#f9f2ed",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-surface": "#1d1b18",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "on-background": "#1d1b18",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "outline-variant": "#bec9c1",
+              "primary-container": "#0f6b4b",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700",
+              "inverse-on-surface": "#f6f0ea",
+              "on-primary-container": "#97e9c0",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "tertiary-fixed": "#dbe1ff",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#3f4943",
+              "tertiary": "#003da6",
+              "surface": "#fff8f3",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .brand-font { font-family: 'Newsreader', serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 sticky bg-[#fff8f3]/80 dark:bg-stone-900/80 backdrop-blur-md shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] dark:shadow-none transition-colors duration-300">
+<div class="flex justify-between items-center px-8 py-4 w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-['Newsreader'] font-black text-[#005137] dark:text-emerald-500">NaijaPulse Admin</span>
+<div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-xl gap-3">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm font-body w-64" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+</button>
+<div class="flex items-center gap-3 pl-4 ml-4 border-l border-outline-variant/30">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-on-surface">Editor Profile</p>
+<p class="text-[10px] text-on-surface-variant">Super Admin</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container/20" data-alt="portrait of a professional editor in a modern newsroom setting with soft warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXsnWAUdu5RFGEFlCs_jOHMnFwYiCvaiLNRrXhTHeGoBgwQ6fxpPa77-KnluOHDuSrWLC9Tl-Yot7hOMMkpaIe5yCo7gdl0g12pZVwkdJdwlqWrBwL0IqfXdKjvxaYrmIK0KI1ldjooro2xk6Pm9zwcfJA-thMk_jbVm8TjBqX0Sw3m_4lTz8_lplD_XMk20mSOvTJ0ddILIZLsOZjjjZsQt8KcFrRo66nq6H7WuRytcQNqS3pJ2IIHUTsu3EQmhkmEW8i9rw8lRRY"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex min-h-screen pt-2">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-stone-50 dark:bg-stone-950 flex flex-col py-8 border-r-0">
+<div class="px-8 mb-12">
+<h2 class="font-['Newsreader'] italic text-xl text-[#005137] dark:text-emerald-600">The Digital Curator</h2>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">Newsroom Operations</p>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<div class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] text-[15px] font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span class="font-['Inter'] text-[15px] font-medium">Editorial Queue</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-['Inter'] text-[15px] font-medium">Analytics</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="perm_media">perm_media</span>
+<span class="font-['Inter'] text-[15px] font-medium">Multimedia</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-[#005137] dark:text-emerald-400 font-bold border-r-4 border-[#005137] bg-emerald-50/50 dark:bg-emerald-900/20 cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-['Inter'] text-[15px] font-medium">Staff Directory</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] text-[15px] font-medium">Archive</span>
+</div>
+</nav>
+<div class="px-6 mb-8">
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                    Quick Draft
+                </button>
+</div>
+<div class="mt-auto px-4 py-6 border-t border-stone-100 dark:border-stone-900/50 space-y-1">
+<div class="flex items-center gap-3 px-4 py-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+<span class="text-sm font-medium">Help Center</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 text-error hover:bg-error-container/20 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="logout">logout</span>
+<span class="text-sm font-medium">Logout</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 p-12 bg-background">
+<header class="mb-12 max-w-6xl">
+<div class="flex items-center gap-2 text-primary font-semibold mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="text-xs uppercase tracking-widest">System Governance</span>
+</div>
+<h1 class="text-5xl font-black text-on-surface tracking-tight mb-4">Roles &amp; Permissions</h1>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">
+                    Define the operational boundaries for your newsroom staff. Manage access levels, editorial constraints, and administrative oversight through the central curator matrix.
+                </p>
+</header>
+<div class="grid grid-cols-12 gap-8 max-w-7xl">
+<!-- Left: Roles Selection (Bento Style) -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<div class="bg-surface-container-low rounded-3xl p-8 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-lg font-bold font-headline">Editorial Roles</h3>
+<button class="text-primary text-sm font-semibold hover:underline">New Role</button>
+</div>
+<div class="space-y-4">
+<!-- Contributor -->
+<div class="p-6 bg-surface rounded-2xl cursor-pointer ring-2 ring-primary transition-all shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-bold text-on-surface">Contributor</h4>
+<span class="px-2 py-1 bg-primary-fixed text-on-primary-fixed text-[10px] font-bold rounded-full">ACTIVE</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">External writers and freelancers with limited access to drafting and submission.</p>
+<div class="mt-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="group">group</span>
+<span class="text-[10px] font-medium text-on-surface-variant">12 Members assigned</span>
+</div>
+</div>
+<!-- Editor -->
+<div class="p-6 bg-surface-container-highest/30 rounded-2xl cursor-pointer hover:bg-surface-container-highest transition-all">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-bold text-on-surface">Staff Editor</h4>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">Core newsroom staff with ability to edit, review, and schedule published content.</p>
+<div class="mt-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="group">group</span>
+<span class="text-[10px] font-medium text-on-surface-variant">4 Members assigned</span>
+</div>
+</div>
+<!-- Admin -->
+<div class="p-6 bg-surface-container-highest/30 rounded-2xl cursor-pointer hover:bg-surface-container-highest transition-all">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-bold text-on-surface">System Admin</h4>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">Unrestricted access to organizational settings, finances, and user management.</p>
+<div class="mt-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="group">group</span>
+<span class="text-[10px] font-medium text-on-surface-variant">2 Members assigned</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual Accent Card -->
+<div class="bg-primary-container rounded-3xl p-8 text-on-primary-container overflow-hidden relative">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-4xl mb-4" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<h3 class="text-xl font-headline font-bold mb-2">Security Protocol</h3>
+<p class="text-sm opacity-80 leading-relaxed">Changes to permissions are logged in the master audit rail and require 2FA confirmation for Administrative roles.</p>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="shield">shield</span>
+</div>
+</div>
+</div>
+<!-- Right: Permissions Matrix -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-surface-container-lowest rounded-3xl p-10 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+<div class="flex items-center justify-between mb-10 pb-6 border-b border-surface-variant/30">
+<div>
+<h3 class="text-2xl font-bold font-headline mb-1">Permission Matrix</h3>
+<p class="text-sm text-on-surface-variant">Configuring: <span class="text-primary font-bold">Contributor</span></p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2.5 rounded-xl border border-outline-variant text-sm font-semibold hover:bg-surface-container transition-all">Discard</button>
+<button class="px-6 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold shadow-md hover:shadow-lg transition-all">Save Matrix</button>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="space-y-12">
+<!-- Section: Editorial Content -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="edit_note">edit_note</span>
+<h4 class="font-bold text-sm tracking-widest uppercase text-on-surface-variant">Editorial Content</h4>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Permission Item -->
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all">
+<div>
+<p class="font-semibold text-on-surface">Create Articles</p>
+<p class="text-[11px] text-on-surface-variant">Allow starting new story drafts</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all">
+<div>
+<p class="font-semibold text-on-surface">Edit Own Articles</p>
+<p class="text-[11px] text-on-surface-variant">Modify content created by user</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Edit Any Article</p>
+<p class="text-[11px] text-on-surface-variant">Global editorial modification</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Publish Content</p>
+<p class="text-[11px] text-on-surface-variant">Make articles live on site</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Media & Assets -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="camera">camera</span>
+<h4 class="font-bold text-sm tracking-widest uppercase text-on-surface-variant">Media &amp; Assets</h4>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all">
+<div>
+<p class="font-semibold text-on-surface">Upload Assets</p>
+<p class="text-[11px] text-on-surface-variant">Add images/video to library</p>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Delete Media</p>
+<p class="text-[11px] text-on-surface-variant">Permanently remove from CDN</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Administration -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="manage_accounts">manage_accounts</span>
+<h4 class="font-bold text-sm tracking-widest uppercase text-on-surface-variant">Governance</h4>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Manage Users</p>
+<p class="text-[11px] text-on-surface-variant">Add/Edit/Remove staff</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Moderate Comments</p>
+<p class="text-[11px] text-on-surface-variant">Approve or delete reader feedback</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Analytics Export</p>
+<p class="text-[11px] text-on-surface-variant">Download traffic and performance data</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 bg-surface-container-low/50 rounded-2xl hover:bg-surface-container-low transition-all opacity-60">
+<div>
+<p class="font-semibold text-on-surface">Financial View</p>
+<p class="text-[11px] text-on-surface-variant">Access ad-revenue and subscription logs</p>
+</div>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Meta -->
+<footer class="mt-16 flex justify-between items-center text-[10px] text-on-surface-variant uppercase tracking-widest font-bold border-t border-surface-variant/30 pt-8">
+<div>Last Modification: October 24, 2023 - 14:32 GMT</div>
+<div class="flex gap-8">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">System Log</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin - Create Article</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "on-surface": "#1d1b18",
+              "on-error-container": "#93000a",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed-dim": "#ffb95f",
+              "secondary": "#855300",
+              "inverse-surface": "#32302d",
+              "surface-container-low": "#f9f2ed",
+              "surface-container-highest": "#e7e1dc",
+              "tertiary": "#003da6",
+              "on-secondary-fixed": "#2a1700",
+              "error-container": "#ffdad6",
+              "on-error": "#ffffff",
+              "on-secondary-container": "#734700",
+              "on-tertiary-fixed": "#00174b",
+              "secondary-fixed": "#ffddb8",
+              "surface-container-high": "#ede7e2",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-bright": "#fff8f3",
+              "tertiary-container": "#0052d9",
+              "on-primary-fixed": "#002114",
+              "primary-fixed-dim": "#86d7af",
+              "secondary-container": "#feb557",
+              "inverse-on-surface": "#f6f0ea",
+              "on-tertiary-container": "#ccd6ff",
+              "on-background": "#1d1b18",
+              "surface-tint": "#106c4b",
+              "on-surface-variant": "#3f4943",
+              "surface-container": "#f3ede7",
+              "outline": "#6f7a72",
+              "surface-variant": "#e7e1dc",
+              "tertiary-fixed": "#dbe1ff",
+              "inverse-primary": "#86d7af",
+              "surface-dim": "#dfd9d4",
+              "on-primary-fixed-variant": "#005137",
+              "error": "#ba1a1a",
+              "surface-container-lowest": "#ffffff",
+              "surface": "#fff8f3",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-fixed-dim": "#b4c5ff",
+              "background": "#fff8f3",
+              "on-primary-container": "#97e9c0",
+              "primary-container": "#0f6b4b",
+              "outline-variant": "#bec9c1",
+              "primary-fixed": "#a1f4cb",
+              "primary": "#005137",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      h1, h2, .serif {
+        font-family: 'Newsreader', serif;
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-screen w-[264px] bg-[#f2eee6] dark:bg-stone-900 border-r-0 py-6 space-y-2 z-50">
+<div class="px-6 mb-8">
+<h1 class="font-['Newsreader'] text-xl font-bold text-[#005137] dark:text-emerald-400">NaijaPulse</h1>
+<p class="font-['Inter'] font-medium text-[11px] uppercase tracking-wider text-stone-500">Editorial Platform</p>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-[#0f6b4b]/10 text-[#005137] border-l-4 border-[#005137] font-bold px-4 py-3 translate-x-1 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span>Content</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+<span>Trust</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span>Community</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span>Operations</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>People</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+</nav>
+<div class="px-2 pt-4 mt-auto border-t border-stone-200/50">
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 px-4 py-3 hover:bg-[#0f6b4b]/5 transition-all font-['Inter'] font-medium text-[15px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-h-screen relative overflow-y-auto">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-40 flex items-center justify-between w-full px-8 h-[72px] bg-gradient-to-r from-[#005137] to-[#0f6b4b] text-white shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+<div class="flex items-center gap-6">
+<span class="font-['Newsreader'] italic tracking-tight text-xl font-bold">Editorial Platform</span>
+<div class="h-6 w-[1px] bg-white/20"></div>
+<nav class="flex gap-6">
+<span class="text-white font-semibold">Create Article</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-white/10 transition-colors active:opacity-80 scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors active:opacity-80 scale-95 duration-200 font-medium">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+<span>Refresh</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a professional male editor with clean lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN7431C7pWCRexdDi5OXzTUMb59dUvoWerpWtLh5tZQpiyV-xT1ULE9A3QKLPtR0eHn05jeDqFSvooxvqVOQJzooSYNOSh04XjTiCwRM6EPzxdohU9RqN_aqlTNw6BRXTIiXujjlgpXx9j-qDQVUyzwBWWecjtb5-lz-7zYTeBE_tkgC8Va7rqjXnig5T9plTqWK4KFFYxhpaauXdHa7_TykzPznwT2v8-Cvg9dJLzUbEB_SVNQKn8G_ptMj6lpjF1EEorVzlnylJ5"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<main class="flex-1 px-8 py-10 pb-32">
+<div class="max-w-7xl mx-auto">
+<div class="grid grid-cols-12 gap-12">
+<!-- Left Column: Form -->
+<div class="col-span-12 lg:col-span-8 space-y-10">
+<section>
+<h2 class="text-4xl font-headline font-bold mb-8 text-on-surface">Create Article</h2>
+<div class="space-y-8">
+<!-- Title Input -->
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Headline</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl p-6 text-2xl font-headline focus:ring-2 focus:ring-primary/40 placeholder:text-outline-variant transition-all" placeholder="Enter a compelling, authoritative title..." type="text"/>
+</div>
+<!-- Summary -->
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Executive Summary</label>
+<textarea class="w-full bg-surface-container-lowest border-none rounded-xl p-5 text-body leading-relaxed focus:ring-2 focus:ring-primary/40 placeholder:text-outline-variant transition-all" placeholder="Brief overview of the story for the feed card..." rows="4"></textarea>
+</div>
+<!-- Source & Image Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Source Name</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl px-4 py-3 text-body focus:ring-2 focus:ring-primary/40 transition-all" placeholder="e.g. Premium Times" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Source URL</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl px-4 py-3 text-body focus:ring-2 focus:ring-primary/40 transition-all" placeholder="https://..." type="url"/>
+</div>
+<div class="md:col-span-2 space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Featured Image URL</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-xl pl-12 pr-4 py-3 text-body focus:ring-2 focus:ring-primary/40 transition-all" placeholder="Unsplash or direct asset link..." type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" data-icon="image">image</span>
+</div>
+</div>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Category</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-xl px-4 py-3 text-body focus:ring-2 focus:ring-primary/40 appearance-none transition-all">
+<option>Politics</option>
+<option>Economy</option>
+<option>Culture</option>
+<option>Tech</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Verification</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-xl px-4 py-3 text-body focus:ring-2 focus:ring-primary/40 appearance-none transition-all">
+<option>Unverified</option>
+<option>Partially Fact-Checked</option>
+<option>Verified Source</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Schedule Publication</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl px-4 py-3 text-body focus:ring-2 focus:ring-primary/40 transition-all" type="datetime-local"/>
+</div>
+</div>
+<!-- Tags & Toggle -->
+<div class="flex flex-col md:flex-row gap-8 items-start">
+<div class="flex-1 w-full space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Tags</label>
+<div class="flex flex-wrap gap-2 p-3 bg-surface-container-lowest rounded-xl min-h-[48px]">
+<span class="flex items-center gap-1 bg-surface-container-highest px-3 py-1 rounded-full text-xs font-medium text-primary">#Elections <span class="material-symbols-outlined text-[14px] cursor-pointer" data-icon="close">close</span></span>
+<span class="flex items-center gap-1 bg-surface-container-highest px-3 py-1 rounded-full text-xs font-medium text-primary">#Lagos <span class="material-symbols-outlined text-[14px] cursor-pointer" data-icon="close">close</span></span>
+<input class="bg-transparent border-none p-0 text-xs focus:ring-0 w-24" placeholder="Add tag..." type="text"/>
+</div>
+</div>
+<div class="pt-8">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 text-sm font-medium text-on-surface">Featured Article</span>
+</label>
+</div>
+</div>
+<!-- Editorial Notes -->
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-widest font-bold text-outline">Internal Editorial Notes</label>
+<textarea class="w-full bg-surface-container-lowest border-none rounded-xl p-4 text-sm italic focus:ring-2 focus:ring-primary/40 transition-all" placeholder="Context for the review team..." rows="3"></textarea>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Sidebar -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Preview Card -->
+<div class="sticky top-28 space-y-8">
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] border border-outline-variant/10">
+<div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant/10 flex justify-between items-center">
+<span class="text-[11px] font-bold uppercase tracking-wider text-outline">Real-time Preview</span>
+<span class="material-symbols-outlined text-outline-variant" data-icon="visibility">visibility</span>
+</div>
+<div class="relative aspect-video bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Dramatic aerial shot of Lagos skyline at twilight with glowing street lights and deep indigo sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVjU0HK-90Nuz4zLIbmZifERhA2R7H3rEqhdw3YiXDCRpe7BvFufQTwMbhuTnCwBWSH3GUr1Uu1e4evIxUtR-ZjLWv-giDdaQblBq3u9CgaxgdAh55aEpqUxdS2KAIqXbCUWr_u6IxeHuMJgWFEvac5Drg1E_l2e9NyvT1T539nYI-7aBzCNuwYXQBTri3qfFYl0o-2KtpMfCHERvNx0DV-32B4CTCi-9cX05RtpLvox0fg6BOAGo-GuloGzxgP_26dBpDhKaZXryA"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-primary text-white text-[10px] font-bold uppercase px-2 py-1 rounded">Politics</span>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                            Verified
+                                        </span>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<h3 class="text-xl font-headline font-bold leading-tight">Navigating the Economic Pivot: A Detailed Policy Review</h3>
+<p class="text-sm text-on-surface-variant line-clamp-3 leading-relaxed">Recent fiscal adjustments indicate a significant shift in regional trade balances, affecting key manufacturing hubs in the southwest...</p>
+<div class="flex items-center gap-2 pt-2 border-t border-outline-variant/10">
+<div class="w-5 h-5 bg-primary rounded-sm flex items-center justify-center text-[10px] font-bold text-white italic">N</div>
+<span class="text-[11px] font-bold text-primary uppercase">Nigeria Daily News</span>
+</div>
+</div>
+</div>
+<!-- Duplicate Detection -->
+<div class="bg-error-container/20 rounded-xl p-6 border border-error/10">
+<div class="flex items-center gap-3 mb-4 text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-bold text-sm uppercase tracking-wider">Duplicate Check</span>
+</div>
+<ul class="space-y-3">
+<li class="p-3 bg-white/50 rounded-lg text-xs hover:bg-white transition-colors cursor-pointer group">
+<div class="font-bold text-on-surface mb-1">Economic Pivot: Policy Update...</div>
+<div class="flex justify-between items-center">
+<span class="text-outline">89% Title Match</span>
+<span class="text-primary group-hover:underline">View Article</span>
+</div>
+</li>
+</ul>
+</div>
+<!-- Publication Summary -->
+<div class="bg-surface-container-high rounded-xl p-6">
+<h4 class="text-[11px] font-bold uppercase tracking-widest text-outline mb-4">Publication Summary</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Estimated Word Count</span>
+<span class="font-semibold">428 words</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Reading Time</span>
+<span class="font-semibold">3 mins</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Global Reach</span>
+<span class="flex items-center gap-1 font-semibold text-primary">
+<span class="material-symbols-outlined text-[16px]" data-icon="trending_up">trending_up</span>
+                                            High
+                                        </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Sticky Bar -->
+<footer class="fixed bottom-0 right-0 left-0 md:left-[264px] bg-white/80 backdrop-blur-md border-t border-outline-variant/20 z-40 p-4">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-3">
+<span class="flex h-3 w-3 rounded-full bg-secondary-container animate-pulse"></span>
+<span class="text-xs font-medium text-outline">Auto-saved at 14:32 PM</span>
+</div>
+<div class="flex items-center gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-3 rounded-xl font-semibold text-on-surface bg-surface-container-highest hover:bg-surface-variant transition-colors text-sm">
+                        Save Draft
+                    </button>
+<button class="flex-1 md:flex-none px-6 py-3 rounded-xl font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-colors text-sm">
+                        Submit for Review
+                    </button>
+<button class="flex-1 md:flex-none px-10 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-primary-container shadow-lg shadow-primary/20 active:scale-95 transition-transform text-sm">
+                        Publish Now
+                    </button>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

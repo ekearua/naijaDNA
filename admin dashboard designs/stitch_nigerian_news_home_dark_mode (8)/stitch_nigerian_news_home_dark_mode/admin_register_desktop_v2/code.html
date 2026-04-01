@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register | NaijaPulse Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-container": "#734700",
+              "tertiary-container": "#0052d9",
+              "surface-dim": "#dfd9d4",
+              "primary": "#005137",
+              "surface-bright": "#fff8f3",
+              "secondary": "#855300",
+              "inverse-primary": "#86d7af",
+              "outline": "#6f7a72",
+              "on-primary": "#ffffff",
+              "secondary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed": "#00174b",
+              "inverse-on-surface": "#f6f0ea",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "secondary-container": "#feb557",
+              "on-tertiary-container": "#ccd6ff",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container-highest": "#e7e1dc",
+              "surface-tint": "#106c4b",
+              "surface-container-low": "#f9f2ed",
+              "on-primary-fixed": "#002114",
+              "surface-container": "#f3ede7",
+              "primary-container": "#0f6b4b",
+              "on-surface": "#1d1b18",
+              "primary-fixed": "#a1f4cb",
+              "surface-container-lowest": "#ffffff",
+              "on-error": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed": "#ffddb8",
+              "on-error-container": "#93000a",
+              "surface": "#fff8f3",
+              "tertiary-fixed-dim": "#b4c5ff",
+              "primary-fixed-dim": "#86d7af",
+              "on-surface-variant": "#3f4943",
+              "on-primary-container": "#97e9c0",
+              "tertiary": "#003da6",
+              "inverse-surface": "#32302d",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "on-secondary-fixed-variant": "#653e00",
+              "tertiary-fixed": "#dbe1ff",
+              "surface-container-high": "#ede7e2",
+              "on-background": "#1d1b18",
+              "error-container": "#ffdad6",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "outline-variant": "#bec9c1",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Newsreader", "serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .serif-headline { font-family: 'Newsreader', serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 32px -4px rgba(29, 27, 24, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-[#fff8f3] text-on-surface min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar (Shared Component Template) -->
+<nav class="flex justify-between items-center w-full px-8 py-6 max-w-full bg-[#fff8f3] dark:bg-stone-950 fixed top-0 z-50">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-bold font-['Newsreader'] text-[#005137] dark:text-[#1a7a5a] tracking-tight">The Digital Curator</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-stone-600 dark:text-stone-400 font-sans text-sm hover:text-[#0f6b4b] transition-colors duration-200" href="#">Help</a>
+<a class="text-stone-600 dark:text-stone-400 font-sans text-sm hover:text-[#0f6b4b] transition-colors duration-200" href="#">Guidelines</a>
+<a class="text-stone-600 dark:text-stone-400 font-sans text-sm hover:text-[#0f6b4b] transition-colors duration-200" href="#">Support</a>
+<button class="bg-[#005137] text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-[#0f6b4b] transition-all transform active:scale-95 duration-150">Request Access</button>
+</div>
+</nav>
+<main class="flex-grow flex items-center justify-center px-4 pt-24 pb-20">
+<div class="w-full max-w-[480px]">
+<!-- Header Section -->
+<div class="text-center mb-10">
+<span class="block font-label text-[0.6875rem] uppercase tracking-[0.2em] text-secondary font-semibold mb-3">NaijaPulse Admin</span>
+<h1 class="serif-headline text-4xl md:text-5xl font-semibold text-on-surface tracking-tight mb-4">Create account</h1>
+<p class="text-on-surface-variant text-[0.9375rem] leading-relaxed max-w-[340px] mx-auto">
+                    Set up your newsroom access for editorial and moderation tools.
+                </p>
+</div>
+<!-- Registration Card -->
+<div class="glass-panel rounded-xl p-8 border border-white/40">
+<form class="space-y-5">
+<!-- Full Name -->
+<div class="space-y-1.5">
+<label class="block font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant" for="full_name">Full name</label>
+<input class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border-transparent focus:border-primary/40 focus:ring-0 text-[0.9375rem] transition-all placeholder:text-stone-400 outline outline-1 outline-variant/20" id="full_name" placeholder="Enter your legal name" type="text"/>
+</div>
+<!-- Email -->
+<div class="space-y-1.5">
+<label class="block font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant" for="email">Email address</label>
+<input class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border-transparent focus:border-primary/40 focus:ring-0 text-[0.9375rem] transition-all placeholder:text-stone-400 outline outline-1 outline-variant/20" id="email" placeholder="name@naijapulse.com" type="email"/>
+</div>
+<!-- Password -->
+<div class="space-y-1.5">
+<label class="block font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant" for="password">Password</label>
+<div class="relative">
+<input class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border-transparent focus:border-primary/40 focus:ring-0 text-[0.9375rem] transition-all placeholder:text-stone-400 outline outline-1 outline-variant/20" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+<!-- Password Requirements UI -->
+<div class="pt-3 grid grid-cols-1 gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[1rem] text-primary" data-weight="fill">check_circle</span>
+<span class="text-[0.75rem] text-on-surface-variant">at least 8 characters</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[1rem] text-stone-300">circle</span>
+<span class="text-[0.75rem] text-stone-400">one letter</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[1rem] text-stone-300">circle</span>
+<span class="text-[0.75rem] text-stone-400">one number</span>
+</div>
+</div>
+</div>
+<!-- Confirm Password -->
+<div class="space-y-1.5">
+<label class="block font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant" for="confirm_password">Confirm password</label>
+<input class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border-transparent focus:border-primary/40 focus:ring-0 text-[0.9375rem] transition-all placeholder:text-stone-400 outline outline-1 outline-variant/20" id="confirm_password" placeholder="••••••••" type="password"/>
+</div>
+<!-- Authorization Checkbox -->
+<div class="flex items-start gap-3 py-2">
+<input class="mt-1 w-4 h-4 rounded border-variant text-primary focus:ring-primary focus:ring-offset-0" id="auth_use" type="checkbox"/>
+<label class="text-[0.8125rem] leading-snug text-on-surface-variant" for="auth_use">
+                            I understand this account is for authorized editorial use only
+                        </label>
+</div>
+<!-- CTA -->
+<div class="pt-4">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-white py-3.5 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all active:scale-[0.98] duration-150" type="submit">
+                            Create account
+                        </button>
+</div>
+<!-- Secondary Action -->
+<div class="text-center pt-2">
+<p class="text-stone-500 text-[0.875rem]">
+                            Already have access? 
+                            <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="#">Log in</a>
+</p>
+</div>
+</form>
+</div>
+<!-- Contextual Note -->
+<div class="mt-8 text-center px-4">
+<div class="inline-flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/10">
+<span class="material-symbols-outlined text-[14px] text-secondary">verified_user</span>
+<p class="text-[0.6875rem] text-on-surface-variant font-medium uppercase tracking-wide">Secure 256-bit encryption active</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer (Shared Component Template) -->
+<footer class="flex justify-center gap-8 py-6 w-full fixed bottom-0 bg-transparent">
+<span class="font-sans text-[0.75rem] uppercase tracking-wider text-stone-500">© 2024 The Digital Curator Editorial Group. All rights reserved.</span>
+<div class="flex gap-6">
+<a class="font-sans text-[0.75rem] uppercase tracking-wider text-stone-500 hover:underline hover:text-stone-700 transition-opacity opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-sans text-[0.75rem] uppercase tracking-wider text-stone-500 hover:underline hover:text-stone-700 transition-opacity opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-sans text-[0.75rem] uppercase tracking-wider text-stone-500 hover:underline hover:text-stone-700 transition-opacity opacity-80 hover:opacity-100" href="#">Security</a>
+<a class="font-sans text-[0.75rem] uppercase tracking-wider text-stone-500 hover:underline hover:text-stone-700 transition-opacity opacity-80 hover:opacity-100" href="#">Newsroom Ethics</a>
+</div>
+</footer>
+<!-- Image for visual depth (Abstract/Decorative) -->
+<div class="fixed top-0 right-0 -z-10 w-1/3 h-screen opacity-10 pointer-events-none">
+<img alt="high-end close-up of premium textured paper with subtle shadows and elegant typography curves" class="w-full h-full object-cover grayscale" data-alt="high-end close-up of premium textured paper with subtle shadows and elegant typography curves in a minimal lighting environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx7ri3i-KaNQqmdp0zlOYYxzALlRpaCF-IWofEfcW5Bznw141Dl9kotUHI7CqU27pnnAdMBPvBPU4x2LYjeVSX5LhW7WAzK6W4iEiIa5e8gRaMQMbPFE0p3FbXFyHp8bctgypvP-UOlAzOnZZvNY3Cjz3uhTz9i5kHGxBbYHlhd5OyiniJUSJD54XZoVbavh5YkaGtVEGYcNExJ9Dp2XPCt_FXXO1kAOl7WGnnpMKb63pvl87iX0eCFCiz5536iRqGqaRDDtrugEKw"/>
+</div>
+<div class="fixed bottom-0 left-0 -z-10 w-1/4 h-1/2 opacity-10 pointer-events-none transform -scale-x-100">
+<img alt="blurred editorial newsroom background with monitors and warm ambient lighting" class="w-full h-full object-cover grayscale" data-alt="blurred editorial newsroom background with monitors and warm ambient lighting showing busy professional environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw_upo0NeRtWWUrc3IhJmeUDOLqhMQxjbR1s-W2WxoqC_FCJu22u6HctRykmePrW7Y8vkBEj5P6M8Fr4DQFftcL-aFGNbOLy9E0CkulvfjxwG8JhSOPVZgeu0fyhGpjgd7KNMb_R9j_iVFFnMJOm3prnnKuMq7FpQHlbIyQKsl04PAOGHRKBXqua17e1Huh0o0A_tfN7wa2v6ePSruX87x82CnBB7hysNAvTGiKKaaotada6WVKKQkOIJ-81xgggAywBIj9M5dlgU7"/>
+</div>
+</body></html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NaijaPulse Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "on-surface": "#1d1b18",
+              "on-error-container": "#93000a",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed-dim": "#ffb95f",
+              "secondary": "#855300",
+              "inverse-surface": "#32302d",
+              "surface-container-low": "#f9f2ed",
+              "surface-container-highest": "#e7e1dc",
+              "tertiary": "#003da6",
+              "on-secondary-fixed": "#2a1700",
+              "error-container": "#ffdad6",
+              "on-error": "#ffffff",
+              "on-secondary-container": "#734700",
+              "on-tertiary-fixed": "#00174b",
+              "secondary-fixed": "#ffddb8",
+              "surface-container-high": "#ede7e2",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-bright": "#fff8f3",
+              "tertiary-container": "#0052d9",
+              "on-primary-fixed": "#002114",
+              "primary-fixed-dim": "#86d7af",
+              "secondary-container": "#feb557",
+              "inverse-on-surface": "#f6f0ea",
+              "on-tertiary-container": "#ccd6ff",
+              "on-background": "#1d1b18",
+              "surface-tint": "#106c4b",
+              "on-surface-variant": "#3f4943",
+              "surface-container": "#f3ede7",
+              "outline": "#6f7a72",
+              "surface-variant": "#e7e1dc",
+              "tertiary-fixed": "#dbe1ff",
+              "inverse-primary": "#86d7af",
+              "surface-dim": "#dfd9d4",
+              "on-primary-fixed-variant": "#005137",
+              "error": "#ba1a1a",
+              "surface-container-lowest": "#ffffff",
+              "surface": "#fff8f3",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-fixed-dim": "#b4c5ff",
+              "background": "#fff8f3",
+              "on-primary-container": "#97e9c0",
+              "primary-container": "#0f6b4b",
+              "outline-variant": "#bec9c1",
+              "primary-fixed": "#a1f4cb",
+              "primary": "#005137",
+              "on-secondary": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fff8f3;
+        color: #1d1b18;
+      }
+      .editorial-serif {
+        font-family: 'Newsreader', serif;
+      }
+    </script>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- SideNavBar (Execution from JSON) -->
+    <aside class="hidden md:flex flex-col h-screen w-[264px] bg-[#fff8f3] border-r-0 fixed left-0 top-0 z-20 overflow-y-auto py-6 space-y-2">
+        <div class="px-6 mb-8">
+            <h1 class="font-['Newsreader'] text-xl font-bold text-[#005137]">NaijaPulse</h1>
+            <p class="font-['Inter'] font-medium text-[12px] uppercase tracking-wider text-stone-500">Editorial Platform</p>
+        </div>
+
+        <nav class="flex-1 px-3 space-y-1">
+            <a href="#" class="flex items-center space-x-3 bg-[#0f6b4b]/10 text-[#005137] border-l-4 border-[#005137] font-bold px-4 py-3 transition-all translate-x-1">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="article">article</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Content</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="verified">verified</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Trust</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="forum">forum</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Community</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Operations</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="group">group</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">People</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Analytics</span>
+            </a>
+        </nav>
+
+        <div class="px-3 pt-6 border-t border-stone-200/50 space-y-1">
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="settings">settings</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Settings</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 text-stone-500 hover:bg-[#0f6b4b]/5 px-4 py-3 transition-all">
+                <span class="material-symbols-outlined" data-icon="logout">logout</span>
+                <span class="font-['Inter'] font-medium text-[15px] uppercase tracking-wider">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 md:ml-[264px] min-h-screen">
+        <!-- TopNavBar (Execution from JSON) -->
+        <header class="sticky top-0 z-10 flex items-center justify-between w-full px-8 h-[72px] bg-gradient-to-r from-[#005137] to-[#0f6b4b] text-white shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+            <div class="flex items-center space-x-8">
+                <div class="editorial-serif italic text-2xl font-bold tracking-tight">NaijaPulse Admin</div>
+                <nav class="hidden lg:flex space-x-6">
+                    <a href="#" class="text-white font-semibold">Editorial Platform</a>
+                </nav>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="hidden sm:flex items-center space-x-2 bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-xl text-sm font-medium">
+                    <span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span>
+                    <span>Refresh</span>
+                </button>
+                <button class="bg-white text-primary font-bold px-6 py-2 rounded-xl text-sm hover:opacity-90 active:scale-95 transition-all">
+                    Create Article
+                </button>
+                <div class="relative group">
+                    <span class="material-symbols-outlined p-2 hover:bg-white/10 rounded-full cursor-pointer" data-icon="notifications">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop" 
+                     alt="User Avatar" 
+                     data-alt="portrait of a confident nigerian male editor in professional attire with soft studio lighting"
+                     class="w-10 h-10 rounded-full border-2 border-white/20 object-cover">
+            </div>
+        </header>
+
+        <!-- Content Canvas -->
+        <div class="p-8 max-w-[1600px] mx-auto space-y-10">
+            
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="editorial-serif text-4xl font-bold text-on-surface">Dashboard</h2>
+                    <p class="text-on-surface-variant mt-1">Live operational summary and health overview.</p>
+                </div>
+                <div class="flex bg-surface-container-high rounded-xl p-1">
+                    <button class="px-4 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">Today</button>
+                    <button class="px-4 py-1.5 text-sm font-medium bg-surface-container-lowest text-primary shadow-sm rounded-lg transition-all">7 days</button>
+                    <button class="px-4 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">30 days</button>
+                </div>
+            </div>
+
+            <!-- Row 1: KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-surface-container-lowest p-5 rounded-xl transition-all hover:bg-surface-variant/30">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+                        </div>
+                        <span class="text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded-full">+2</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-on-surface tracking-tight">Drafts</div>
+                        <p class="text-xs text-on-surface-variant mt-1">Pending editor action</p>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-surface-container-lowest p-5 rounded-xl transition-all hover:bg-surface-variant/30">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+                            <span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+                        </div>
+                        <span class="text-xs font-bold text-secondary bg-secondary-container/10 px-2 py-1 rounded-full uppercase">High</span>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-on-surface tracking-tight">Review</div>
+                        <p class="text-xs text-on-surface-variant mt-1">Awaiting approval</p>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-surface-container-lowest p-5 rounded-xl transition-all hover:bg-surface-variant/30">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-primary-fixed-dim/30 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-on-surface tracking-tight">12</div>
+                        <p class="text-xs text-on-surface-variant mt-1">Published Today</p>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="bg-surface-container-lowest p-5 rounded-xl transition-all hover:bg-surface-variant/30">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-error">
+                            <span class="material-symbols-outlined" data-icon="flag">flag</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-on-surface tracking-tight">156</div>
+                        <p class="text-xs text-on-surface-variant mt-1">Flagged Comments</p>
+                    </div>
+                </div>
+                <!-- Card 5 -->
+                <div class="bg-surface-container-lowest p-5 rounded-xl transition-all hover:bg-surface-variant/30">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined" data-icon="rss_feed">rss_feed</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-on-surface tracking-tight">384</div>
+                        <p class="text-xs text-on-surface-variant mt-1">Healthy Sources</p>
+                    </div>
+                </div>
+                <!-- Card 6 -->
+                <div class="bg-surface-container-lowest p-5 rounded-xl transition-all hover:bg-surface-variant/30">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+                            <span class="material-symbols-outlined" data-icon="link_off">link_off</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-on-surface tracking-tight">0</div>
+                        <p class="text-xs text-on-surface-variant mt-1">Failed Sources</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Editorial Queue & Ingestion -->
+            <div class="grid grid-cols-12 gap-8">
+                <!-- Left 8 cols: Editorial Queue Snapshot -->
+                <div class="col-span-12 lg:col-span-8 bg-surface-container-low rounded-2xl p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-xl font-bold text-on-surface flex items-center">
+                            <span class="material-symbols-outlined mr-2 text-primary" data-icon="assignment">assignment</span>
+                            Editorial Queue Snapshot
+                        </h3>
+                        <div class="flex space-x-3">
+                            <button class="text-sm font-semibold text-primary hover:underline transition-all">Review Submissions</button>
+                            <button class="text-sm font-semibold bg-primary text-white px-4 py-2 rounded-xl">Open Queue</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="bg-surface-container-lowest p-6 rounded-2xl">
+                            <span class="text-sm font-bold text-on-surface-variant uppercase tracking-widest">Submitted</span>
+                            <div class="text-4xl font-bold text-on-surface mt-2">124</div>
+                            <div class="h-1 w-full bg-primary-fixed mt-4 rounded-full"></div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-2xl">
+                            <span class="text-sm font-bold text-on-surface-variant uppercase tracking-widest">Approved</span>
+                            <div class="text-4xl font-bold text-on-surface mt-2">89</div>
+                            <div class="h-1 w-full bg-primary mt-4 rounded-full"></div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-2xl">
+                            <span class="text-sm font-bold text-on-surface-variant uppercase tracking-widest text-error">Rejected</span>
+                            <div class="text-4xl font-bold text-on-surface mt-2">14</div>
+                            <div class="h-1 w-full bg-error mt-4 rounded-full opacity-30"></div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-6 rounded-2xl">
+                            <span class="text-sm font-bold text-on-surface-variant uppercase tracking-widest text-secondary">Scheduled</span>
+                            <div class="text-4xl font-bold text-on-surface mt-2">32</div>
+                            <div class="h-1 w-full bg-secondary-container mt-4 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 4 cols: Ingestion Health -->
+                <div class="col-span-12 lg:col-span-4 bg-surface-container-low rounded-2xl p-8">
+                    <h3 class="text-xl font-bold text-on-surface mb-6">Ingestion Health</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                                <span class="text-sm font-medium text-on-surface">Global Wire Service</span>
+                            </div>
+                            <span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                                <span class="text-sm font-medium text-on-surface">NTA Network</span>
+                            </div>
+                            <span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+                                <span class="text-sm font-medium text-on-surface">Local Bureau</span>
+                            </div>
+                            <span class="material-symbols-outlined text-secondary text-lg" data-icon="warning">warning</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                                <span class="text-sm font-medium text-on-surface">Social Metadata</span>
+                            </div>
+                            <span class="material-symbols-outlined text-primary text-lg" data-icon="check_circle">check_circle</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+                                <span class="text-sm font-medium text-on-surface">External Op-Ed</span>
+                            </div>
+                            <span class="material-symbols-outlined text-error text-lg" data-icon="error">error</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Activity & Reports -->
+            <div class="grid grid-cols-12 gap-8 pb-12">
+                <!-- Left 7 cols: Recent Workflow Activity -->
+                <div class="col-span-12 lg:col-span-7 space-y-6">
+                    <h3 class="text-xl font-bold text-on-surface">Recent Workflow Activity</h3>
+                    <div class="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-surface-container-highest">
+                        <!-- Activity 1 -->
+                        <div class="relative">
+                            <span class="absolute -left-[26px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-surface shadow-sm"></span>
+                            <div>
+                                <div class="text-sm text-on-surface-variant"><span class="font-bold text-on-surface">Emeka Obi</span> approved article</div>
+                                <h4 class="editorial-serif text-lg font-bold text-primary mt-1 hover:underline cursor-pointer">Green Energy: The Future of Nigerian Power Sector</h4>
+                                <div class="text-[11px] uppercase tracking-wider text-on-surface-variant mt-2 font-semibold">Today, 10:45 AM</div>
+                            </div>
+                        </div>
+                        <!-- Activity 2 -->
+                        <div class="relative">
+                            <span class="absolute -left-[26px] top-1 w-4 h-4 rounded-full bg-error border-4 border-surface shadow-sm"></span>
+                            <div>
+                                <div class="text-sm text-on-surface-variant"><span class="font-bold text-on-surface">System</span> flagged entry</div>
+                                <h4 class="editorial-serif text-lg font-bold text-on-surface mt-1">Currency Shift: Projections for the Naira in Q4</h4>
+                                <div class="flex items-center space-x-2 mt-2">
+                                    <span class="bg-error-container text-error text-[10px] font-bold px-2 py-0.5 rounded-full">SENSITIVE CONTENT</span>
+                                    <span class="text-[11px] uppercase tracking-wider text-on-surface-variant font-semibold">2 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Activity 3 -->
+                        <div class="relative">
+                            <span class="absolute -left-[26px] top-1 w-4 h-4 rounded-full bg-secondary-container border-4 border-surface shadow-sm"></span>
+                            <div>
+                                <div class="text-sm text-on-surface-variant"><span class="font-bold text-on-surface">Sarah Adams</span> scheduled post</div>
+                                <h4 class="editorial-serif text-lg font-bold text-on-surface mt-1">Lagos Tech Summit 2024: What to Expect</h4>
+                                <div class="text-[11px] uppercase tracking-wider text-on-surface-variant mt-2 font-semibold">Scheduled for Oct 24, 08:00 AM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 5 cols: Reported Comments -->
+                <div class="col-span-12 lg:col-span-5 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-on-surface">Reported Comments</h3>
+                        <span class="text-xs font-bold text-error bg-error-container px-3 py-1 rounded-full">REQUIRES ATTENTION</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Comment Card 1 -->
+                        <div class="bg-surface-container-low p-5 rounded-2xl border-l-4 border-error">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Article</span>
+                                    <h5 class="editorial-serif font-bold text-on-surface truncate max-w-[200px]">Truth Seeker: Investigative report on...</h5>
+                                </div>
+                                <div class="flex items-center bg-error/10 px-2 py-1 rounded-lg">
+                                    <span class="material-symbols-outlined text-sm text-error mr-1" data-icon="report">report</span>
+                                    <span class="text-xs font-bold text-error">15</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-surface-container-lowest rounded-xl text-sm italic text-on-surface-variant relative">
+                                "This information is clearly biased and doesn't represent the full facts of the..."
+                                <span class="block mt-2 font-bold not-italic text-xs">— Anon</span>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button class="flex-1 py-2 rounded-xl text-xs font-bold bg-error text-white hover:opacity-90 transition-all">Remove</button>
+                                <button class="flex-1 py-2 rounded-xl text-xs font-bold border border-outline-variant text-on-surface-variant hover:bg-surface-container-highest transition-all">Dismiss</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Comment Card 2 -->
+                        <div class="bg-surface-container-low p-5 rounded-2xl border-l-4 border-secondary-container">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Article</span>
+                                    <h5 class="editorial-serif font-bold text-on-surface">Tech Hubs Expanding</h5>
+                                </div>
+                                <div class="flex items-center bg-secondary-container/10 px-2 py-1 rounded-lg">
+                                    <span class="material-symbols-outlined text-sm text-secondary mr-1" data-icon="report">report</span>
+                                    <span class="text-xs font-bold text-secondary">4</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-surface-container-lowest rounded-xl text-sm italic text-on-surface-variant relative">
+                                "Spam link detected in the middle of this comment thread..."
+                                <span class="block mt-2 font-bold not-italic text-xs">— User_882</span>
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <button class="flex-1 py-2 rounded-xl text-xs font-bold bg-error text-white hover:opacity-90 transition-all">Remove</button>
+                                <button class="flex-1 py-2 rounded-xl text-xs font-bold border border-outline-variant text-on-surface-variant hover:bg-surface-container-highest transition-all">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html></style></head><body></body></html>

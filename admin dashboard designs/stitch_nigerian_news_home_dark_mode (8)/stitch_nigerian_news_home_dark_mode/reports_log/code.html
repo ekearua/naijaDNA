@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reports Log | NaijaPulse Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#ccd6ff",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "inverse-primary": "#86d7af",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container": "#f3ede7",
+              "surface-container-low": "#f9f2ed",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-surface": "#1d1b18",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "on-background": "#1d1b18",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "outline-variant": "#bec9c1",
+              "primary-container": "#0f6b4b",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700",
+              "inverse-on-surface": "#f6f0ea",
+              "on-primary-container": "#97e9c0",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "tertiary-fixed": "#dbe1ff",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#3f4943",
+              "tertiary": "#003da6",
+              "surface": "#fff8f3",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .serif { font-family: 'Newsreader', serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-stone-50 flex flex-col py-8 border-r-0">
+<div class="px-6 mb-12">
+<h1 class="font-['Newsreader'] italic text-xl text-[#005137]">The Digital Curator</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-bold mt-1">Newsroom Operations</p>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<div class="group flex items-center px-4 py-3 text-stone-600 hover:bg-stone-100 cursor-pointer transition-colors transition-all duration-200 ease-in-out hover:pl-2 rounded-lg">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] text-[15px] font-medium">Dashboard</span>
+</div>
+<!-- Editorial Queue as Active (Semantic Mapping for Reports/Queue) -->
+<div class="group flex items-center px-4 py-3 text-[#005137] font-bold border-r-4 border-[#005137] bg-emerald-50/50 cursor-pointer transition-colors transition-all duration-200 ease-in-out hover:pl-2">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="article">article</span>
+<span class="font-['Inter'] text-[15px] font-medium">Editorial Queue</span>
+</div>
+<div class="group flex items-center px-4 py-3 text-stone-600 hover:bg-stone-100 cursor-pointer transition-colors transition-all duration-200 ease-in-out hover:pl-2 rounded-lg">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="monitoring">monitoring</span>
+<span class="font-['Inter'] text-[15px] font-medium">Analytics</span>
+</div>
+<div class="group flex items-center px-4 py-3 text-stone-600 hover:bg-stone-100 cursor-pointer transition-colors transition-all duration-200 ease-in-out hover:pl-2 rounded-lg">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="perm_media">perm_media</span>
+<span class="font-['Inter'] text-[15px] font-medium">Multimedia</span>
+</div>
+<div class="group flex items-center px-4 py-3 text-stone-600 hover:bg-stone-100 cursor-pointer transition-colors transition-all duration-200 ease-in-out hover:pl-2 rounded-lg">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="group">group</span>
+<span class="font-['Inter'] text-[15px] font-medium">Staff Directory</span>
+</div>
+<div class="group flex items-center px-4 py-3 text-stone-600 hover:bg-stone-100 cursor-pointer transition-colors transition-all duration-200 ease-in-out hover:pl-2 rounded-lg">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] text-[15px] font-medium">Archive</span>
+</div>
+</nav>
+<div class="px-6 mt-auto space-y-4">
+<button class="w-full py-3 bg-primary text-white rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all active:scale-95">
+                Quick Draft
+            </button>
+<div class="pt-6 space-y-2 border-t border-stone-100">
+<div class="flex items-center px-2 py-2 text-stone-500 hover:text-stone-800 cursor-pointer text-sm">
+<span class="material-symbols-outlined mr-3 text-md" data-icon="help">help</span>
+                    Help Center
+                </div>
+<div class="flex items-center px-2 py-2 text-stone-500 hover:text-stone-800 cursor-pointer text-sm">
+<span class="material-symbols-outlined mr-3 text-md" data-icon="logout">logout</span>
+                    Logout
+                </div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 z-50 bg-[#fff8f3]/80 backdrop-blur-md flex justify-between items-center px-8 py-4 no-border transition-colors duration-300 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+<div class="flex items-center gap-6">
+<h2 class="font-['Newsreader'] font-black text-[#005137] text-2xl">NaijaPulse Admin</h2>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xl" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 placeholder-stone-400" placeholder="Search reports or articles..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-stone-200 mx-2"></div>
+<div class="flex items-center gap-3 pl-2 group cursor-pointer">
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface">Editor Profile</p>
+<p class="text-[10px] text-stone-500">Chief Moderator</p>
+</div>
+<img alt="Editor Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10" data-alt="Close-up portrait of a professional male editor with a focused expression in a modern sunlit office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgfI1lbBzcOtwld2V9hspRUIakBcYJsPy6ZCrgw3vByE_1dKV0re8G5hyrZy2ugcAPYfJ6v8P16QN4oQv-7Q41yxPlPJAsOd0YCZH3FdOkU-AL2_8iVLSRw0fc1qo4ByOewSX59siw6GhP2dU2ci-TDUQr8N2pZdgtySyz0TRLsOW55VB7K3JuKV3osy9_Nmgi4T4-7xpxA45wt5HV7vYTB3Hcjx92aTkPqozh1Yomat7eHc1fqbfygDm2HRKOtTfNKxsMIXZWpxrF"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-24 pb-12 px-12 max-w-[1600px]">
+<!-- Page Header -->
+<div class="mb-10 flex justify-between items-end">
+<div>
+<nav class="flex items-center gap-2 text-stone-400 text-xs mb-3 font-medium uppercase tracking-widest">
+<span>Moderation</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-primary-container">Reports Log</span>
+</nav>
+<h1 class="text-5xl font-extrabold text-on-surface leading-tight serif">Content Integrity <span class="italic text-primary font-normal">Audit</span></h1>
+<p class="text-stone-500 mt-2 max-w-xl font-body">Real-time oversight of flagged editorial comments and user interactions requiring newsroom intervention.</p>
+</div>
+<div class="flex gap-3">
+<div class="flex bg-surface-container-low p-1 rounded-xl">
+<button class="px-4 py-2 bg-surface-container-lowest shadow-sm text-primary font-bold text-xs rounded-lg uppercase tracking-wider">Active</button>
+<button class="px-4 py-2 text-stone-400 font-bold text-xs rounded-lg uppercase tracking-wider">Resolved</button>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:shadow-primary/20 transition-all scale-95 active:scale-90">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                    Refine View
+                </button>
+</div>
+</div>
+<!-- Dashboard Stats Bento -->
+<div class="grid grid-cols-12 gap-6 mb-12">
+<div class="col-span-4 bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] flex flex-col justify-between h-48 border-l-4 border-primary">
+<div class="flex justify-between items-start">
+<span class="text-stone-400 font-bold text-xs uppercase tracking-widest">Total Flags</span>
+<span class="bg-primary/10 text-primary px-2 py-1 rounded text-[10px] font-black">+12%</span>
+</div>
+<div>
+<span class="text-4xl font-headline font-bold text-on-surface">1,284</span>
+<p class="text-stone-500 text-sm mt-1">Pending verification across all threads</p>
+</div>
+</div>
+<div class="col-span-4 bg-surface-container-low p-8 rounded-xl h-48 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="text-stone-400 font-bold text-xs uppercase tracking-widest">Primary Breach</span>
+</div>
+<div>
+<span class="text-2xl font-headline italic font-bold text-secondary">Hate Speech</span>
+<p class="text-stone-500 text-sm mt-1">Found in 42% of flagged comments today</p>
+</div>
+</div>
+<div class="col-span-4 bg-stone-900 text-white p-8 rounded-xl h-48 flex flex-col justify-between overflow-hidden relative">
+<div class="relative z-10">
+<span class="text-stone-400 font-bold text-xs uppercase tracking-widest">Audit Status</span>
+<h3 class="text-xl font-headline mt-4">Average response time: <span class="text-primary-fixed">14m</span></h3>
+</div>
+<div class="relative z-10 mt-auto">
+<div class="w-full bg-stone-700 h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-3/4"></div>
+</div>
+<p class="text-[10px] text-stone-500 mt-2 uppercase tracking-tighter">75% of Daily Target Reached</p>
+</div>
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[160px]" data-icon="verified_user">verified_user</span>
+</div>
+</div>
+</div>
+<!-- Audit Table -->
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_12px_48px_-8px_rgba(29,27,24,0.04)]">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-5 text-xs font-bold text-stone-400 uppercase tracking-widest">Comment ID</th>
+<th class="px-8 py-5 text-xs font-bold text-stone-400 uppercase tracking-widest">Linked Article</th>
+<th class="px-8 py-5 text-xs font-bold text-stone-400 uppercase tracking-widest">Reports</th>
+<th class="px-8 py-5 text-xs font-bold text-stone-400 uppercase tracking-widest">Primary Reason</th>
+<th class="px-8 py-5 text-xs font-bold text-stone-400 uppercase tracking-widest text-center">Audit Status</th>
+<th class="px-8 py-5 text-xs font-bold text-stone-400 uppercase tracking-widest text-right">Created At</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-stone-100">
+<!-- Row 1 -->
+<tr class="hover:bg-stone-50/50 transition-colors group cursor-pointer">
+<td class="px-8 py-6">
+<span class="font-mono text-sm text-stone-400">#CM-90821</span>
+</td>
+<td class="px-8 py-6">
+<div class="max-w-xs">
+<p class="text-sm font-bold text-on-surface leading-snug line-clamp-1 group-hover:text-primary transition-colors">The Rising Cost of Energy in Lagos Suburbs</p>
+<p class="text-[11px] text-stone-400 mt-1">Section: Economy &amp; Policy</p>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="font-bold text-on-surface">14</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold bg-error-container text-on-error-container px-3 py-1 rounded-full">Harassment</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex justify-center">
+<span class="text-[10px] font-black uppercase tracking-tighter bg-secondary-container/20 text-on-secondary-container px-3 py-1 rounded border border-secondary/20">Under Review</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<p class="text-sm font-medium text-on-surface">Today, 09:42</p>
+<p class="text-[10px] text-stone-400 uppercase">14 mins ago</p>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-stone-50/50 transition-colors group cursor-pointer">
+<td class="px-8 py-6">
+<span class="font-mono text-sm text-stone-400">#CM-90799</span>
+</td>
+<td class="px-8 py-6">
+<div class="max-w-xs">
+<p class="text-sm font-bold text-on-surface leading-snug line-clamp-1 group-hover:text-primary transition-colors">Tech Hubs: Can Ibadan Overtake Yaba?</p>
+<p class="text-[11px] text-stone-400 mt-1">Section: Technology</p>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-bold text-on-surface">8</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full">Misinformation</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex justify-center">
+<span class="text-[10px] font-black uppercase tracking-tighter bg-secondary-container/20 text-on-secondary-container px-3 py-1 rounded border border-secondary/20">Under Review</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<p class="text-sm font-medium text-on-surface">Today, 08:15</p>
+<p class="text-[10px] text-stone-400 uppercase">2 hours ago</p>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-stone-50/50 transition-colors group cursor-pointer">
+<td class="px-8 py-6">
+<span class="font-mono text-sm text-stone-400">#CM-90742</span>
+</td>
+<td class="px-8 py-6">
+<div class="max-w-xs">
+<p class="text-sm font-bold text-on-surface leading-snug line-clamp-1 group-hover:text-primary transition-colors">Super Eagles: AFCON Qualifiers Deep Dive</p>
+<p class="text-[11px] text-stone-400 mt-1">Section: Sports</p>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-stone-300"></span>
+<span class="font-bold text-on-surface">3</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full">Spam/Bot</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex justify-center">
+<span class="text-[10px] font-black uppercase tracking-tighter bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded">Queued</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<p class="text-sm font-medium text-on-surface">Yesterday, 22:30</p>
+<p class="text-[10px] text-stone-400 uppercase">12 hours ago</p>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-stone-50/50 transition-colors group cursor-pointer border-l-4 border-error/50">
+<td class="px-8 py-6">
+<span class="font-mono text-sm text-stone-400">#CM-90710</span>
+</td>
+<td class="px-8 py-6">
+<div class="max-w-xs">
+<p class="text-sm font-bold text-on-surface leading-snug line-clamp-1 group-hover:text-primary transition-colors">Election Transparency in the Digital Age</p>
+<p class="text-[11px] text-stone-400 mt-1">Section: Politics</p>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-bold text-on-surface">31</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold bg-error text-white px-3 py-1 rounded-full">Hate Speech</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex justify-center">
+<span class="text-[10px] font-black uppercase tracking-tighter bg-error-container text-error px-3 py-1 rounded border border-error/20">Escalated</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<p class="text-sm font-medium text-on-surface">Yesterday, 19:12</p>
+<p class="text-[10px] text-stone-400 uppercase">15 hours ago</p>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-stone-50/50 transition-colors group cursor-pointer">
+<td class="px-8 py-6">
+<span class="font-mono text-sm text-stone-400">#CM-90655</span>
+</td>
+<td class="px-8 py-6">
+<div class="max-w-xs">
+<p class="text-sm font-bold text-on-surface leading-snug line-clamp-1 group-hover:text-primary transition-colors">Modern Afrobeats: The Global Influence</p>
+<p class="text-[11px] text-stone-400 mt-1">Section: Culture</p>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-stone-300"></span>
+<span class="font-bold text-on-surface">1</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full">Copyright</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex justify-center">
+<span class="text-[10px] font-black uppercase tracking-tighter bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded">Queued</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<p class="text-sm font-medium text-on-surface">Oct 24, 14:00</p>
+<p class="text-[10px] text-stone-400 uppercase">1 day ago</p>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination Audit Footer -->
+<div class="px-8 py-6 bg-surface-container-low/30 border-t border-stone-100 flex justify-between items-center">
+<span class="text-xs text-stone-500 font-medium">Viewing <span class="text-on-surface">1-5</span> of 284 Pending Reports</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-stone-400 hover:text-on-surface shadow-sm border border-stone-100 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white shadow-md font-bold text-xs transition-all active:scale-95">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-stone-600 hover:text-on-surface shadow-sm border border-stone-100 transition-all active:scale-95">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-stone-600 hover:text-on-surface shadow-sm border border-stone-100 transition-all active:scale-95">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-lowest text-stone-400 hover:text-on-surface shadow-sm border border-stone-100 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Status Bar -->
+<footer class="mt-12 flex items-center justify-between px-2">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-stone-400">AI Auto-Mod: Online</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-stone-400">Database: Sync 100%</span>
+</div>
+</div>
+<p class="text-[10px] font-medium text-stone-400">© 2024 NaijaPulse Editorial Systems v4.2.1</p>
+</footer>
+</main>
+</body></html>

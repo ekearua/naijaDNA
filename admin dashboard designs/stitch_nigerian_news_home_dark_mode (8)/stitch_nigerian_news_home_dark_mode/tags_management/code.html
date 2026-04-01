@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,is-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#ccd6ff",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "inverse-primary": "#86d7af",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container": "#f3ede7",
+              "surface-container-low": "#f9f2ed",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-surface": "#1d1b18",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "on-background": "#1d1b18",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "outline-variant": "#bec9c1",
+              "primary-container": "#0f6b4b",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700",
+              "inverse-on-surface": "#f6f0ea",
+              "on-primary-container": "#97e9c0",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "tertiary-fixed": "#dbe1ff",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#3f4943",
+              "tertiary": "#003da6",
+              "surface": "#fff8f3",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .serif-font { font-family: 'Newsreader', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 flex flex-col h-full py-8 border-r-0 bg-stone-50 dark:bg-stone-950">
+<div class="px-6 mb-10">
+<h1 class="font-['Newsreader'] italic text-xl text-[#005137] dark:text-emerald-600">The Digital Curator</h1>
+<p class="text-[11px] uppercase tracking-widest text-on-surface-variant/60 font-semibold mt-1">Newsroom Operations</p>
+</div>
+<nav class="flex-1 space-y-1 px-4">
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 group">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="font-['Inter'] text-[15px] font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-[#005137] dark:text-emerald-400 font-bold border-r-4 border-[#005137] bg-emerald-50/50 dark:bg-emerald-900/20 group">
+<span class="material-symbols-outlined text-xl">article</span>
+<span class="font-['Inter'] text-[15px] font-medium">Editorial Queue</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 group">
+<span class="material-symbols-outlined text-xl">monitoring</span>
+<span class="font-['Inter'] text-[15px] font-medium">Analytics</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 group">
+<span class="material-symbols-outlined text-xl">perm_media</span>
+<span class="font-['Inter'] text-[15px] font-medium">Multimedia</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 group">
+<span class="material-symbols-outlined text-xl">group</span>
+<span class="font-['Inter'] text-[15px] font-medium">Staff Directory</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 group">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span class="font-['Inter'] text-[15px] font-medium">Archive</span>
+</div>
+</nav>
+<div class="px-4 mt-auto pt-6 border-t border-stone-200/50">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 rounded-xl font-semibold shadow-lg shadow-primary/10 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+<span>Quick Draft</span>
+</button>
+<div class="mt-6 space-y-1">
+<div class="flex items-center gap-3 px-4 py-2 text-stone-500 hover:text-stone-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-xl">help</span>
+<span class="text-sm font-medium">Help Center</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 text-stone-500 hover:text-stone-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-xl">logout</span>
+<span class="text-sm font-medium">Logout</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 z-50 flex justify-between items-center px-8 py-4 bg-[#fff8f3]/80 dark:bg-stone-900/80 backdrop-blur-md shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] dark:shadow-none">
+<div class="flex items-center gap-8">
+<div class="font-['Newsreader'] font-bold text-2xl tracking-tight text-[#005137] dark:text-[#0f6b4b]">Tags Management</div>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-0 focus:ring-2 focus:ring-primary/40 rounded-xl text-sm placeholder:text-on-surface-variant/40" placeholder="Filter semantic tags..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-stone-200 overflow-hidden ml-2 border-2 border-primary/10">
+<img alt="Editor Profile" data-alt="Close-up portrait of a professional male editor with spectacles and a thoughtful expression in a warmly lit library office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgNO5xbojUShl7PS_fMYQF1zGR6hQ03uPwTRQRJRxgnTnMGGZc2bMZks0eATEubn4hB8KulPVRtRc59Eh_AohZkciMUpnXb5UAirWGdE3jUnMbtNy_tcD18-zNiFtLLaZSa7LYCOQI0utMS8ptS9SgTGg90DxmVaArXa8lpuL9k3fVx51v4hnxRdwz7Bd4-kTpBPGB-Zd3s2RiKCGhXqxPyvqcZpbw1mNkO7zq5DSs7mGWSWAVZ1c1tG-3NO1uBd7HkDC4z0xJsQ4p"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="pt-28 px-12 pb-12 max-w-7xl mx-auto">
+<div class="flex items-end justify-between mb-10">
+<div>
+<span class="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">Taxonomy Control</span>
+<h2 class="text-4xl font-headline font-extrabold text-on-surface">Semantic Tag Ledger</h2>
+<p class="text-on-surface-variant/70 mt-2 max-w-xl">Curate the navigational backbone of NaijaPulse. Manage visual tokens and editorial placement priority for all public-facing content discovery.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-xl flex items-center gap-2 font-semibold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+                    Create New Tag
+                </button>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Tag Table (Left 8 Cols) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-low rounded-[2rem] p-1 overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-[11px] uppercase tracking-widest text-on-surface-variant/60 font-bold">
+<th class="px-8 py-5">Label &amp; Icon</th>
+<th class="px-6 py-5">Visual Key</th>
+<th class="px-6 py-5">Rank</th>
+<th class="px-6 py-5">Impact</th>
+<th class="px-6 py-5">Status</th>
+<th class="px-6 py-5"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-variant/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-highest/40 transition-colors cursor-pointer group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-[#005137]/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">public</span>
+</div>
+<div>
+<div class="font-bold text-on-surface">Politics</div>
+<div class="text-xs text-on-surface-variant/60 font-medium">Core Narrative</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<div class="h-3 w-3 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<span class="text-xs font-mono text-on-surface-variant">#005137</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-sm font-semibold text-on-surface tabular-nums">01</span>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface">1,248</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-medium">Articles</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="w-10 h-6 bg-primary/20 rounded-full relative p-1 flex items-center justify-end">
+<div class="h-4 w-4 bg-primary rounded-full shadow-sm"></div>
+</div>
+</td>
+<td class="px-6 py-6 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-highest/40 transition-colors cursor-pointer group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+<div>
+<div class="font-bold text-on-surface">Economy</div>
+<div class="text-xs text-on-surface-variant/60 font-medium">Market Analysis</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<div class="h-3 w-3 rounded-full bg-secondary ring-4 ring-secondary/10"></div>
+<span class="text-xs font-mono text-on-surface-variant">#855300</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-sm font-semibold text-on-surface tabular-nums">02</span>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface">856</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-medium">Articles</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="w-10 h-6 bg-primary/20 rounded-full relative p-1 flex items-center justify-end">
+<div class="h-4 w-4 bg-primary rounded-full shadow-sm"></div>
+</div>
+</td>
+<td class="px-6 py-6 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-highest/40 transition-colors cursor-pointer group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">movie</span>
+</div>
+<div>
+<div class="font-bold text-on-surface">Culture</div>
+<div class="text-xs text-on-surface-variant/60 font-medium">Lifestyle &amp; Arts</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<div class="h-3 w-3 rounded-full bg-tertiary ring-4 ring-tertiary/10"></div>
+<span class="text-xs font-mono text-on-surface-variant">#003DA6</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-sm font-semibold text-on-surface tabular-nums">03</span>
+</td>
+<td class="px-6 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface">342</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-medium">Articles</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<div class="w-10 h-6 bg-stone-200 rounded-full relative p-1 flex items-center justify-start">
+<div class="h-4 w-4 bg-stone-400 rounded-full shadow-sm"></div>
+</div>
+</td>
+<td class="px-6 py-6 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-highest rounded-full transition-all">
+<span class="material-symbols-outlined text-primary">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Side Drawer Content (Right 4 Cols) -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Drawer-like Card for Editing -->
+<div class="bg-surface-container-highest rounded-[2rem] p-8 shadow-2xl shadow-on-surface/5 relative overflow-hidden border border-white/40">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-headline font-bold text-2xl">Tag Properties</h3>
+<button class="text-primary hover:bg-primary/5 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="space-y-6">
+<!-- Preview Box -->
+<div class="p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
+<span class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/40 mb-4 block">Live Strip Preview</span>
+<div class="flex justify-center p-4 bg-[#fdfaf7] rounded-lg">
+<div class="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full shadow-md animate-pulse">
+<span class="material-symbols-outlined text-[18px]">public</span>
+<span class="text-sm font-semibold tracking-tight">Politics</span>
+</div>
+</div>
+</div>
+<!-- Name -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-on-surface-variant">Tag Name</label>
+<input class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/20 focus:ring-primary/40 p-4 rounded-xl text-on-surface font-semibold" type="text" value="Politics"/>
+</div>
+<!-- Visual Config Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-on-surface-variant">Color Token</label>
+<div class="flex items-center gap-3 bg-surface-container-lowest p-4 rounded-xl ring-1 ring-outline-variant/20">
+<div class="h-6 w-6 rounded-full bg-primary shadow-inner"></div>
+<span class="text-sm font-mono font-medium">#005137</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-on-surface-variant">Icon Glyph</label>
+<div class="flex items-center justify-center bg-surface-container-lowest p-4 rounded-xl ring-1 ring-outline-variant/20 cursor-pointer hover:bg-stone-50 transition-colors">
+<span class="material-symbols-outlined text-on-surface">public</span>
+</div>
+</div>
+</div>
+<!-- Description -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-on-surface-variant">Internal Memo</label>
+<textarea class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/20 focus:ring-primary/40 p-4 rounded-xl text-sm min-h-[100px] text-on-surface-variant/80 leading-relaxed">System-critical category for all national and international governance reporting. Requires primary color prominence.</textarea>
+</div>
+<!-- Advanced Stats Bento Piece -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-primary/5 p-4 rounded-2xl">
+<div class="text-[10px] font-bold uppercase text-primary/60 mb-1">CTR Impact</div>
+<div class="text-xl font-headline font-bold text-primary">12.4%</div>
+</div>
+<div class="bg-secondary/5 p-4 rounded-2xl">
+<div class="text-[10px] font-bold uppercase text-secondary/60 mb-1">Growth</div>
+<div class="text-xl font-headline font-bold text-secondary">+4.2%</div>
+</div>
+</div>
+<!-- Controls -->
+<div class="pt-4 flex gap-3">
+<button class="flex-1 bg-primary text-on-primary py-4 rounded-xl font-bold transition-transform hover:shadow-lg hover:shadow-primary/10 active:scale-95">
+                                    Commit Changes
+                                </button>
+<button class="px-4 py-4 rounded-xl bg-error/10 text-error hover:bg-error/20 transition-colors group">
+<span class="material-symbols-outlined align-middle">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Informational Micro-card -->
+<div class="bg-surface-container-low rounded-3xl p-6 flex items-start gap-4">
+<div class="p-3 bg-tertiary-fixed rounded-xl">
+<span class="material-symbols-outlined text-on-tertiary-fixed">info</span>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-1 text-on-surface">Taxonomy Best Practices</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Limit top-level active tags to 12 for optimal mobile discovery experience and reduced cognitive load.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Visual Floating Backdrop Grain (Simulated Texture) -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[url('https://www.transparenttextures.com/patterns/asfalt-light.png')]"></div>
+</body></html>

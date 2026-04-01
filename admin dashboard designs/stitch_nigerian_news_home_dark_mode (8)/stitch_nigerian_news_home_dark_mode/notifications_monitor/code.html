@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notifications Monitor | NaijaPulse Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#ccd6ff",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed-variant": "#653e00",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "inverse-primary": "#86d7af",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "on-primary-fixed-variant": "#005137",
+              "surface-container": "#f3ede7",
+              "surface-container-low": "#f9f2ed",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-surface": "#1d1b18",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "on-background": "#1d1b18",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "outline-variant": "#bec9c1",
+              "primary-container": "#0f6b4b",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700",
+              "inverse-on-surface": "#f6f0ea",
+              "on-primary-container": "#97e9c0",
+              "error": "#ba1a1a",
+              "background": "#fff8f3",
+              "tertiary-fixed": "#dbe1ff",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-surface-variant": "#3f4943",
+              "tertiary": "#003da6",
+              "surface": "#fff8f3",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fff8f3; color: #1d1b18; }
+        .font-newsreader { font-family: 'Newsreader', serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(255, 248, 243, 0.8); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#fff8f3]/80 backdrop-blur-md flex justify-between items-center px-8 py-4 w-full shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)]">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-['Newsreader'] font-black text-[#005137]">NaijaPulse Admin</span>
+<div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-xl">
+<span class="material-symbols-outlined text-outline mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Search system logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-stone-100 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:scale-95 transition-transform">
+                Create Article
+            </button>
+<div class="ml-4 h-10 w-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Editor Profile" data-alt="close-up portrait of a professional African editor in a bright office setting with neutral colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA30BAyTgPthNvpQYvggFk-Kp2MTuz9dkEhJ9P54_voLJmtXP5nVwgT2tpGTtGJOlha0h19y9APUU1GwmFL2JlZ8rzMaPzZS_W5ufgwZdSyO9BDSwklSDmFv6wijYcg6Ruxxo1uBBhe9Vu2fQoEQ_FUcjR3AJEs2BKywTm3S_ExgBUJ9lNyDQueWUId623OEn4ion_RvP9bCxORzbGI2_V-KF_xOI2LPwqqmdngip62Hb0RTUXsMVuzbg2o2DjCmeQz2aDn85Tp_Q0-"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-stone-50 flex flex-col h-full py-8 border-r-0 pt-24">
+<div class="px-6 mb-8">
+<h2 class="font-['Newsreader'] italic text-xl text-[#005137]">The Digital Curator</h2>
+<p class="text-xs text-stone-500 uppercase tracking-widest mt-1">Newsroom Operations</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-stone-600 hover:bg-stone-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-medium text-[15px]">Dashboard</span>
+</a>
+<a class="flex items-center px-6 py-3 text-stone-600 hover:bg-stone-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[#005137]" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-bold text-[#005137] border-r-4 border-[#005137] flex-1">Notifications Monitor</span>
+</a>
+<a class="flex items-center px-6 py-3 text-stone-600 hover:bg-stone-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">article</span>
+<span class="font-medium text-[15px]">Editorial Queue</span>
+</a>
+<a class="flex items-center px-6 py-3 text-stone-600 hover:bg-stone-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">monitoring</span>
+<span class="font-medium text-[15px]">Analytics</span>
+</a>
+<a class="flex items-center px-6 py-3 text-stone-600 hover:bg-stone-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">perm_media</span>
+<span class="font-medium text-[15px]">Multimedia</span>
+</a>
+<a class="flex items-center px-6 py-3 text-stone-600 hover:bg-stone-100 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span>
+<span class="font-medium text-[15px]">Archive</span>
+</a>
+</nav>
+<div class="px-6 mt-auto space-y-4">
+<button class="w-full bg-emerald-50 text-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                Quick Draft
+            </button>
+<div class="pt-4 border-t border-stone-200">
+<a class="flex items-center py-2 text-stone-500 hover:text-stone-800 text-sm" href="#">
+<span class="material-symbols-outlined mr-2 text-lg">help</span>
+                    Help Center
+                </a>
+<a class="flex items-center py-2 text-stone-500 hover:text-stone-800 text-sm" href="#">
+<span class="material-symbols-outlined mr-2 text-lg">logout</span>
+                    Logout
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-28 px-12 pb-12">
+<!-- Header Section -->
+<header class="mb-12">
+<h1 class="font-headline text-5xl font-bold text-on-surface tracking-tight mb-2">Notifications Monitor</h1>
+<p class="text-on-surface-variant font-body max-w-2xl">Real-time oversight of cross-platform interactions, editorial alerts, and automated system triggers.</p>
+</header>
+<!-- Filters Strip (Asymmetric Layout) -->
+<div class="flex flex-wrap items-center gap-4 mb-8">
+<button class="bg-primary text-on-primary px-5 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
+                All Logs
+            </button>
+<button class="bg-surface-container-high text-on-surface px-5 py-2 rounded-full text-sm font-medium hover:bg-surface-container-highest transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">reply</span> Replies
+            </button>
+<button class="bg-surface-container-high text-on-surface px-5 py-2 rounded-full text-sm font-medium hover:bg-surface-container-highest transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">edit_note</span> Editorial
+            </button>
+<button class="bg-surface-container-high text-on-surface px-5 py-2 rounded-full text-sm font-medium hover:bg-surface-container-highest transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">mark_email_unread</span> Unread
+            </button>
+<button class="bg-error-container text-on-error-container px-5 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">error</span> Failed
+            </button>
+<div class="ml-auto flex items-center gap-3">
+<span class="text-xs font-bold uppercase tracking-tighter text-on-surface-variant">Sort By:</span>
+<select class="bg-transparent border-none text-sm font-semibold text-primary focus:ring-0 cursor-pointer">
+<option>Most Recent First</option>
+<option>Oldest First</option>
+<option>Priority Level</option>
+</select>
+</div>
+</div>
+<!-- Data Table (The "No-Line" Rule) -->
+<div class="bg-surface-container-low rounded-3xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant text-[11px] font-bold uppercase tracking-widest">
+<th class="px-8 py-5">Type</th>
+<th class="px-6 py-5">Recipient</th>
+<th class="px-6 py-5">Actor</th>
+<th class="px-6 py-5">Target Asset</th>
+<th class="px-6 py-5">Status</th>
+<th class="px-8 py-5 text-right">Created At</th>
+</tr>
+</thead>
+<tbody class="text-[14px] font-body divide-y divide-surface-variant/30">
+<!-- Row 1: Reply (Unread) -->
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<div class="flex items-center gap-2 text-primary font-semibold">
+<span class="material-symbols-outlined text-lg">forum</span>
+                                    Comment Reply
+                                </div>
+</div>
+</td>
+<td class="px-6 py-6 font-medium">@tolu_dada</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="portrait of a smiling woman with glasses in a modern studio with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcUOLUh4ycuK6KvpgzKBvVNgU6lUm2ajbhn6A-8x5Ddqb8hqQeJ85KaTQN6lMxZ5ki_usYxR9z2ypZVOh0Q_iiFidFwFkSKK8wFiUvU3-Bfl_gwzjAUA_Q-1T-IT37sAw7uufGvyigz2Z_8FqekruMtfFSrJ5456AMVlTgPNcbf5TdX4yBbANPO2XIvc311Jl_p4M1Ij7oKvGavAhwogkbDIouOrbJiB5FbhtxQruuZY3N5cwahGOaEZkQwCtYuWg_vTNnhTMDvAms"/>
+<span>Sarah Okafor</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-on-surface-variant italic">"The Future of Lagos Tech..."</span>
+</td>
+<td class="px-6 py-6">
+<span class="px-3 py-1 bg-secondary-container/20 text-on-secondary-container rounded-full text-xs font-bold">Unread</span>
+</td>
+<td class="px-8 py-6 text-right text-on-surface-variant">2 mins ago</td>
+</tr>
+<!-- Row 2: Editorial (Read) -->
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3 pl-5">
+<div class="flex items-center gap-2 text-stone-600 font-semibold">
+<span class="material-symbols-outlined text-lg">auto_awesome</span>
+                                    Editorial Alert
+                                </div>
+</div>
+</td>
+<td class="px-6 py-6 font-medium">Editorial Board</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">NP</div>
+<span>System Admin</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-on-surface-variant">Review Request: #4920</span>
+</td>
+<td class="px-6 py-6">
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-bold">Delivered</span>
+</td>
+<td class="px-8 py-6 text-right text-on-surface-variant">14 mins ago</td>
+</tr>
+<!-- Row 3: Mention (Read) -->
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3 pl-5">
+<div class="flex items-center gap-2 text-stone-600 font-semibold">
+<span class="material-symbols-outlined text-lg">alternate_email</span>
+                                    Mention
+                                </div>
+</div>
+</td>
+<td class="px-6 py-6 font-medium">@editor_chief</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="close up of a professional man in a dark suit against a soft blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASxXil6HB9S6913cAHcrZ98diUMTrHQHu21PJLbN5VA8qH95QrSkxQMst0Rxj-ZLoX1gWceDjshDSupiQLA9GVHWHhxLfgMoVGQ5jwMJ7SzF_IDr0QSCBfw7oqOCmhl0NJm-_8QdJV9m_nTp9Z10NAFH_UuV2N1W2lJCsSLrisvhqdhLB70K0UI5DJkjMB0qExJxTS59tIuR7pb5b59YWOa_wm17o3peX3-wd3VNWOa1iETNUgbZx0W0Wbbu761sNFFwkmN72yOtiw"/>
+<span>David Bello</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-on-surface-variant italic">"Internal Audit: Q3..."</span>
+</td>
+<td class="px-6 py-6">
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-bold">Delivered</span>
+</td>
+<td class="px-8 py-6 text-right text-on-surface-variant">1 hour ago</td>
+</tr>
+<!-- Row 4: Error (Failed) -->
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3 pl-5">
+<div class="flex items-center gap-2 text-error font-semibold">
+<span class="material-symbols-outlined text-lg">error_outline</span>
+                                    Delivery Failure
+                                </div>
+</div>
+</td>
+<td class="px-6 py-6 font-medium">push_node_04</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-stone-400">dns</span>
+<span>Worker Process</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-on-surface-variant">Global Push Alert</span>
+</td>
+<td class="px-6 py-6">
+<span class="px-3 py-1 bg-error-container text-on-error-container rounded-full text-xs font-bold">Failed</span>
+</td>
+<td class="px-8 py-6 text-right text-on-surface-variant">2 hours ago</td>
+</tr>
+<!-- Row 5: Published (Read) -->
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3 pl-5">
+<div class="flex items-center gap-2 text-stone-600 font-semibold">
+<span class="material-symbols-outlined text-lg">task_alt</span>
+                                    Live Update
+                                </div>
+</div>
+</td>
+<td class="px-6 py-6 font-medium">Public Feed</td>
+<td class="px-6 py-6">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[10px] text-white font-bold">NP</div>
+<span>Auto-Publisher</span>
+</div>
+</td>
+<td class="px-6 py-6">
+<span class="text-on-surface-variant italic">"Breaking: New Policy..."</span>
+</td>
+<td class="px-6 py-6">
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-bold">Delivered</span>
+</td>
+<td class="px-8 py-6 text-right text-on-surface-variant">4 hours ago</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination/Footer of Table -->
+<div class="p-8 flex items-center justify-between bg-surface-container-low/50">
+<span class="text-sm text-on-surface-variant">Showing 1 to 25 of 1,492 notification events</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-on-primary font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-high transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-high transition-colors">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Health Insight (Bento Grid Style) -->
+<div class="mt-12 grid grid-cols-12 gap-6">
+<div class="col-span-8 bg-surface-container-low p-8 rounded-3xl">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline text-2xl font-bold text-primary">Notification Velocity</h3>
+<p class="text-on-surface-variant text-sm mt-1">Total system throughput over the last 24 hours.</p>
+</div>
+<span class="text-emerald-600 font-bold bg-emerald-50 px-3 py-1 rounded-full text-xs">+12% vs yesterday</span>
+</div>
+<div class="h-32 flex items-end gap-2 px-2">
+<div class="flex-1 bg-primary/10 h-[40%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[55%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[70%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[45%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary h-[85%] rounded-t-lg"></div>
+<div class="flex-1 bg-primary/10 h-[60%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[40%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[30%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[50%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[65%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[90%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+<div class="flex-1 bg-primary/10 h-[75%] rounded-t-lg hover:bg-primary/30 transition-all cursor-pointer"></div>
+</div>
+</div>
+<div class="col-span-4 bg-primary text-on-primary p-8 rounded-3xl relative overflow-hidden">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-4xl mb-4" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<h3 class="font-headline text-2xl font-bold mb-2">Push Node Status</h3>
+<p class="text-on-primary-container text-sm leading-relaxed mb-6">Operational efficiency at 99.8%. No critical latencies detected across editorial channels.</p>
+<button class="bg-white/10 hover:bg-white/20 transition-colors text-white py-3 px-6 rounded-xl font-bold text-sm w-full border border-white/20 backdrop-blur-md">
+                        Run Diagnostics
+                    </button>
+</div>
+<!-- Abstract Texture for Premium Feel -->
+<div class="absolute -right-16 -bottom-16 w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl"></div>
+</div>
+</div>
+</main>
+<!-- Contextual "Add Action" FAB (Suppressed based on logic, but here for completeness of system) -->
+<!-- Not rendered as this is a Monitor/Details style page -->
+</body></html>

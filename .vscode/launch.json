@@ -1,0 +1,111 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "naijapulse",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "toolArgs": [
+                "--web-port=7357",
+                "--web-launch-url=http://localhost:7357/admin/login",
+                "--dart-define=API_BASE_URL=https://countless-lahoma-uncontemporaneously.ngrok-free.dev/api/v1"
+            ]
+        },
+        {
+            "name": "naijapulse (debug via ngrok)",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--web-port=7357",
+                "--web-launch-url=http://localhost:7357/admin/login",
+                "--dart-define=API_BASE_URL=https://countless-lahoma-uncontemporaneously.ngrok-free.dev/api/v1"
+            ]
+        },
+        {
+            "name": "naijapulse (full stack: api + ngrok + app)",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "preLaunchTask": "naijapulse: services up",
+            "toolArgs": [
+                "--web-port=7357",
+                "--web-launch-url=http://localhost:7357/admin/login",
+                "--dart-define=API_BASE_URL=https://countless-lahoma-uncontemporaneously.ngrok-free.dev/api/v1"
+            ]
+        },
+        {
+            "name": "naijapulse admin (local)",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "preLaunchTask": "naijapulse-api: uvicorn",
+            "toolArgs": [
+                "--web-port=7357",
+                "--web-launch-url=http://localhost:7357/admin/login",
+                "--dart-define=API_BASE_URL=http://localhost:8000/api/v1"
+            ]
+        },
+        {
+            "name": "naijapulse (debug with custom API URL)",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--web-port=7357",
+                "--web-launch-url=http://localhost:7357/admin/login",
+                "--dart-define=API_BASE_URL=${input:apiBaseUrl}"
+            ]
+        },
+        {
+            "name": "naijapulse (profile mode)",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "naijapulse (release mode)",
+            "cwd": "naijapulse",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "naijapulse (full stack)",
+            "configurations": [
+                "naijapulse (full stack: api + ngrok + app)"
+            ],
+            "stopAll": true
+        },
+        {
+            "name": "naijapulse admin (local)",
+            "configurations": [
+                "naijapulse admin (local)"
+            ],
+            "stopAll": true
+        }
+    ],
+    "inputs": [
+        {
+            "id": "apiBaseUrl",
+            "type": "promptString",
+            "description": "NaijaPulse API base URL (include /api/v1)",
+            "default": "https://countless-lahoma-uncontemporaneously.ngrok-free.dev/api/v1"
+        }
+    ]
+}

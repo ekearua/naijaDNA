@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Source Registry | NaijaPulse Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,6..72@400&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#fff8f3",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f3ede7",
+                        "primary-fixed-dim": "#86d7af",
+                        "inverse-on-surface": "#f6f0ea",
+                        "tertiary-fixed": "#dbe1ff",
+                        "surface-container-high": "#ede7e2",
+                        "primary": "#005137",
+                        "on-surface-variant": "#3f4943",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e7e1dc",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "surface-container-low": "#f9f2ed",
+                        "primary-fixed": "#a1f4cb",
+                        "tertiary": "#003da6",
+                        "outline": "#6f7a72",
+                        "on-surface": "#1d1b18",
+                        "on-secondary-fixed": "#2a1700",
+                        "secondary": "#855300",
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "surface-container-highest": "#e7e1dc",
+                        "on-tertiary-fixed": "#00174b",
+                        "secondary-container": "#feb557",
+                        "on-primary-fixed": "#002114",
+                        "on-background": "#1d1b18",
+                        "outline-variant": "#bec9c1",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fff8f3",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dfd9d4",
+                        "primary-container": "#0f6b4b",
+                        "secondary-fixed": "#ffddb8",
+                        "inverse-surface": "#32302d",
+                        "on-secondary-container": "#734700",
+                        "on-primary-fixed-variant": "#005137",
+                        "background": "#fff8f3",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#ccd6ff",
+                        "inverse-primary": "#86d7af",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#106c4b",
+                        "on-primary-container": "#97e9c0",
+                        "tertiary-container": "#0052d9"
+                    },
+                    fontFamily: {
+                        "headline": ["Newsreader"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .font-serif { font-family: 'Newsreader', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Bar -->
+<header class="bg-[#005137] dark:bg-[#003d29] font-['Newsreader'] tracking-tight docked full-width top-0 z-50 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] flex justify-between items-center w-full px-6 h-16 fixed">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold font-['Newsreader'] text-white">NaijaPulse Admin</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-emerald-100/80 hover:text-white transition-colors text-sm font-medium" href="#">Live View</a>
+<a class="text-emerald-100/80 hover:text-white transition-colors text-sm font-medium" href="#">Alerts</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-emerald-100 text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-white placeholder-emerald-100/50 w-48" placeholder="Search resources..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-emerald-50 hover:bg-white/10 p-2 rounded-full transition-all">notifications</button>
+<button class="material-symbols-outlined text-emerald-50 hover:bg-white/10 p-2 rounded-full transition-all">settings</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-emerald-400/30">
+<img alt="Editor Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional editor in a modern office with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6DwOpdBn6sDGC8Q86PjZi7tgy_25arrnFXdJGGFO4Rrh28emACbyAaYss2Zy0XD-BY8lUUHClTlPfc-ljCumVoUNzCKvWtq5mQ35BH-nnmfLYzR23t3pdUO95imoy1oXZN3aofjwGvXIqkGFwzCeiW3y6aiJwfEO_aXhbieAwghemqfdmA5xl_aHj_3tlDgGPOuwf8cxHBFNfO6Vhp8Sqcgm35KI9ZbMBg7ino6u8huo_mKsc3lN22gq4KmnD5tmFi_xDngGRaYRl"/>
+</div>
+<button class="bg-primary-container text-white px-5 py-1.5 rounded-full text-sm font-semibold hover:bg-emerald-600 transition-all scale-95 active:opacity-80">Publish</button>
+</div>
+</header>
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col py-4 bg-[#fff8f3] dark:bg-[#1a1c1e] text-sm font-medium font-['Inter'] bg-shift surface-container-low flat no shadows">
+<div class="px-6 py-4 flex flex-col gap-1">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Editorial Desk</p>
+<p class="text-[10px] text-outline uppercase tracking-widest">High-End Admin</p>
+</div>
+</div>
+<!-- Navigation Items -->
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span> Articles Queue
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#005137] dark:text-emerald-400 font-bold bg-[#005137]/5 dark:bg-emerald-500/10 rounded-r-full" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span> Sources
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:text-[#005137] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span> Team
+            </a>
+</div>
+<div class="mt-auto px-6 py-4 border-t border-outline-variant/10">
+<button class="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mb-4 hover:shadow-lg transition-all">
+<span class="material-symbols-outlined">add</span> New Story
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">help</span> Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span> Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen">
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h1 class="text-4xl font-headline font-bold text-on-surface mb-2">Source Registry</h1>
+<p class="text-on-surface-variant font-body">Manage automated news ingestion pipes and feed health.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest rounded-xl text-on-surface font-semibold hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined">sync</span> Re-sync
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest rounded-xl text-on-surface font-semibold hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined">play_circle</span> Run Test
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-lg shadow-primary/10 hover:shadow-xl transition-all">
+<span class="material-symbols-outlined">add_box</span> Add Source
+                    </button>
+</div>
+</div>
+<!-- Stats Overview - Bento Style -->
+<div class="grid grid-cols-12 gap-6 mb-10">
+<div class="col-span-12 md:col-span-4 bg-surface-container-low p-6 rounded-2xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary/10 rounded-xl text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rss_feed</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-outline">Ingestion Health</span>
+</div>
+<div class="text-3xl font-headline font-bold mb-1">98.4%</div>
+<div class="text-sm text-primary flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-sm">trending_up</span> +2.1% from yesterday
+                    </div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-low p-6 rounded-2xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-secondary/10 rounded-xl text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_delete</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-outline">Dedupe Accuracy</span>
+</div>
+<div class="text-3xl font-headline font-bold mb-1">92.0%</div>
+<div class="text-sm text-outline flex items-center gap-1">
+                        4,210 duplicates filtered
+                    </div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-primary text-on-primary p-6 rounded-2xl relative overflow-hidden">
+<div class="relative z-10">
+<div class="text-sm font-medium text-emerald-100/70 mb-2">Live Throughput</div>
+<div class="text-4xl font-headline font-bold mb-4">12.5k <span class="text-xl font-normal opacity-70">articles/day</span></div>
+<div class="flex gap-1 h-8 items-end">
+<div class="bg-emerald-400/30 w-full h-[40%] rounded-t-sm"></div>
+<div class="bg-emerald-400/30 w-full h-[60%] rounded-t-sm"></div>
+<div class="bg-emerald-400/50 w-full h-[85%] rounded-t-sm"></div>
+<div class="bg-emerald-400/30 w-full h-[55%] rounded-t-sm"></div>
+<div class="bg-emerald-400/70 w-full h-[95%] rounded-t-sm"></div>
+</div>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-9xl">bolt</span>
+</div>
+</div>
+</div>
+<!-- Operational Data Grid -->
+<div class="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] border border-surface-container">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 text-outline text-[11px] font-bold uppercase tracking-widest border-b border-surface-container">
+<th class="px-6 py-5">Source Name</th>
+<th class="px-4 py-5">Type</th>
+<th class="px-4 py-5">Feed URL/Domain</th>
+<th class="px-4 py-5">Categories</th>
+<th class="px-4 py-5 text-center">Last Run</th>
+<th class="px-4 py-5">Status</th>
+<th class="px-4 py-5 text-right">Fetch/Ins</th>
+<th class="px-4 py-5 text-center">Dedupe</th>
+<th class="px-6 py-5 text-right">Enabled</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container/50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xs">NG</div>
+<span class="font-semibold text-on-surface">News Agency Nigeria</span>
+</div>
+</td>
+<td class="px-4 py-5"><span class="px-2 py-1 bg-surface-container rounded text-[10px] font-bold text-outline">RSS</span></td>
+<td class="px-4 py-5 text-on-surface-variant text-xs font-mono truncate max-w-[180px]">nannews.ng/feed</td>
+<td class="px-4 py-5">
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-primary" title="Politics"></span>
+<span class="w-2 h-2 rounded-full bg-secondary" title="Economy"></span>
+</div>
+</td>
+<td class="px-4 py-5 text-center text-xs text-outline">2m ago</td>
+<td class="px-4 py-5">
+<span class="flex items-center gap-1.5 text-xs font-bold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Success
+                                    </span>
+</td>
+<td class="px-4 py-5 text-right font-mono text-xs text-on-surface">142 / 89</td>
+<td class="px-4 py-5 text-center text-xs font-medium text-on-surface-variant">37%</td>
+<td class="px-6 py-5 text-right">
+<div class="inline-block w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xs">VN</div>
+<span class="font-semibold text-on-surface">Vanguard News</span>
+</div>
+</td>
+<td class="px-4 py-5"><span class="px-2 py-1 bg-surface-container rounded text-[10px] font-bold text-outline">API</span></td>
+<td class="px-4 py-5 text-on-surface-variant text-xs font-mono truncate max-w-[180px]">api.vanguardngr.com/v2</td>
+<td class="px-4 py-5">
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary-container" title="Tech"></span>
+<span class="w-2 h-2 rounded-full bg-primary" title="Politics"></span>
+</div>
+</td>
+<td class="px-4 py-5 text-center text-xs text-outline">15m ago</td>
+<td class="px-4 py-5">
+<span class="flex items-center gap-1.5 text-xs font-bold text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Timeout
+                                    </span>
+</td>
+<td class="px-4 py-5 text-right font-mono text-xs text-on-surface">0 / 0</td>
+<td class="px-4 py-5 text-center text-xs font-medium text-on-surface-variant">0%</td>
+<td class="px-6 py-5 text-right">
+<div class="inline-block w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xs">PT</div>
+<span class="font-semibold text-on-surface">Premium Times</span>
+</div>
+</td>
+<td class="px-4 py-5"><span class="px-2 py-1 bg-surface-container rounded text-[10px] font-bold text-outline">RSS</span></td>
+<td class="px-4 py-5 text-on-surface-variant text-xs font-mono truncate max-w-[180px]">premiumtimesng.com/feed</td>
+<td class="px-4 py-5">
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary" title="Investigations"></span>
+</div>
+</td>
+<td class="px-4 py-5 text-center text-xs text-outline">1h ago</td>
+<td class="px-4 py-5">
+<span class="flex items-center gap-1.5 text-xs font-bold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Success
+                                    </span>
+</td>
+<td class="px-4 py-5 text-right font-mono text-xs text-on-surface">24 / 12</td>
+<td class="px-4 py-5 text-center text-xs font-medium text-on-surface-variant">50%</td>
+<td class="px-6 py-5 text-right">
+<div class="inline-block w-10 h-5 bg-outline-variant/30 rounded-full relative">
+<div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center font-bold text-on-surface-variant text-xs">CH</div>
+<span class="font-semibold text-on-surface">Channels TV</span>
+</div>
+</td>
+<td class="px-4 py-5"><span class="px-2 py-1 bg-surface-container rounded text-[10px] font-bold text-outline">API</span></td>
+<td class="px-4 py-5 text-on-surface-variant text-xs font-mono truncate max-w-[180px]">api.channelstv.com/stream</td>
+<td class="px-4 py-5">
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim" title="Broadcast"></span>
+<span class="w-2 h-2 rounded-full bg-secondary-container" title="Breaking"></span>
+</div>
+</td>
+<td class="px-4 py-5 text-center text-xs text-outline">Just now</td>
+<td class="px-4 py-5">
+<span class="flex items-center gap-1.5 text-xs font-bold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Success
+                                    </span>
+</td>
+<td class="px-4 py-5 text-right font-mono text-xs text-on-surface">310 / 205</td>
+<td class="px-4 py-5 text-center text-xs font-medium text-on-surface-variant">33%</td>
+<td class="px-6 py-5 text-right">
+<div class="inline-block w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Side Drawer Overlay (Simulated via positioning) -->
+<div class="fixed right-0 top-16 h-[calc(100vh-64px)] w-[450px] bg-white shadow-2xl z-40 transform translate-x-0 transition-transform duration-300 border-l border-surface-container">
+<div class="h-full flex flex-col">
+<!-- Drawer Header -->
+<div class="p-6 border-b border-surface-container flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">rss_feed</span>
+</div>
+<div>
+<h2 class="text-xl font-headline font-bold text-on-surface leading-tight">News Agency Nigeria</h2>
+<p class="text-xs text-outline uppercase font-bold tracking-widest">Source Configuration</p>
+</div>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-on-surface transition-colors p-2">close</button>
+</div>
+<!-- Drawer Content -->
+<div class="flex-1 overflow-y-auto p-8 no-scrollbar">
+<!-- Health Overview -->
+<div class="mb-8">
+<h3 class="text-xs font-bold text-outline uppercase tracking-widest mb-4">Health History</h3>
+<div class="bg-surface-container-low p-4 rounded-2xl">
+<div class="flex justify-between items-center mb-4">
+<span class="text-sm font-medium">Uptime (24h)</span>
+<span class="text-sm font-bold text-primary">99.9%</span>
+</div>
+<div class="flex gap-1 h-6">
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-error rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+<div class="flex-1 bg-primary rounded-sm"></div>
+</div>
+<div class="flex justify-between mt-2 text-[10px] text-outline">
+<span>24h ago</span>
+<span>Now</span>
+</div>
+</div>
+</div>
+<!-- Mapping Editor -->
+<div class="mb-8">
+<h3 class="text-xs font-bold text-outline uppercase tracking-widest mb-4">Category Mapping</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3 p-3 bg-surface rounded-xl border border-surface-container">
+<div class="flex-1">
+<p class="text-[10px] text-outline font-bold uppercase">Remote Category</p>
+<p class="text-sm font-medium">"state_news"</p>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">arrow_forward</span>
+<div class="flex-1">
+<p class="text-[10px] text-outline font-bold uppercase">Local Target</p>
+<select class="text-sm font-medium bg-transparent border-none p-0 focus:ring-0 w-full text-primary">
+<option>Politics</option>
+<option>National</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface rounded-xl border border-surface-container">
+<div class="flex-1">
+<p class="text-[10px] text-outline font-bold uppercase">Remote Category</p>
+<p class="text-sm font-medium">"biz_finance"</p>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">arrow_forward</span>
+<div class="flex-1">
+<p class="text-[10px] text-outline font-bold uppercase">Local Target</p>
+<select class="text-sm font-medium bg-transparent border-none p-0 focus:ring-0 w-full text-primary">
+<option>Economy</option>
+<option>Business</option>
+</select>
+</div>
+</div>
+<button class="w-full py-2 border-2 border-dashed border-outline-variant/50 rounded-xl text-outline text-xs font-bold hover:bg-surface-container-low transition-all">
+                                    + Add New Mapping
+                                </button>
+</div>
+</div>
+<!-- Technical Params -->
+<div class="mb-8">
+<h3 class="text-xs font-bold text-outline uppercase tracking-widest mb-4">Technical Params</h3>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="text-[10px] font-bold text-outline uppercase">Ingestion Frequency</label>
+<p class="text-sm text-on-surface font-medium">Every 5 minutes</p>
+</div>
+<div>
+<label class="text-[10px] font-bold text-outline uppercase">User Agent</label>
+<p class="text-sm text-on-surface font-medium">NaijaPulseBot/1.0</p>
+</div>
+<div>
+<label class="text-[10px] font-bold text-outline uppercase">Auth Method</label>
+<p class="text-sm text-on-surface font-medium">None (Public)</p>
+</div>
+<div>
+<label class="text-[10px] font-bold text-outline uppercase">Max Batch Size</label>
+<p class="text-sm text-on-surface font-medium">100 items</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer -->
+<div class="p-6 bg-surface-container-low border-t border-surface-container flex gap-3">
+<button class="flex-1 py-3 bg-surface text-on-surface border border-surface-container rounded-xl font-bold hover:bg-surface-container transition-all">Discard</button>
+<button class="flex-1 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/10 hover:shadow-xl transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed-variant": "#005137",
+              "surface-container-low": "#f9f2ed",
+              "surface-container": "#f3ede7",
+              "tertiary-container": "#0052d9",
+              "surface-tint": "#106c4b",
+              "on-tertiary-fixed-variant": "#003ea8",
+              "surface-container-highest": "#e7e1dc",
+              "on-secondary": "#ffffff",
+              "on-surface": "#1d1b18",
+              "on-tertiary": "#ffffff",
+              "tertiary-fixed-dim": "#b4c5ff",
+              "surface-variant": "#e7e1dc",
+              "on-secondary-fixed": "#2a1700",
+              "on-tertiary-container": "#ccd6ff",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed-dim": "#ffb95f",
+              "secondary": "#855300",
+              "on-primary-fixed": "#002114",
+              "inverse-primary": "#86d7af",
+              "surface-container-high": "#ede7e2",
+              "secondary-fixed": "#ffddb8",
+              "on-secondary-fixed-variant": "#653e00",
+              "error": "#ba1a1a",
+              "on-primary-container": "#97e9c0",
+              "inverse-on-surface": "#f6f0ea",
+              "tertiary-fixed": "#dbe1ff",
+              "background": "#fff8f3",
+              "primary": "#005137",
+              "error-container": "#ffdad6",
+              "on-error-container": "#93000a",
+              "surface": "#fff8f3",
+              "tertiary": "#003da6",
+              "on-surface-variant": "#3f4943",
+              "on-background": "#1d1b18",
+              "on-primary": "#ffffff",
+              "surface-dim": "#dfd9d4",
+              "secondary-container": "#feb557",
+              "outline": "#6f7a72",
+              "on-tertiary-fixed": "#00174b",
+              "on-error": "#ffffff",
+              "inverse-surface": "#32302d",
+              "primary-container": "#0f6b4b",
+              "outline-variant": "#bec9c1",
+              "surface-bright": "#fff8f3",
+              "primary-fixed": "#a1f4cb",
+              "primary-fixed-dim": "#86d7af",
+              "on-secondary-container": "#734700"
+            },
+            fontFamily: {
+              "headline": ["Newsreader"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-gradient {
+            background: linear-gradient(135deg, #005137 0%, #0f6b4b 100%);
+        }
+        .newsroom-shadow {
+            box-shadow: 0 12px 32px -4px rgba(29, 27, 24, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex flex-col">
+<!-- Top Navigation (Shell Implementation) -->
+<!-- Suppression logic: Navigation links visible as it's a root entry point, but simplified for focus -->
+<nav class="docked full-width top-0 bg-[#fff8f3] dark:bg-stone-950 flex justify-between items-center w-full px-8 py-4 max-w-full mx-auto">
+<div class="text-2xl font-['Newsreader'] font-bold text-[#1d1b18] dark:text-stone-100">
+            The Digital Curator
+        </div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#1d1b18]/60 dark:text-stone-400 font-medium hover:text-[#005137] font-['Newsreader'] italic transition-colors duration-300" href="#">Support</a>
+<a class="text-[#1d1b18]/60 dark:text-stone-400 font-medium hover:text-[#005137] font-['Newsreader'] italic transition-colors duration-300" href="#">Security</a>
+<a class="text-[#1d1b18]/60 dark:text-stone-400 font-medium hover:text-[#005137] font-['Newsreader'] italic transition-colors duration-300" href="#">Help</a>
+</div>
+</nav>
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+<div class="w-full max-w-[480px] space-y-8">
+<!-- Asymmetric Layout: Branding & Intro -->
+<div class="text-center md:text-left space-y-3">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container text-on-primary-fixed-variant text-[11px] font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">encrypted</span>
+                    Security Protocol
+                </div>
+<h1 class="font-headline text-4xl md:text-5xl font-medium tracking-tight text-on-surface">
+                    Recover your access
+                </h1>
+<p class="text-on-surface-variant font-body text-sm leading-relaxed max-w-sm">
+                    Enter your verified editorial credentials to receive a secure authentication link. For your protection, links expire after 15 minutes.
+                </p>
+</div>
+<!-- Central Card Layout -->
+<div class="bg-surface-container-lowest newsroom-shadow rounded-xl p-8 md:p-10 relative overflow-hidden">
+<!-- Decorative texture/accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+<form class="space-y-6 relative z-10">
+<div class="space-y-2">
+<label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant ml-1" for="email">
+                            Verified Editorial Email
+                        </label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[20px] transition-colors group-focus-within:text-primary">
+                                mail
+                            </span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-xl text-on-surface placeholder:text-outline/50 focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all text-sm" id="email" name="email" placeholder="editor@newsroom.com" required="" type="email"/>
+</div>
+</div>
+<button class="editorial-gradient w-full py-4 px-6 rounded-xl text-white font-semibold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group" type="submit">
+<span>Send Recovery Link</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
+                            arrow_forward
+                        </span>
+</button>
+</form>
+<div class="mt-10 pt-8 border-t border-outline-variant/20 flex flex-col md:flex-row items-center justify-between gap-4">
+<a class="group flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors text-xs font-semibold uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                        Back to Login
+                    </a>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-outline/40 text-[20px]">verified_user</span>
+<span class="material-symbols-outlined text-outline/40 text-[20px]">fingerprint</span>
+</div>
+</div>
+</div>
+<!-- Footer Meta Info -->
+<div class="text-center space-y-4">
+<p class="text-[10px] text-outline uppercase tracking-[0.2em] font-medium">
+                    Technical assistance required? <a class="text-primary hover:underline underline-offset-4" href="#">Contact System Admin</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Footer (Shell Implementation) -->
+<footer class="bg-[#fff8f3] dark:bg-stone-950 flex justify-between items-center w-full px-12 py-6 border-t border-[#1d1b18]/5">
+<div class="font-['Inter'] text-xs tracking-wider uppercase text-[#1d1b18]/40 dark:text-stone-500">
+            © 2024 Editorial Newsroom Admin. Confidential &amp; Secure.
+        </div>
+<div class="flex gap-6">
+<a class="font-['Inter'] text-xs tracking-wider uppercase text-[#1d1b18]/40 dark:text-stone-500 hover:text-[#005137] dark:hover:text-[#10b981] transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs tracking-wider uppercase text-[#1d1b18]/40 dark:text-stone-500 hover:text-[#005137] dark:hover:text-[#10b981] transition-colors" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs tracking-wider uppercase text-[#1d1b18]/40 dark:text-stone-500 hover:text-[#005137] dark:hover:text-[#10b981] transition-colors" href="#">Audit Logs</a>
+</div>
+</footer>
+</body></html>

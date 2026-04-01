@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Comment Moderation | NaijaPulse Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Newsreader:ital,wght@0,400;0,700;0,800;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed-dim": "#b4c5ff",
+                        "surface-variant": "#e7e1dc",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#ccd6ff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "surface-container-high": "#ede7e2",
+                        "secondary-fixed": "#ffddb8",
+                        "inverse-primary": "#86d7af",
+                        "secondary": "#855300",
+                        "on-primary-fixed": "#002114",
+                        "on-primary-fixed-variant": "#005137",
+                        "surface-container": "#f3ede7",
+                        "surface-container-low": "#f9f2ed",
+                        "on-tertiary-fixed-variant": "#003ea8",
+                        "tertiary-container": "#0052d9",
+                        "surface-tint": "#106c4b",
+                        "on-surface": "#1d1b18",
+                        "surface-container-highest": "#e7e1dc",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1d1b18",
+                        "outline": "#6f7a72",
+                        "on-tertiary-fixed": "#00174b",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#32302d",
+                        "surface-dim": "#dfd9d4",
+                        "secondary-container": "#feb557",
+                        "surface-bright": "#fff8f3",
+                        "primary-fixed": "#a1f4cb",
+                        "outline-variant": "#bec9c1",
+                        "primary-container": "#0f6b4b",
+                        "primary-fixed-dim": "#86d7af",
+                        "on-secondary-container": "#734700",
+                        "inverse-on-surface": "#f6f0ea",
+                        "on-primary-container": "#97e9c0",
+                        "error": "#ba1a1a",
+                        "background": "#fff8f3",
+                        "tertiary-fixed": "#dbe1ff",
+                        "primary": "#005137",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#3f4943",
+                        "tertiary": "#003da6",
+                        "surface": "#fff8f3",
+                        "on-error-container": "#93000a"
+                    },
+                    fontFamily: {
+                        "headline": ["Newsreader"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .font-serif { font-family: 'Newsreader', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-stone-50 dark:bg-stone-950 flex flex-col h-full py-8 border-r-0">
+<div class="px-6 mb-8">
+<h1 class="font-['Newsreader'] italic text-xl text-[#005137] dark:text-emerald-600">The Digital Curator</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold mt-1">Newsroom Operations</p>
+</div>
+<nav class="flex-1 space-y-1 px-4">
+<div class="cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out py-2.5 px-3 rounded-lg flex items-center gap-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 font-['Inter'] text-[15px] font-medium">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out py-2.5 px-3 rounded-lg flex items-center gap-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 font-['Inter'] text-[15px] font-medium">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span>Editorial Queue</span>
+</div>
+<!-- Editorial Queue is active conceptually as moderation is editorial work -->
+<div class="cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out py-2.5 px-3 rounded-lg flex items-center gap-3 text-[#005137] dark:text-emerald-400 font-bold border-r-4 border-[#005137] bg-emerald-50/50 dark:bg-emerald-900/20 font-['Inter'] text-[15px]">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span>Comment Moderation</span>
+</div>
+<div class="cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out py-2.5 px-3 rounded-lg flex items-center gap-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 font-['Inter'] text-[15px] font-medium">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span>Analytics</span>
+</div>
+<div class="cursor-pointer transition-colors hover:pl-2 transition-all duration-200 ease-in-out py-2.5 px-3 rounded-lg flex items-center gap-3 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900 font-['Inter'] text-[15px] font-medium">
+<span class="material-symbols-outlined" data-icon="perm_media">perm_media</span>
+<span>Multimedia</span>
+</div>
+</nav>
+<div class="px-4 mt-auto pt-8 border-t border-surface-variant/30">
+<button class="w-full bg-primary text-on-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                Quick Draft
+            </button>
+<div class="mt-6 space-y-1">
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+<span>Help Center</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-error hover:opacity-80 transition-colors cursor-pointer text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="logout">logout</span>
+<span>Logout</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 z-50 bg-[#fff8f3]/80 dark:bg-stone-900/80 backdrop-blur-md flex justify-between items-center px-8 py-4 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] dark:shadow-none transition-colors duration-300">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search comments, authors, or topics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-stone-100 transition-all active:scale-90">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-stone-100 transition-all active:scale-90">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface leading-tight">Chinedu Okafor</p>
+<p class="text-[10px] text-on-surface-variant">Senior Editor</p>
+</div>
+<img alt="Editor Profile" class="w-10 h-10 rounded-full border-2 border-primary/10 object-cover" data-alt="Close-up portrait of a professional African man in a newsroom setting, soft office lighting, editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHFkTBOEzyxOfJ0vIEW4kmvRX2CyDg-mplo00KWAEx2PQBGVm8IEV3J-M1Iqix5FxD4jB9xnI3javAvCXEJhYabf92fV6Q6TKVxjhFxCsJpTeZz0kOIdT8uCa60Js0Dw7PP8JmjBllCoSirA9hHnISBCfMLyLVQpGEQ_3y8OBjSw46md2EwIVnuvaG4bXGdLu7-xk0rUguzlA9MDfS8bszsAPb9WoHindFhO42KTiShD37FsBnGfEcRyy87oUY0Jeq67-sd8X_IWYb"/>
+</div>
+</div>
+</header>
+<div class="pt-24 px-8 pb-12 max-w-[1600px] mx-auto">
+<!-- Header Section -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="text-4xl font-headline font-extrabold tracking-tight text-primary">Comment Moderation</h2>
+<p class="text-on-surface-variant mt-1">Reviewing community discourse for 24 October 2023</p>
+</div>
+<div class="flex bg-surface-container-low p-1 rounded-xl">
+<button class="px-6 py-2 rounded-lg text-sm font-semibold transition-all bg-surface-container-lowest text-on-surface shadow-sm">All</button>
+<button class="px-6 py-2 rounded-lg text-sm font-semibold transition-all text-on-surface-variant hover:text-on-surface">Flagged <span class="ml-1 px-1.5 py-0.5 bg-secondary-container/30 text-secondary text-[10px] rounded-full">12</span></button>
+<button class="px-6 py-2 rounded-lg text-sm font-semibold transition-all text-on-surface-variant hover:text-on-surface">Removed</button>
+<button class="px-6 py-2 rounded-lg text-sm font-semibold transition-all text-on-surface-variant hover:text-on-surface">Resolved</button>
+</div>
+</div>
+<!-- Main Content: Moderation Interface -->
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Left: Moderation Queue -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- Moderation Card 1 (Flagged) -->
+<div class="bg-secondary-container/10 rounded-2xl p-6 relative group transition-all hover:bg-secondary-container/15">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary rounded-l-2xl"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<img alt="Author" class="w-10 h-10 rounded-full object-cover" data-alt="Candid portrait of a young Nigerian woman smiling, outdoor city background, high quality photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_3af76Q0s2Tw5fVl-KcqA1DxaHG-6tn_AHeEvzR2ztkKtJ9vbAQw03uKbAuqgVb7wccYyBIiO5HUGpVTxMw-8CvOJ5-XfSoBhz3juYojBn9yOYsF5ZDej6hdBsekFEiAGSyiMzcvsAXl-SLrGBf3w-AMKKYz7HSLlMB4MX1mlwvZynA-5sqi18PyyxoBeQ44nEbiUTn3P1tgRDu-EQe1yHU-TQI8yBi8cFCjg9TmSv_dkQlcTbdoWTeySdxjIE9WgzyGHVnreP0Ah"/>
+<div>
+<h4 class="font-bold text-on-surface leading-tight">Amaka Adeleke</h4>
+<p class="text-xs text-on-surface-variant">2 mins ago • <span class="font-medium text-primary hover:underline cursor-pointer">Re: Economic Reforms 2024</span></p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="bg-secondary-container text-on-secondary-container text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="flag" style="font-variation-settings: 'FILL' 1;">flag</span>
+                                    5 REPORTS
+                                </div>
+<button class="p-2 hover:bg-surface-variant/40 rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<div class="pl-13 ml-13">
+<blockquote class="text-[15px] leading-relaxed text-on-surface mb-4">
+                                "The policy framework mentioned in the third paragraph is completely delusional. How can we talk about growth while the currency is in freefall? This entire article reads like government propaganda. We need real solutions, not just fluff pieces from paid journalists!"
+                            </blockquote>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container-high px-3 py-1 rounded-md text-[11px] font-medium text-on-surface-variant">Harassment</span>
+<span class="bg-surface-container-high px-3 py-1 rounded-md text-[11px] font-medium text-on-surface-variant">Disinformation</span>
+<span class="bg-surface-container-high px-3 py-1 rounded-md text-[11px] font-medium text-on-surface-variant">Low Effort</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-error text-on-error px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm" data-icon="delete_forever">delete_forever</span>
+                                    Remove
+                                </button>
+<button class="bg-surface-container-highest text-on-surface px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                    Dismiss
+                                </button>
+<button class="ml-auto text-primary text-sm font-bold hover:underline px-2 py-1 flex items-center gap-1">
+                                    Thread Context
+                                    <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Moderation Card 2 (Standard) -->
+<div class="bg-surface-container-low rounded-2xl p-6 relative transition-all hover:bg-surface-container">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<img alt="Author" class="w-10 h-10 rounded-full object-cover" data-alt="Portrait of a middle-aged man with glasses, professional studio lighting, calm neutral expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7h1w5kxjKw1rhJUGyOyAvzIXls1ZivzBME-q-xv87hVDMjtdUhg7bfhSAeXTsmyibyCTEqH6rszva1KKct-ZD15hk2lywNEz_VvOG1AfBZw9sntjuf0t5lesbNV2m2GvQ4IKh1DRnHUKeQngkbG02T2iW7vGoPtwEuc9-RuxwM_VRRij6PXEaqAbHukEdC5yUuyAQoBR7QmKmosJ4N48cTYNzNljQgnApPk69rCJr8Y1V0AGe0gCc7cvNhbU8jxnvnKzTgrVL9bZ8"/>
+<div>
+<h4 class="font-bold text-on-surface leading-tight">Dr. Segun Balogun</h4>
+<p class="text-xs text-on-surface-variant">15 mins ago • <span class="font-medium text-primary hover:underline cursor-pointer">Re: Health Sector Investment</span></p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="bg-surface-variant/50 text-on-surface-variant text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="priority_high">priority_high</span>
+                                    1 REPORT
+                                </div>
+<button class="p-2 hover:bg-surface-variant/40 rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<div class="pl-13">
+<blockquote class="text-[15px] leading-relaxed text-on-surface mb-4">
+                                "While I appreciate the analysis, the figures on hospital bed occupancy are slightly outdated based on the recent WHO report. You might want to cross-reference with the Ministry's Q3 data."
+                            </blockquote>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container-high px-3 py-1 rounded-md text-[11px] font-medium text-on-surface-variant">Factual Error</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-container-highest text-on-surface px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="reply">reply</span>
+                                    Respond
+                                </button>
+<button class="bg-surface-container-highest text-on-surface px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                    Dismiss
+                                </button>
+</div>
+</div>
+</div>
+<!-- Moderation Card 3 (Suspicious) -->
+<div class="bg-surface-container-low rounded-2xl p-6 relative transition-all hover:bg-surface-container">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center font-bold text-on-primary-fixed">J</div>
+<div>
+<h4 class="font-bold text-on-surface leading-tight">JobHunter99</h4>
+<p class="text-xs text-on-surface-variant">42 mins ago • <span class="font-medium text-primary hover:underline cursor-pointer">Re: Lagos Tech Summit</span></p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="bg-secondary-container text-on-secondary-container text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="security">security</span>
+                                    SYSTEM FLAG
+                                </div>
+</div>
+</div>
+<div class="pl-13">
+<blockquote class="text-[15px] leading-relaxed text-on-surface mb-4">
+                                "CLICK HERE for easy jobs in the UK and USA! 100% visa guarantee. Visit bit.ly/easy-visas-now for details. Don't miss this opportunity to leave!"
+                            </blockquote>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container-high px-3 py-1 rounded-md text-[11px] font-medium text-on-surface-variant">Spam</span>
+<span class="bg-surface-container-high px-3 py-1 rounded-md text-[11px] font-medium text-on-surface-variant">Malicious Link</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-error text-on-error px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="delete_forever">delete_forever</span>
+                                    Remove &amp; Block
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Thread Context Panel -->
+<div class="col-span-12 lg:col-span-4 sticky top-24">
+<div class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_12px_32px_-4px_rgba(29,27,24,0.06)] border-none">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-headline text-2xl font-bold">Thread Context</h3>
+<span class="text-[10px] font-bold bg-primary/10 text-primary px-2 py-1 rounded uppercase tracking-wider">Live</span>
+</div>
+<div class="space-y-8 relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-[1px] before:bg-outline-variant/30">
+<!-- Parent Comment -->
+<div class="relative pl-12">
+<div class="absolute left-0 top-0 w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden z-10">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Professional headshot of a smiling man, clean lighting, blurred urban background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoM2O2Uh5koHoLjiVLOVPsDZfqt8GtZW3ZNQkNmD50UQJvvZIo_z7Snn-bfgkGiwRQhzTadUBPMW6YtnxjXBayVM2brfbxz-DHq4uTqNnAv0YKzgAaxZDSTWYF_1WRtXNSdRUSKgj00bqR57SfR4WeNaSRHoJijz8q4WR12ChNiK-SwCDBkHjexJ80HOQNTYuwMHYXLr1LJHGi0izXsGBB41kyxv-rCnCDZh_Sf46Xelz0qlobyQNey3fdQXHtFn_kCMcZq0TZZqxJ"/>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl">
+<p class="text-[10px] font-bold text-on-surface-variant mb-1">Tobi Adeyemi (Author)</p>
+<p class="text-[13px] leading-snug text-on-surface italic">"The core of the issue remains the lack of implementation of the 2021 framework..."</p>
+</div>
+</div>
+<!-- Selected Flagged Comment -->
+<div class="relative pl-12">
+<div class="absolute left-0 top-0 w-10 h-10 rounded-full border-2 border-secondary/20 shadow-sm overflow-hidden z-10">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Candid portrait of a young Nigerian woman smiling, outdoor city background, high quality photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiLnslvuq9zbBXZR0oHhJWoXreduRDx5wDvO0RceUn67QKM5Fr2doEWJQ4bdZIhB_pTy-zJ_j7t-tQUI_QMzXVk1DRH7-7681TsaQWYyjyMWlJnIRjX56VHzfXcs5uzu_ZQrsS2tPSTg2afoOVzYRWQgVLwlyyzcIMacd2Qc2uFEH66Frja93MGYhvjTH4UrhhEqxiah2rwMxTA1-oe3KZxu_v17ugAiG2tPte_6YJDH8mv-EcGgxjXqR4A7OVhGQ2FyMzQHmjnfQR"/>
+</div>
+<div class="bg-secondary-container/10 border border-secondary/10 p-4 rounded-2xl ring-2 ring-secondary/20">
+<p class="text-[10px] font-bold text-secondary mb-1">Amaka Adeleke (Flagged)</p>
+<p class="text-[13px] leading-snug text-on-surface font-medium">"The policy framework mentioned in the third paragraph is completely delusional..."</p>
+</div>
+</div>
+<!-- Replies -->
+<div class="relative pl-12">
+<div class="absolute left-0 top-0 w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden z-10">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Modern professional woman portrait, soft natural light, warm atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSOetuIJguAmefplAA-TyDqeKc7ogXpDakiy1JU8zOD5VOdpJ0K_256XtyvrvcUvlYw2toTzkvj_7HAZNAkZT-EgCOsLn-wDH9V0lag09UIze6e3zjmnH3HLQOx4paHwqCFKLHWM7J0xH7Y65coqciDWtfnyHVgbWUkktZmTxDt8H-NYfTEb1OISXikJnWy_hergSGVn6NTqUtCs7boNRaQzJ3XYaudKgJwFim3PBgCduVbcbnH5H1yan1QWaCjEB39MtGgC7Nl_dO"/>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl">
+<p class="text-[10px] font-bold text-on-surface-variant mb-1">Fatima Yusuf</p>
+<p class="text-[13px] leading-snug text-on-surface">"Actually, if you look at the Q2 report, there's been some marginal improvement in the manufacturing sector..."</p>
+</div>
+</div>
+</div>
+<div class="mt-10 pt-6 border-t border-outline-variant/20">
+<h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Quick Stats</h4>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-3 rounded-xl">
+<p class="text-2xl font-bold text-primary">2.4k</p>
+<p class="text-[10px] text-on-surface-variant">Total Thread Views</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl">
+<p class="text-2xl font-bold text-secondary">8%</p>
+<p class="text-[10px] text-on-surface-variant">Report Rate</p>
+</div>
+</div>
+</div>
+<div class="mt-8">
+<button class="w-full py-3 bg-surface-container-highest text-on-surface font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span>
+                                View Full Article
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Help Button -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+</button>
+</body></html>

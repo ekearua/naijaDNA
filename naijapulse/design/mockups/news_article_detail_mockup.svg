@@ -1,0 +1,102 @@
+﻿<svg width="1080" height="2340" viewBox="0 0 1080 2340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1080" y2="2340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4F7F5"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1080" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0E3D2D"/>
+      <stop offset="1" stop-color="#1F6A4E"/>
+    </linearGradient>
+    <linearGradient id="heroOverlay" x1="0" y1="280" x2="0" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00000000"/>
+      <stop offset="1" stop-color="#000000B0"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1080" height="2340" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#052214" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="2340" fill="url(#bg)"/>
+
+  <!-- Hero media -->
+  <rect x="0" y="0" width="1080" height="560" fill="url(#hero)"/>
+  <rect x="0" y="280" width="1080" height="280" fill="url(#heroOverlay)"/>
+  <rect x="36" y="104" width="72" height="72" rx="36" fill="#FFFFFF22"/>
+  <path d="M80 140H64" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M64 140L76 128" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M64 140L76 152" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="902" y="104" width="72" height="72" rx="36" fill="#FFFFFF22"/>
+  <path d="M938 132V152" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M929 140H947" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+
+  <rect x="44" y="404" width="166" height="52" rx="26" fill="#D32F2F"/>
+  <text x="127" y="438" text-anchor="middle" fill="#FFFFFF" font-size="28" font-family="Inter, Arial" font-weight="700">BREAKING</text>
+
+  <text x="44" y="490" fill="#FFFFFF" font-size="54" font-family="Merriweather, Georgia" font-weight="800">Lagos protest update:</text>
+  <text x="44" y="552" fill="#FFFFFF" font-size="54" font-family="Merriweather, Georgia" font-weight="800">What happened and what’s next</text>
+
+  <!-- Floating article sheet -->
+  <g filter="url(#shadow)">
+    <rect x="28" y="516" width="1024" height="1704" rx="42" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Metadata row -->
+  <circle cx="86" cy="608" r="18" fill="#0A7F4F"/>
+  <text x="122" y="618" fill="#0F1C17" font-size="30" font-family="Inter, Arial" font-weight="700">Channels TV</text>
+  <text x="330" y="618" fill="#6B7280" font-size="28" font-family="Inter, Arial">• 15m ago</text>
+  <rect x="780" y="578" width="228" height="56" rx="28" fill="#EAF4EE"/>
+  <text x="894" y="614" text-anchor="middle" fill="#0A7F4F" font-size="26" font-family="Inter, Arial" font-weight="700">Fact-Checked</text>
+
+  <!-- Action pills -->
+  <rect x="52" y="656" width="180" height="68" rx="34" fill="#F3F4F6"/>
+  <text x="142" y="700" text-anchor="middle" fill="#1F2937" font-size="28" font-family="Inter, Arial" font-weight="600">Save</text>
+  <rect x="248" y="656" width="214" height="68" rx="34" fill="#F3F4F6"/>
+  <text x="355" y="700" text-anchor="middle" fill="#1F2937" font-size="28" font-family="Inter, Arial" font-weight="600">Discuss</text>
+  <rect x="478" y="656" width="184" height="68" rx="34" fill="#008751"/>
+  <text x="570" y="700" text-anchor="middle" fill="#FFFFFF" font-size="28" font-family="Inter, Arial" font-weight="700">Listen</text>
+
+  <!-- Quick facts card -->
+  <rect x="52" y="760" width="976" height="228" rx="24" fill="#F7FAF8" stroke="#E2E8F0"/>
+  <text x="84" y="822" fill="#0F1C17" font-size="32" font-family="Inter, Arial" font-weight="800">At a Glance</text>
+  <text x="84" y="874" fill="#334155" font-size="28" font-family="Inter, Arial">• Protest began early morning around Ikeja axis.</text>
+  <text x="84" y="922" fill="#334155" font-size="28" font-family="Inter, Arial">• Police deployed crowd control by mid-day.</text>
+  <text x="84" y="970" fill="#334155" font-size="28" font-family="Inter, Arial">• Civil groups demand talks and de-escalation.</text>
+
+  <!-- Story body -->
+  <text x="52" y="1068" fill="#111827" font-size="34" font-family="Inter, Arial" font-weight="700">Story</text>
+  <text x="52" y="1122" fill="#1F2937" font-size="30" font-family="Inter, Arial">Residents in multiple parts of Lagos reported disruptions</text>
+  <text x="52" y="1168" fill="#1F2937" font-size="30" font-family="Inter, Arial">as traffic was diverted and commercial activity slowed.</text>
+  <text x="52" y="1214" fill="#1F2937" font-size="30" font-family="Inter, Arial">Officials said an emergency meeting is expected later today.</text>
+
+  <rect x="52" y="1250" width="976" height="172" rx="22" fill="#F8FAFC" stroke="#E5E7EB"/>
+  <text x="84" y="1322" fill="#0A7F4F" font-size="30" font-family="Merriweather, Georgia" font-weight="700">"We need calm dialogue and clear communication,"</text>
+  <text x="84" y="1370" fill="#0A7F4F" font-size="30" font-family="Merriweather, Georgia" font-weight="700">a transport union leader told NaijaPulse.</text>
+
+  <text x="52" y="1496" fill="#1F2937" font-size="30" font-family="Inter, Arial">Witnesses shared videos showing roadblocks and heavy</text>
+  <text x="52" y="1542" fill="#1F2937" font-size="30" font-family="Inter, Arial">security presence. Emergency responders remained on standby.</text>
+  <text x="52" y="1588" fill="#1F2937" font-size="30" font-family="Inter, Arial">Further updates are expected during evening briefings.</text>
+
+  <!-- Related -->
+  <text x="52" y="1686" fill="#111827" font-size="34" font-family="Inter, Arial" font-weight="700">Related stories</text>
+
+  <rect x="52" y="1720" width="976" height="126" rx="18" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <rect x="72" y="1740" width="136" height="86" rx="12" fill="#DDE8E3"/>
+  <text x="228" y="1788" fill="#0F172A" font-size="28" font-family="Inter, Arial" font-weight="600">INEC issues new polling center guidance</text>
+  <text x="228" y="1826" fill="#6B7280" font-size="24" font-family="Inter, Arial">Politics • 21m ago</text>
+
+  <rect x="52" y="1864" width="976" height="126" rx="18" fill="#FFFFFF" stroke="#E5E7EB"/>
+  <rect x="72" y="1884" width="136" height="86" rx="12" fill="#E7E3DD"/>
+  <text x="228" y="1932" fill="#0F172A" font-size="28" font-family="Inter, Arial" font-weight="600">Oil prices edge up after supply warning</text>
+  <text x="228" y="1970" fill="#6B7280" font-size="24" font-family="Inter, Arial">Business • 25m ago</text>
+
+  <!-- Bottom sticky bar -->
+  <rect x="0" y="2170" width="1080" height="170" fill="#FFFFFF"/>
+  <line x1="0" y1="2170" x2="1080" y2="2170" stroke="#E5E7EB"/>
+  <rect x="52" y="2202" width="300" height="92" rx="46" fill="#F3F4F6"/>
+  <text x="202" y="2260" text-anchor="middle" fill="#111827" font-size="30" font-family="Inter, Arial" font-weight="600">Discuss 124</text>
+  <rect x="372" y="2202" width="300" height="92" rx="46" fill="#F3F4F6"/>
+  <text x="522" y="2260" text-anchor="middle" fill="#111827" font-size="30" font-family="Inter, Arial" font-weight="600">Share</text>
+  <rect x="692" y="2202" width="336" height="92" rx="46" fill="#008751"/>
+  <text x="860" y="2260" text-anchor="middle" fill="#FFFFFF" font-size="30" font-family="Inter, Arial" font-weight="700">Listen to Article</text>
+</svg>
