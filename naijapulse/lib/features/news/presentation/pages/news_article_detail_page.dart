@@ -367,39 +367,47 @@ class _NewsArticleDetailPageState extends State<NewsArticleDetailPage> {
 
   List<NewsArticle> _buildRelatedStories(NewsState state, NewsArticle story) {
     final all = [...state.topStories, ...state.latestStories];
-    final seen = <String>{story.id};
-    final related = <NewsArticle>[];
+    final seenIds = <String>{story.id};
+    final deduped = <NewsArticle>[];
     for (final item in all) {
-      if (seen.contains(item.id)) {
-        continue;
-      }
-      final sameCategory =
-          item.category.trim().toLowerCase() ==
-          story.category.trim().toLowerCase();
-      final sameSource =
-          item.source.trim().toLowerCase() == story.source.trim().toLowerCase();
-      if (!sameCategory && !sameSource) {
-        continue;
-      }
-      seen.add(item.id);
-      related.add(item);
-      if (related.length == 4) {
-        break;
+      if (seenIds.add(item.id)) {
+        deduped.add(item);
       }
     }
-    if (related.length < 4) {
-      for (final item in all) {
-        if (seen.contains(item.id)) {
-          continue;
-        }
-        seen.add(item.id);
-        related.add(item);
-        if (related.length == 4) {
-          break;
-        }
-      }
-    }
-    return related;
+
+    final ranked =
+        deduped.map((item) {
+          final sameCategory =
+              item.category.trim().toLowerCase() ==
+              story.category.trim().toLowerCase();
+          final sameSource =
+              item.source.trim().toLowerCase() ==
+              story.source.trim().toLowerCase();
+          final sharedTags = _sharedTagCount(story, item);
+          final score =
+              (sharedTags * 10) + (sameCategory ? 3 : 0) + (sameSource ? 1 : 0);
+          return (story: item, score: score);
+        }).toList()..sort((a, b) {
+          final byScore = b.score.compareTo(a.score);
+          if (byScore != 0) {
+            return byScore;
+          }
+          return b.story.publishedAt.compareTo(a.story.publishedAt);
+        });
+
+    return ranked.take(4).map((entry) => entry.story).toList(growable: false);
+  }
+
+  int _sharedTagCount(NewsArticle left, NewsArticle right) {
+    final leftTags = left.tags
+        .map((tag) => tag.trim().toLowerCase())
+        .where((tag) => tag.isNotEmpty)
+        .toSet();
+    final rightTags = right.tags
+        .map((tag) => tag.trim().toLowerCase())
+        .where((tag) => tag.isNotEmpty)
+        .toSet();
+    return leftTags.intersection(rightTags).length;
   }
 }
 
@@ -813,62 +821,122 @@ class _MetadataRow extends StatelessWidget {
         story.verificationStatus.trim().toLowerCase() == 'fact_checked' ||
         story.verificationStatus.trim().toLowerCase() == 'verified';
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
-          child: Text(
-            story.source.trim().isNotEmpty
-                ? story.source.trim().characters.first.toUpperCase()
-                : 'N',
-            style: const TextStyle(
-              color: AppTheme.primary,
-              fontWeight: FontWeight.w800,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
+              child: Text(
+                story.source.trim().isNotEmpty
+                    ? story.source.trim().characters.first.toUpperCase()
+                    : 'N',
+                style: const TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  Text(
+                    story.source,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    '- ${relativeTimeLabel(story.publishedAt)}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (verified)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppTheme.primary.withValues(alpha: 0.2)
+                      : const Color(0xFFEAF4EE),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Fact-Checked',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              Text(
-                story.source,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              Text(
-                '- ${relativeTimeLabel(story.publishedAt)}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
-              ),
-            ],
-          ),
-        ),
-        if (verified)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppTheme.primary.withValues(alpha: 0.2)
-                  : const Color(0xFFEAF4EE),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              'Fact-Checked',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+        if (story.tags.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _StoryTagWrap(tags: story.tags),
+        ],
       ],
+    );
+  }
+}
+
+class _StoryTagWrap extends StatelessWidget {
+  const _StoryTagWrap({required this.tags});
+
+  final List<String> tags;
+
+  @override
+  Widget build(BuildContext context) {
+    final visibleTags = tags
+        .map((tag) => tag.trim())
+        .where((tag) => tag.isNotEmpty)
+        .take(8)
+        .toList(growable: false);
+    if (visibleTags.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: visibleTags
+          .map(
+            (tag) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppTheme.darkSurfaceMuted
+                    : const Color(0xFFF2EEE7),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: isDark
+                      ? AppTheme.darkDivider
+                      : const Color(0xFFE1D8CB),
+                ),
+              ),
+              child: Text(
+                tag,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          )
+          .toList(growable: false),
     );
   }
 }
@@ -1182,6 +1250,10 @@ class _RelatedStoryCard extends StatelessWidget {
                       context,
                     ).textTheme.bodySmall?.copyWith(color: AppTheme.textMeta),
                   ),
+                  if (story.tags.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    _StoryTagWrap(tags: story.tags.take(3).toList()),
+                  ],
                 ],
               ),
             ),

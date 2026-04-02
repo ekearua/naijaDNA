@@ -117,7 +117,7 @@ class _AdminForgotPasswordPageState extends State<AdminForgotPasswordPage> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Enter the editorial account email you use for NaijaPulse Admin. We will generate a reset link that opens the secure reset form.',
+                          'Enter the editorial account email you use for naijaDNA Admin. We will generate a reset link that opens the secure reset form.',
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(
                                 color: const Color(0xFF4B453E),

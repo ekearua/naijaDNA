@@ -7,6 +7,7 @@ class NewsArticleModel extends NewsArticle {
     required super.title,
     required super.source,
     required super.category,
+    super.tags = const <String>[],
     required super.publishedAt,
     super.sourceDomain,
     super.sourceType,
@@ -34,6 +35,10 @@ class NewsArticleModel extends NewsArticle {
       title: (json['title'] ?? '').toString(),
       source: (json['source'] ?? '').toString(),
       category: (json['category'] ?? 'General').toString(),
+      tags: ((json['tags'] as List<dynamic>?) ?? const <dynamic>[])
+          .map((item) => item.toString().trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false),
       sourceDomain: (json['sourceDomain'] ?? json['source_domain']) as String?,
       sourceType: (json['sourceType'] ?? json['source_type']) as String?,
       summary: json['summary'] as String?,
@@ -61,6 +66,7 @@ class NewsArticleModel extends NewsArticle {
       title: entity.title,
       source: entity.source,
       category: entity.category,
+      tags: entity.tags,
       sourceDomain: entity.sourceDomain,
       sourceType: entity.sourceType,
       summary: entity.summary,
@@ -82,6 +88,7 @@ class NewsArticleModel extends NewsArticle {
       'title': title,
       'source': source,
       'category': category,
+      'tags': tags,
       'sourceDomain': sourceDomain,
       'sourceType': sourceType,
       'summary': summary,

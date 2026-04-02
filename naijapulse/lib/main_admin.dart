@@ -4,8 +4,8 @@ import 'core/routing/app_router.dart';
 
 Future<void> main() async {
   await bootstrapApp(
-    variant: AppVariant.client,
-    routerConfig: AppRouter.clientRouter,
-    title: 'naijaDNA',
+    variant: AppVariant.admin,
+    routerConfig: AppRouter.adminRouter,
+    title: 'naijaDNA Admin',
   );
 }

@@ -120,259 +120,289 @@ class AppRouter {
     return '$homeLiveFeedPath?tag=$tagParam&label=$labelParam';
   }
 
-  static final GoRouter router = GoRouter(
+  static final GoRouter clientRouter = GoRouter(
     initialLocation: loadingPath,
-    routes: [
-      GoRoute(
-        path: loadingPath,
-        builder: (context, state) => const LoadingPage(),
-      ),
-      GoRoute(
-        path: searchPath,
-        builder: (context, state) =>
-            const _StandaloneFeedScope(child: SearchPage()),
-      ),
-      GoRoute(
-        path: newsSubmitPath,
-        builder: (context, state) =>
-            const _StandaloneFeedScope(child: NewsSubmitPage()),
-      ),
-      GoRoute(
-        path: legacyAdminArticlesPath,
-        builder: (context, state) =>
-            const _StandaloneFeedScope(child: AdminArticlesPage()),
-      ),
-      GoRoute(
-        path: adminEntryPath,
-        redirect: (context, state) => adminLoginPath,
-      ),
-      GoRoute(
-        path: loginPath,
-        builder: (context, state) =>
-            const _StandaloneAuthScope(child: LoginPage()),
-      ),
-      GoRoute(
-        path: registerPath,
-        builder: (context, state) =>
-            const _StandaloneAuthScope(child: RegisterPage()),
-      ),
-      GoRoute(
-        path: forgotPasswordPath,
-        builder: (context, state) => const ForgotPasswordPage(),
-      ),
-      GoRoute(
-        path: resetPasswordPath,
-        builder: (context, state) =>
-            ResetPasswordPage(initialToken: state.uri.queryParameters['token']),
-      ),
-      GoRoute(
-        path: adminLoginPath,
-        builder: (context, state) =>
-            const _StandaloneAuthScope(child: AdminLoginPage()),
-      ),
-      GoRoute(
-        path: adminForgotPasswordPath,
-        builder: (context, state) => const AdminForgotPasswordPage(),
-      ),
-      GoRoute(
-        path: adminRequestAccessPath,
-        builder: (context, state) =>
-            const _StandaloneAuthScope(child: AdminRequestAccessPage()),
-      ),
-      GoRoute(
-        path: adminResetPasswordPath,
-        builder: (context, state) => AdminResetPasswordPage(
-          initialToken: state.uri.queryParameters['token'],
-        ),
-      ),
-      GoRoute(
-        path: alertsPath,
-        builder: (context, state) =>
-            const _StandaloneFeedScope(child: NotificationsHomePage()),
-      ),
-      GoRoute(
-        path: pollsPath,
-        builder: (context, state) =>
-            const _StandaloneFeedScope(child: PollsPage()),
-      ),
-      GoRoute(
-        path: homeLiveFeedPath,
-        builder: (context, state) {
-          final tagId = state.uri.queryParameters['tag'] ?? '';
-          final tagLabel = state.uri.queryParameters['label'];
-          return _StandaloneFeedScope(
-            child: NewsLiveFeedPage(tagId: tagId, tagLabel: tagLabel),
-          );
-        },
-      ),
-      GoRoute(
-        path: newsDetailPathTemplate,
-        builder: (context, state) {
-          final articleId = state.pathParameters['articleId'] ?? '';
-          final article = state.extra is NewsArticle
-              ? state.extra as NewsArticle
-              : null;
-          return _StandaloneFeedScope(
-            child: NewsArticleDetailPage(
-              articleId: articleId,
-              article: article,
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: articleDiscussionPathTemplate,
-        builder: (context, state) {
-          final articleId = state.pathParameters['articleId'] ?? '';
-          final focusCommentId = int.tryParse(
-            state.uri.queryParameters['comment'] ?? '',
-          );
-          final article = state.extra is NewsArticle
-              ? state.extra as NewsArticle
-              : null;
-          return _StandaloneFeedScope(
-            child: ArticleDiscussionPage(
-              articleId: articleId,
-              article: article,
-              focusCommentId: focusCommentId,
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: liveSessionPathTemplate,
-        builder: (context, state) {
-          final sessionId = state.pathParameters['sessionId'] ?? '';
-          final session = state.extra is StreamSession
-              ? state.extra as StreamSession
-              : null;
-          return _StandaloneFeedScope(
-            child: LiveSessionPage(sessionId: sessionId, session: session),
-          );
-        },
-      ),
-      ShellRoute(
-        builder: (context, state, child) =>
-            AdminShellPage(location: state.uri.path, child: child),
-        routes: [
-          GoRoute(
-            path: adminDashboardPath,
-            builder: (context, state) => const AdminDashboardPage(),
-          ),
-          GoRoute(
-            path: adminArticlesPath,
-            builder: (context, state) => const AdminArticlesManagementPage(),
-          ),
-          GoRoute(
-            path: adminArticleCreatePath,
-            builder: (context, state) => const AdminArticleEditorPage(),
-          ),
-          GoRoute(
-            path: adminArticleDetailPathTemplate,
-            builder: (context, state) {
-              final articleId = state.pathParameters['articleId'] ?? '';
-              return AdminArticleDetailPage(articleId: articleId);
-            },
-          ),
-          GoRoute(
-            path: adminArticleEditPathTemplate,
-            builder: (context, state) {
-              final articleId = state.pathParameters['articleId'] ?? '';
-              return AdminArticleEditorPage(articleId: articleId);
-            },
-          ),
-          GoRoute(
-            path: adminModerationPath,
-            builder: (context, state) => const AdminModerationPage(),
-          ),
-          GoRoute(
-            path: adminOperationsPath,
-            builder: (context, state) => const AdminOperationsPage(),
-          ),
-          GoRoute(
-            path: adminAnalyticsPath,
-            builder: (context, state) => const AdminAnalyticsPage(),
-          ),
-          GoRoute(
-            path: adminVerificationPath,
-            builder: (context, state) => const AdminVerificationPage(),
-          ),
-          GoRoute(
-            path: adminHomepagePath,
-            builder: (context, state) => const AdminHomepagePage(),
-          ),
-          GoRoute(
-            path: adminSourcesPath,
-            builder: (context, state) => const AdminSourcesPage(),
-          ),
-          GoRoute(
-            path: adminUsersPath,
-            builder: (context, state) => const AdminUsersPage(),
-          ),
-        ],
-      ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            _ShellProviders(navigationShell: navigationShell),
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: homePath,
-                builder: (context, state) =>
-                    const NewsHomePage(showScaffold: false),
-                routes: [
-                  GoRoute(
-                    path: 'all-news',
-                    builder: (context, state) =>
-                        const NewsAllPage(showScaffold: false),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: livePath,
-                builder: (context, state) => const StreamHomePage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: explorePath,
-                builder: (context, state) =>
-                    const SearchPage(showScaffold: false),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: savedPath,
-                builder: (context, state) =>
-                    const SavedStoriesPage(showScaffold: false),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: profilePath,
-                builder: (context, state) => const UserHomePage(),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-    errorBuilder: (context, state) => Scaffold(
+    routes: _clientRoutes(),
+    errorBuilder: _errorBuilder,
+  );
+
+  static final GoRouter adminRouter = GoRouter(
+    initialLocation: loadingPath,
+    routes: _adminRoutes(),
+    errorBuilder: _errorBuilder,
+  );
+
+  static Widget _errorBuilder(BuildContext context, GoRouterState state) {
+    return Scaffold(
       appBar: AppBar(title: const Text('Route Not Found')),
       body: Center(child: Text('No route defined for ${state.uri.path}.')),
+    );
+  }
+
+  static List<RouteBase> _clientRoutes() => [
+    GoRoute(
+      path: loadingPath,
+      builder: (context, state) => const LoadingPage(),
     ),
-  );
+    GoRoute(
+      path: searchPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: SearchPage()),
+    ),
+    GoRoute(
+      path: newsSubmitPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: NewsSubmitPage()),
+    ),
+    GoRoute(
+      path: legacyAdminArticlesPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: AdminArticlesPage()),
+    ),
+    GoRoute(
+      path: loginPath,
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: LoginPage()),
+    ),
+    GoRoute(
+      path: registerPath,
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: RegisterPage()),
+    ),
+    GoRoute(
+      path: forgotPasswordPath,
+      builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    GoRoute(
+      path: resetPasswordPath,
+      builder: (context, state) =>
+          ResetPasswordPage(initialToken: state.uri.queryParameters['token']),
+    ),
+    GoRoute(
+      path: alertsPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: NotificationsHomePage()),
+    ),
+    GoRoute(
+      path: pollsPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: PollsPage()),
+    ),
+    GoRoute(
+      path: homeLiveFeedPath,
+      builder: (context, state) {
+        final tagId = state.uri.queryParameters['tag'] ?? '';
+        final tagLabel = state.uri.queryParameters['label'];
+        return _StandaloneFeedScope(
+          child: NewsLiveFeedPage(tagId: tagId, tagLabel: tagLabel),
+        );
+      },
+    ),
+    _newsDetailRoute(),
+    _articleDiscussionRoute(),
+    _liveSessionRoute(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          _ShellProviders(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: homePath,
+              builder: (context, state) =>
+                  const NewsHomePage(showScaffold: false),
+              routes: [
+                GoRoute(
+                  path: 'all-news',
+                  builder: (context, state) =>
+                      const NewsAllPage(showScaffold: false),
+                ),
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: livePath,
+              builder: (context, state) => const StreamHomePage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: explorePath,
+              builder: (context, state) =>
+                  const SearchPage(showScaffold: false),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: savedPath,
+              builder: (context, state) =>
+                  const SavedStoriesPage(showScaffold: false),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: profilePath,
+              builder: (context, state) => const UserHomePage(),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ];
+
+  static List<RouteBase> _adminRoutes() => [
+    GoRoute(path: loadingPath, redirect: (context, state) => adminLoginPath),
+    GoRoute(path: homePath, redirect: (context, state) => adminDashboardPath),
+    GoRoute(path: adminEntryPath, redirect: (context, state) => adminLoginPath),
+    GoRoute(
+      path: adminLoginPath,
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: AdminLoginPage()),
+    ),
+    GoRoute(
+      path: adminForgotPasswordPath,
+      builder: (context, state) => const AdminForgotPasswordPage(),
+    ),
+    GoRoute(
+      path: adminRequestAccessPath,
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: AdminRequestAccessPage()),
+    ),
+    GoRoute(
+      path: adminResetPasswordPath,
+      builder: (context, state) => AdminResetPasswordPage(
+        initialToken: state.uri.queryParameters['token'],
+      ),
+    ),
+    GoRoute(
+      path: alertsPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: NotificationsHomePage()),
+    ),
+    _newsDetailRoute(),
+    _articleDiscussionRoute(),
+    ShellRoute(
+      builder: (context, state, child) =>
+          AdminShellPage(location: state.uri.path, child: child),
+      routes: [
+        GoRoute(
+          path: adminDashboardPath,
+          builder: (context, state) => const AdminDashboardPage(),
+        ),
+        GoRoute(
+          path: adminArticlesPath,
+          builder: (context, state) => const AdminArticlesManagementPage(),
+        ),
+        GoRoute(
+          path: adminArticleCreatePath,
+          builder: (context, state) => const AdminArticleEditorPage(),
+        ),
+        GoRoute(
+          path: adminArticleDetailPathTemplate,
+          builder: (context, state) {
+            final articleId = state.pathParameters['articleId'] ?? '';
+            return AdminArticleDetailPage(articleId: articleId);
+          },
+        ),
+        GoRoute(
+          path: adminArticleEditPathTemplate,
+          builder: (context, state) {
+            final articleId = state.pathParameters['articleId'] ?? '';
+            return AdminArticleEditorPage(articleId: articleId);
+          },
+        ),
+        GoRoute(
+          path: adminModerationPath,
+          builder: (context, state) => const AdminModerationPage(),
+        ),
+        GoRoute(
+          path: adminOperationsPath,
+          builder: (context, state) => const AdminOperationsPage(),
+        ),
+        GoRoute(
+          path: adminAnalyticsPath,
+          builder: (context, state) => const AdminAnalyticsPage(),
+        ),
+        GoRoute(
+          path: adminVerificationPath,
+          builder: (context, state) => const AdminVerificationPage(),
+        ),
+        GoRoute(
+          path: adminHomepagePath,
+          builder: (context, state) => const AdminHomepagePage(),
+        ),
+        GoRoute(
+          path: adminSourcesPath,
+          builder: (context, state) => const AdminSourcesPage(),
+        ),
+        GoRoute(
+          path: adminUsersPath,
+          builder: (context, state) => const AdminUsersPage(),
+        ),
+      ],
+    ),
+  ];
+
+  static GoRoute _newsDetailRoute() {
+    return GoRoute(
+      path: newsDetailPathTemplate,
+      builder: (context, state) {
+        final articleId = state.pathParameters['articleId'] ?? '';
+        final article = state.extra is NewsArticle
+            ? state.extra as NewsArticle
+            : null;
+        return _StandaloneFeedScope(
+          child: NewsArticleDetailPage(articleId: articleId, article: article),
+        );
+      },
+    );
+  }
+
+  static GoRoute _articleDiscussionRoute() {
+    return GoRoute(
+      path: articleDiscussionPathTemplate,
+      builder: (context, state) {
+        final articleId = state.pathParameters['articleId'] ?? '';
+        final focusCommentId = int.tryParse(
+          state.uri.queryParameters['comment'] ?? '',
+        );
+        final article = state.extra is NewsArticle
+            ? state.extra as NewsArticle
+            : null;
+        return _StandaloneFeedScope(
+          child: ArticleDiscussionPage(
+            articleId: articleId,
+            article: article,
+            focusCommentId: focusCommentId,
+          ),
+        );
+      },
+    );
+  }
+
+  static GoRoute _liveSessionRoute() {
+    return GoRoute(
+      path: liveSessionPathTemplate,
+      builder: (context, state) {
+        final sessionId = state.pathParameters['sessionId'] ?? '';
+        final session = state.extra is StreamSession
+            ? state.extra as StreamSession
+            : null;
+        return _StandaloneFeedScope(
+          child: LiveSessionPage(sessionId: sessionId, session: session),
+        );
+      },
+    );
+  }
 }
 
 class _ShellProviders extends StatefulWidget {

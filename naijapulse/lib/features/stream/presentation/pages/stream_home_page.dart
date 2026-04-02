@@ -36,6 +36,7 @@ class _StreamHomePageState extends State<StreamHomePage> {
     super.initState();
     _authSessionController = InjectionContainer.sl<AuthSessionController>();
     _authSessionController.addListener(_handleAuthChanged);
+    unawaited(_authSessionController.refreshEntitlementsFromServer());
     _loadCurrentUser();
   }
 

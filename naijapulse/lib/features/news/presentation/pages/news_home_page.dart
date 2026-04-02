@@ -38,7 +38,7 @@ class _NewsHomePageState extends State<NewsHomePage> {
   HomepageContentModel? _homepage;
   bool _loadingHomepage = true;
   String? _homepageError;
-  String? _selectedCategoryKey;
+  String? _selectedCategoryFilter;
   String? _selectedSecondaryChipKey;
   List<NewsArticle> _forYouStories = const <NewsArticle>[];
   bool _loadingForYou = true;
@@ -113,7 +113,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
       }
       setState(() {
         _homepage = homepage;
-        _selectedCategoryKey = _resolveSelectedCategoryKey(homepage);
         _selectedSecondaryChipKey = _resolveSelectedSecondaryChipKey(homepage);
       });
     } catch (error) {
@@ -134,7 +133,10 @@ class _NewsHomePageState extends State<NewsHomePage> {
       _forYouError = null;
     });
     try {
-      final stories = await _remote.fetchPersonalizedStories(limit: 6);
+      final stories = await _remote.fetchPersonalizedStories(
+        limit: 12,
+        category: _selectedCategoryFilter,
+      );
       if (!mounted) {
         return;
       }
@@ -249,15 +251,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
     }
   }
 
-  String? _resolveSelectedCategoryKey(HomepageContentModel homepage) {
-    final current = _selectedCategoryKey;
-    if (current != null &&
-        homepage.categories.any((item) => item.key == current)) {
-      return current;
-    }
-    return homepage.categories.isEmpty ? null : homepage.categories.first.key;
-  }
-
   String? _resolveSelectedSecondaryChipKey(HomepageContentModel homepage) {
     final current = _selectedSecondaryChipKey;
     if (current != null &&
@@ -267,20 +260,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
     return homepage.secondaryChips.isEmpty
         ? null
         : homepage.secondaryChips.first.key;
-  }
-
-  HomepageCategoryFeedModel? _findSelectedCategory(
-    HomepageContentModel? homepage,
-  ) {
-    if (homepage == null || _selectedCategoryKey == null) {
-      return null;
-    }
-    for (final category in homepage.categories) {
-      if (category.key == _selectedCategoryKey) {
-        return category;
-      }
-    }
-    return null;
   }
 
   HomepageSecondaryChipFeedModel? _findSelectedSecondaryChip(
@@ -297,16 +276,119 @@ class _NewsHomePageState extends State<NewsHomePage> {
     return null;
   }
 
+  List<String> _buildCategoryChipLabels({
+    required HomepageContentModel? homepage,
+    required List<NewsArticle> latestStories,
+  }) {
+    final labels = <String>[];
+    final seen = <String>{};
+    final storyGroups = <Iterable<NewsArticle>>[
+      homepage?.topStories ?? const <NewsArticle>[],
+      latestStories,
+      if (homepage != null)
+        ...homepage.categories.map((section) => section.items),
+    ];
+    for (final group in storyGroups) {
+      for (final story in group) {
+        final label = story.category.trim();
+        if (label.isEmpty) {
+          continue;
+        }
+        final normalized = label.toLowerCase();
+        if (seen.add(normalized)) {
+          labels.add(label);
+        }
+      }
+    }
+    labels.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return labels;
+  }
+
+  List<NewsArticle> _filterStoriesByCategory(
+    List<NewsArticle> stories,
+    String? category,
+  ) {
+    final normalizedCategory = category?.trim().toLowerCase();
+    if (normalizedCategory == null || normalizedCategory.isEmpty) {
+      return stories;
+    }
+    return stories
+        .where(
+          (story) => story.category.trim().toLowerCase() == normalizedCategory,
+        )
+        .toList(growable: false);
+  }
+
+  List<Widget> _buildCategorySectionWidgets(
+    HomepageCategoryFeedModel categorySection,
+  ) {
+    final items = _filterStoriesByCategory(
+      categorySection.items,
+      _selectedCategoryFilter,
+    );
+    if (items.isEmpty) {
+      return const <Widget>[];
+    }
+
+    return <Widget>[
+      const SizedBox(height: 6),
+      _SectionHeading(title: categorySection.label),
+      const SizedBox(height: 14),
+      ...items.map(
+        (story) => Padding(
+          padding: const EdgeInsets.only(bottom: 18),
+          child: _EditorialStoryCard(
+            story: story,
+            onTap: () => _openStory(story),
+            onSaveTap: () => _saveStory(story),
+            onShareTap: () => _shareStory(story),
+          ),
+        ),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final pollsState = context.watch<PollsBloc>().state;
     final isSignedIn = _authSessionController.isAuthenticated;
     final homepage = _homepage;
-    final latestStories = homepage == null
+    final personalizedLatestStories = _forYouStories.toList(growable: false);
+    final unfilteredLatestStories =
+        isSignedIn && personalizedLatestStories.isNotEmpty
+        ? personalizedLatestStories
+        : homepage == null
         ? const <NewsArticle>[]
         : homepage.latestStories.toList(growable: false);
-    final selectedCategory = _findSelectedCategory(homepage);
+    final categoryChipLabels = _buildCategoryChipLabels(
+      homepage: homepage,
+      latestStories: unfilteredLatestStories,
+    );
+    final selectedCategoryFilter =
+        _selectedCategoryFilter != null &&
+            categoryChipLabels.any(
+              (label) =>
+                  label.toLowerCase() == _selectedCategoryFilter!.toLowerCase(),
+            )
+        ? _selectedCategoryFilter
+        : null;
+    final latestStories = _filterStoriesByCategory(
+      unfilteredLatestStories,
+      selectedCategoryFilter,
+    );
+    final latestStoriesArePersonalized =
+        isSignedIn && personalizedLatestStories.isNotEmpty;
+    final topStories = _filterStoriesByCategory(
+      homepage?.topStories.toList(growable: false) ?? const <NewsArticle>[],
+      selectedCategoryFilter,
+    );
     final selectedSecondaryChip = _findSelectedSecondaryChip(homepage);
+    final filteredSecondaryChipStories = selectedSecondaryChip == null
+        ? const <NewsArticle>[]
+        : _filterStoriesByCategory(
+            selectedSecondaryChip.items,
+            selectedCategoryFilter,
+          );
     final hasPolls = pollsState.polls.isNotEmpty;
     final hasHomepageContent = homepage != null && !homepage.isEmpty;
 
@@ -339,7 +421,7 @@ class _NewsHomePageState extends State<NewsHomePage> {
               onRefresh: _refreshFeed,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
                 children: [
                   if (_homepageError != null && !hasHomepageContent)
                     Padding(
@@ -349,78 +431,18 @@ class _NewsHomePageState extends State<NewsHomePage> {
                         onRetry: _refreshFeed,
                       ),
                     ),
-                  _HomeSearchPrompt(
-                    onTap: () => context.push(AppRouter.searchPath),
-                  ),
-                  const SizedBox(height: 18),
-                  if (isSignedIn) ...[
-                    _SectionHeading(
-                      title: 'For You',
-                      subtitle: _forYouStories.isEmpty && !_loadingForYou
-                          ? 'Your personalized picks will appear here as you follow interests and read more stories.'
-                          : 'A personalized feed shaped by your interests and reading activity.',
-                    ),
-                    const SizedBox(height: 14),
-                    if (_loadingForYou)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    else if (_forYouError != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: _FeedErrorBanner(
-                          message: _forYouError!,
-                          onRetry: _loadForYouStories,
-                        ),
-                      )
-                    else if (_forYouStories.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 18),
-                        child: EmptyStateCard(
-                          message:
-                              'Choose a few interests and open some stories to help us tailor this section.',
-                        ),
-                      )
-                    else
-                      ..._forYouStories.map(
-                        (story) => Padding(
-                          padding: const EdgeInsets.only(bottom: 18),
-                          child: _EditorialStoryCard(
-                            story: story,
-                            onTap: () => _openStory(story),
-                            onSaveTap: () => _saveStory(story),
-                            onShareTap: () => _shareStory(story),
-                            onMoreLikeThis: () =>
-                                _handleForYouMoreLikeThis(story),
-                            onHideStory: () => _handleForYouHideStory(story),
-                            onHideSource: () => _handleForYouHideSource(story),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 6),
-                  ] else ...[
-                    _SectionHeading(
-                      title: 'For You',
-                      subtitle:
-                          'Sign in to unlock a personalized feed based on your interests and reading activity.',
-                    ),
-                    const SizedBox(height: 14),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 18),
-                      child: _ForYouGuestCard(
-                        onSignIn: () => context.push(AppRouter.loginPath),
-                      ),
-                    ),
-                  ],
-                  if (homepage != null && homepage.categories.isNotEmpty) ...[
+                  if (categoryChipLabels.isNotEmpty) ...[
                     _EditorialChipRow(
-                      categories: homepage.categories,
-                      selectedKey: _selectedCategoryKey,
-                      onSelected: (value) =>
-                          setState(() => _selectedCategoryKey = value),
+                      categories: categoryChipLabels,
+                      selectedCategory: selectedCategoryFilter,
+                      onSelected: (value) {
+                        setState(() => _selectedCategoryFilter = value);
+                        if (isSignedIn) {
+                          _loadForYouStories();
+                        }
+                      },
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                   ],
                   if (homepage != null &&
                       homepage.secondaryChips.isNotEmpty) ...[
@@ -432,11 +454,11 @@ class _NewsHomePageState extends State<NewsHomePage> {
                     ),
                     const SizedBox(height: 18),
                   ],
-                  if (homepage != null && homepage.topStories.isNotEmpty) ...[
+                  if (topStories.isNotEmpty) ...[
                     const _SectionHeading(title: 'Top Stories'),
                     const SizedBox(height: 14),
                     _TopStoriesCarousel(
-                      stories: homepage.topStories,
+                      stories: topStories,
                       onStoryTap: _openStory,
                       onSaveTap: _saveStory,
                       onShareTap: _shareStory,
@@ -445,7 +467,12 @@ class _NewsHomePageState extends State<NewsHomePage> {
                     const SizedBox(height: 24),
                   ],
                   if (latestStories.isNotEmpty) ...[
-                    const _SectionHeading(title: 'Latest Stories'),
+                    _SectionHeading(
+                      title: 'Latest Stories',
+                      subtitle: latestStoriesArePersonalized
+                          ? 'Shaped by your interests and reading activity.'
+                          : null,
+                    ),
                     const SizedBox(height: 14),
                     ...latestStories.map(
                       (story) => Padding(
@@ -455,33 +482,29 @@ class _NewsHomePageState extends State<NewsHomePage> {
                           onTap: () => _openStory(story),
                           onSaveTap: () => _saveStory(story),
                           onShareTap: () => _shareStory(story),
+                          onMoreLikeThis: latestStoriesArePersonalized
+                              ? () => _handleForYouMoreLikeThis(story)
+                              : null,
+                          onHideStory: latestStoriesArePersonalized
+                              ? () => _handleForYouHideStory(story)
+                              : null,
+                          onHideSource: latestStoriesArePersonalized
+                              ? () => _handleForYouHideSource(story)
+                              : null,
                         ),
                       ),
                     ),
                   ],
-                  if (selectedCategory != null &&
-                      selectedCategory.items.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    _SectionHeading(title: selectedCategory.label),
-                    const SizedBox(height: 14),
-                    ...selectedCategory.items.map(
-                      (story) => Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: _EditorialStoryCard(
-                          story: story,
-                          onTap: () => _openStory(story),
-                          onSaveTap: () => _saveStory(story),
-                          onShareTap: () => _shareStory(story),
-                        ),
-                      ),
-                    ),
+                  if (homepage != null && homepage.categories.isNotEmpty) ...[
+                    for (final categorySection in homepage.categories)
+                      ..._buildCategorySectionWidgets(categorySection),
                   ],
                   if (selectedSecondaryChip != null &&
-                      selectedSecondaryChip.items.isNotEmpty) ...[
+                      filteredSecondaryChipStories.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     _SectionHeading(title: selectedSecondaryChip.label),
                     const SizedBox(height: 14),
-                    ...selectedSecondaryChip.items.map(
+                    ...filteredSecondaryChipStories.map(
                       (story) => Padding(
                         padding: const EdgeInsets.only(bottom: 18),
                         child: _EditorialStoryCard(
@@ -567,7 +590,7 @@ class _NewsHomePageState extends State<NewsHomePage> {
                 ),
               ),
               child: Text(
-                'NaijaPulse',
+                'naijaDNA',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: headerForeground,
                   fontWeight: FontWeight.w800,
@@ -651,56 +674,6 @@ class _FeedErrorBanner extends StatelessWidget {
   }
 }
 
-class _ForYouGuestCard extends StatelessWidget {
-  const _ForYouGuestCard({required this.onSignIn});
-
-  final VoidCallback onSignIn;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : AppTheme.textPrimary.withValues(alpha: 0.08),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: isDark ? 0.28 : 0.12),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: AppTheme.primary,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              'Sign in to get a feed tuned to the topics you follow and the stories you read.',
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-            ),
-          ),
-          const SizedBox(width: 12),
-          FilledButton(onPressed: onSignIn, child: const Text('Sign in')),
-        ],
-      ),
-    );
-  }
-}
-
 String? _distinctStorySummary(NewsArticle story) {
   final summary = (story.summary ?? '').trim();
   if (summary.isEmpty) {
@@ -731,13 +704,13 @@ String _normalizeComparisonText(String value) => value
 class _EditorialChipRow extends StatelessWidget {
   const _EditorialChipRow({
     required this.categories,
-    required this.selectedKey,
+    required this.selectedCategory,
     required this.onSelected,
   });
 
-  final List<HomepageCategoryFeedModel> categories;
-  final String? selectedKey;
-  final ValueChanged<String> onSelected;
+  final List<String> categories;
+  final String? selectedCategory;
+  final ValueChanged<String?> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -745,94 +718,92 @@ class _EditorialChipRow extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(
-          alpha: isDark ? 0.72 : 0.92,
-        ),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : AppTheme.textPrimary.withValues(alpha: 0.06),
-        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Desk channels',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.72)
-                  : AppTheme.primary,
-              letterSpacing: 0.6,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                onTap: () => onSelected(null),
+                borderRadius: BorderRadius.circular(14),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selectedCategory == null
+                        ? AppTheme.primary
+                        : theme.colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: selectedCategory == null
+                          ? AppTheme.primary.withValues(alpha: 0.14)
+                          : theme.dividerColor.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  child: Text(
+                    'All',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: selectedCategory == null
+                          ? Colors.white
+                          : theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: categories.map((category) {
-                final isSelected = category.key == selectedKey;
-                final color =
-                    _parseColor(category.colorHex) ??
-                    categoryColor(category.label);
-                return Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: InkWell(
-                    onTap: () => onSelected(category.key),
-                    borderRadius: BorderRadius.circular(16),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
+            ...categories.map((category) {
+              final isSelected =
+                  category.toLowerCase() == selectedCategory?.toLowerCase();
+              final color = categoryColor(category);
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  onTap: () => onSelected(category),
+                  borderRadius: BorderRadius.circular(14),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? color.withValues(alpha: 0.88)
+                          : theme.colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
                         color: isSelected
-                            ? color
-                            : theme.colorScheme.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? color.withValues(alpha: 0.18)
-                              : theme.dividerColor.withValues(alpha: 0.16),
-                        ),
+                            ? color.withValues(alpha: 0.14)
+                            : theme.dividerColor.withValues(alpha: 0.12),
                       ),
-                      child: Text(
-                        category.label,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: isSelected
-                              ? Colors.white
-                              : theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    ),
+                    child: Text(
+                      category,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: isSelected
+                            ? Colors.white
+                            : theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
-  }
-
-  Color? _parseColor(String? value) {
-    if (value == null) {
-      return null;
-    }
-    final cleaned = value.trim().replaceAll('#', '');
-    if (cleaned.length != 6) {
-      return null;
-    }
-    final parsed = int.tryParse(cleaned, radix: 16);
-    if (parsed == null) {
-      return null;
-    }
-    return Color(0xFF000000 | parsed);
   }
 }
 
@@ -1001,6 +972,8 @@ class _FeaturedStoryCard extends StatelessWidget {
     final summary =
         _distinctStorySummary(story) ??
         'Deep reporting, sharp context, and what it means next.';
+    final badgeBackground = Colors.black.withValues(alpha: 0.3);
+    final badgeBorder = Colors.white.withValues(alpha: 0.14);
 
     return InkWell(
       onTap: onTap,
@@ -1035,9 +1008,9 @@ class _FeaturedStoryCard extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.black.withValues(alpha: 0.04),
-                    Colors.black.withValues(alpha: 0.18),
-                    Colors.black.withValues(alpha: 0.48),
-                    Colors.black.withValues(alpha: 0.86),
+                    Colors.black.withValues(alpha: 0.14),
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.black.withValues(alpha: 0.8),
                   ],
                   stops: const [0.0, 0.34, 0.66, 1.0],
                 ),
@@ -1054,8 +1027,9 @@ class _FeaturedStoryCard extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.18),
+                      color: badgeBackground,
                       borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: badgeBorder),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1314,20 +1288,41 @@ class _EditorialStoryCard extends StatelessWidget {
   final VoidCallback? onHideSource;
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final hasImage = (story.imageUrl ?? '').trim().isNotEmpty;
     final summary = _distinctStorySummary(story);
     final hasFeedbackActions =
         onMoreLikeThis != null || onHideStory != null || onHideSource != null;
+    final cardColor = isDark
+        ? const Color(0xFF1A1F24)
+        : const Color(0xFFF3F1EC);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : const Color(0xFFDDD7CE);
+    final chipBackground = isDark
+        ? const Color(0xFF2C333A)
+        : const Color(0xFFE6E1D7);
+    final chipTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.92)
+        : const Color(0xFF332D25);
+    final secondaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.8)
+        : const Color(0xFF5F584F);
+    final summaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.88)
+        : const Color(0xFF4E473F);
+    final actionTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.82)
+        : AppTheme.textPrimary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: cardColor,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.28),
-          ),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1348,7 +1343,7 @@ class _EditorialStoryCard extends StatelessWidget {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1361,14 +1356,15 @@ class _EditorialStoryCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(12),
+                          color: chipBackground,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           story.category,
-                          style: Theme.of(context).textTheme.labelMedium,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: chipTextColor,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       const Spacer(),
@@ -1377,7 +1373,7 @@ class _EditorialStoryCard extends StatelessWidget {
                           tooltip: 'Personalize feed',
                           icon: Icon(
                             Icons.more_horiz_rounded,
-                            color: Theme.of(context).hintColor,
+                            color: secondaryTextColor,
                           ),
                           onSelected: (value) {
                             switch (value) {
@@ -1412,33 +1408,37 @@ class _EditorialStoryCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Text(
                     story.title,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    style: theme.textTheme.titleLarge?.copyWith(
                       fontSize: 20,
                       height: 1.18,
+                      color: isDark ? Colors.white : AppTheme.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     '${story.source} | ${relativeTimeLabel(story.publishedAt)}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondaryTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   if (summary != null) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Text(
                       summary,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: summaryTextColor,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       _InlineAction(
@@ -1457,12 +1457,14 @@ class _EditorialStoryCard extends StatelessWidget {
                         Icon(
                           Icons.forum_outlined,
                           size: 16,
-                          color: Theme.of(context).hintColor,
+                          color: actionTextColor,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '${story.commentCount}',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: actionTextColor,
+                          ),
                         ),
                       ],
                     ],
@@ -1490,6 +1492,7 @@ class _InlineAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
@@ -1498,9 +1501,22 @@ class _InlineAction extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 17, color: Theme.of(context).hintColor),
+            Icon(
+              icon,
+              size: 17,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.82)
+                  : AppTheme.textPrimary,
+            ),
             const SizedBox(width: 6),
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.82)
+                    : AppTheme.textPrimary,
+              ),
+            ),
           ],
         ),
       ),

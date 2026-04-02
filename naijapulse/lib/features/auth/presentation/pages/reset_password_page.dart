@@ -128,7 +128,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ),
         const SizedBox(height: 10),
         Text(
-          'Your NaijaPulse account password has been reset successfully. You can sign in with the new password now.',
+          'Your naijaDNA account password has been reset successfully. You can sign in with the new password now.',
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),

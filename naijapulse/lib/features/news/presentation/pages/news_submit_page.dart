@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
+import 'package:naijapulse/features/auth/data/auth_session_controller.dart';
 import 'package:naijapulse/features/auth/domain/entities/auth_session.dart';
 import 'package:naijapulse/features/auth/domain/usecases/get_cached_session.dart';
 import 'package:naijapulse/features/news/data/datasource/remote/news_remote_datasource.dart';
@@ -62,6 +63,8 @@ class _NewsSubmitPageState extends State<NewsSubmitPage> {
   Future<void> _loadSession() async {
     AuthSession? session;
     try {
+      await InjectionContainer.sl<AuthSessionController>()
+          .refreshEntitlementsFromServer();
       session = await InjectionContainer.sl<GetCachedSession>()();
     } catch (_) {
       session = null;

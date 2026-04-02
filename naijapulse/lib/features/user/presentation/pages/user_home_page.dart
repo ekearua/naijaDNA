@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:naijapulse/core/app_runtime.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
@@ -1003,7 +1004,8 @@ class _UserHomePageState extends State<UserHomePage> {
                     : 'Up to date',
                 onTap: () => context.push(AppRouter.alertsPath),
               ),
-              if (_authSession?.canManageEditorialContent ?? false)
+              if ((_authSession?.canManageEditorialContent ?? false) &&
+                  AppRuntime.supportsAdminRoutes)
                 PreferencesNavigationRow(
                   title: 'Editorial Desk',
                   valueLabel: 'Review queue',

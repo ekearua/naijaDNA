@@ -70,6 +70,9 @@ class _SearchPageState extends State<SearchPage> {
           }
           return story.title.toLowerCase().contains(normalizedQuery) ||
               story.category.toLowerCase().contains(normalizedQuery) ||
+              story.tags.any(
+                (tag) => tag.toLowerCase().contains(normalizedQuery),
+              ) ||
               story.source.toLowerCase().contains(normalizedQuery) ||
               (story.summary?.toLowerCase().contains(normalizedQuery) ?? false);
         }).toList();
@@ -369,9 +372,24 @@ class _SearchPageState extends State<SearchPage> {
         .toSet()
         .take(3)
         .toList();
+    final tagSuggestions = stories
+        .expand((story) => story.tags)
+        .map((tag) => tag.trim())
+        .where((value) => value.isNotEmpty && value.toLowerCase() != 'general')
+        .toSet()
+        .take(4)
+        .toList();
     final keywordSuggestions = _extractTrendingKeywords(stories);
 
     final combined = <String>[...categorySuggestions];
+    for (final tag in tagSuggestions) {
+      if (combined.length >= 6) {
+        break;
+      }
+      if (!combined.any((item) => item.toLowerCase() == tag.toLowerCase())) {
+        combined.add(tag);
+      }
+    }
     for (final keyword in keywordSuggestions) {
       if (combined.length >= 6) {
         break;

@@ -8,6 +8,10 @@ abstract class AuthRemoteDataSource {
     required String password,
   });
 
+  Future<AuthSessionModel> refreshSession({
+    required AuthSessionModel currentSession,
+  });
+
   Future<AuthSessionModel> register({
     required String email,
     required String password,
@@ -51,6 +55,29 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       rethrow;
     } catch (error) {
       throw ParseException('Could not parse login response: $error');
+    }
+  }
+
+  @override
+  Future<AuthSessionModel> refreshSession({
+    required AuthSessionModel currentSession,
+  }) async {
+    try {
+      final response = await _apiClient.get(
+        '/users/${currentSession.userId.trim()}',
+      );
+      return AuthSessionModel.fromUserJson(
+        response,
+        accessToken: currentSession.accessToken,
+        tokenType: currentSession.tokenType,
+        expiresInSeconds: currentSession.expiresInSeconds,
+      );
+    } on AppException {
+      rethrow;
+    } catch (error) {
+      throw ParseException(
+        'Could not parse refreshed session response: $error',
+      );
     }
   }
 

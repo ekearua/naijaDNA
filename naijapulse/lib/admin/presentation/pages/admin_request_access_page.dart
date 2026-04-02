@@ -96,7 +96,7 @@ class _AdminRequestAccessPageState extends State<AdminRequestAccessPage> {
                 child: Row(
                   children: [
                     Text(
-                      'NaijaPulse Admin',
+                      'naijaDNA Admin',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             fontFamily: 'Newsreader',
@@ -195,7 +195,7 @@ class _AdminRequestAccessPageState extends State<AdminRequestAccessPage> {
                   runSpacing: 8,
                   children: const [
                     Text(
-                      'Contributor accounts use the NaijaPulse mobile app.',
+                      'Contributor accounts use the naijaDNA mobile app.',
                       style: TextStyle(
                         fontSize: 12,
                         color: Color(0xFF6A6258),
@@ -296,7 +296,7 @@ class _RequestAccessHero extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Access to the NaijaPulse editorial suite is restricted to verified newsroom staff and administrative partners.',
+                'Access to the naijaDNA editorial suite is restricted to verified newsroom staff and administrative partners.',
                 style: TextStyle(
                   color: Color(0xD8FFFFFF),
                   fontSize: 14,
@@ -413,7 +413,7 @@ class _RequestAccessFormPanel extends StatelessWidget {
                           controller: workEmailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: _requestDecoration(
-                            hintText: 'name@naijapulse.com',
+                            hintText: 'name@naijadna.com',
                           ),
                           validator: (value) {
                             final input = (value ?? '').trim();
@@ -526,7 +526,7 @@ class _RequestAccessFormPanel extends StatelessWidget {
                             SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Dashboard access is limited to editors and administrators. Contributor accounts should continue through the NaijaPulse app experience.',
+                                'Dashboard access is limited to editors and administrators. Contributor accounts should continue through the naijaDNA app experience.',
                                 style: TextStyle(
                                   color: Color(0xFF4B453E),
                                   height: 1.5,

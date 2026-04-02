@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:naijapulse/admin/data/datasource/admin_remote_datasource.dart';
 import 'package:naijapulse/admin/data/models/admin_models.dart';
+import 'package:naijapulse/admin/presentation/article_category_options.dart';
 import 'package:naijapulse/admin/presentation/widgets/homepage_quick_actions.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/external_link.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
 import 'package:naijapulse/core/utils/content_text.dart';
+import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/notifications/domain/entities/app_notification.dart';
 import 'package:naijapulse/features/news/data/models/news_article_model.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
@@ -28,12 +30,26 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
   AdminArticleDetailModel? _detail;
   bool _loading = true;
   bool _runningAction = false;
+  bool _savingMetadata = false;
   String? _errorMessage;
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
+  final TextEditingController _imageUrlController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _categoryController.addListener(_handleMetadataDraftChanged);
+    _tagsController.addListener(_handleMetadataDraftChanged);
+    _imageUrlController.addListener(_handleMetadataDraftChanged);
     _load();
+  }
+
+  void _handleMetadataDraftChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
   }
 
   Future<void> _load() async {
@@ -47,6 +63,9 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
         return;
       }
       setState(() => _detail = detail);
+      _categoryController.text = detail.article.category;
+      _tagsController.text = articleTagDraftFromList(detail.article.tags);
+      _imageUrlController.text = detail.article.imageUrl ?? '';
     } catch (error) {
       if (!mounted) {
         return;
@@ -57,6 +76,17 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
         setState(() => _loading = false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _categoryController.removeListener(_handleMetadataDraftChanged);
+    _tagsController.removeListener(_handleMetadataDraftChanged);
+    _imageUrlController.removeListener(_handleMetadataDraftChanged);
+    _categoryController.dispose();
+    _tagsController.dispose();
+    _imageUrlController.dispose();
+    super.dispose();
   }
 
   Future<void> _runWorkflowAction(String action) async {
@@ -113,6 +143,93 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
           content: Text('Could not open the publisher source right now.'),
         ),
       );
+    }
+  }
+
+  Future<void> _openImageUrl() async {
+    final url = _imageUrlController.text.trim();
+    if (url.isEmpty) {
+      return;
+    }
+    try {
+      final opened = await openExternalLink(url);
+      if (!mounted || opened) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the image URL.')),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the image URL.')),
+      );
+    }
+  }
+
+  Future<void> _saveMetadata() async {
+    final detail = _detail;
+    if (detail == null || _savingMetadata) {
+      return;
+    }
+
+    final category = _categoryController.text.trim();
+    final tags = parseArticleTagDraft(_tagsController.text);
+    final imageUrl = _imageUrlController.text.trim();
+    if (category.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose or enter a valid category.')),
+      );
+      return;
+    }
+    if (imageUrl.isNotEmpty &&
+        !imageUrl.startsWith('http://') &&
+        !imageUrl.startsWith('https://')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Image URL must start with http:// or https://.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _savingMetadata = true);
+    try {
+      final article = await _remote.updateAdminArticle(
+        articleId: detail.article.id,
+        category: category,
+        tags: tags,
+        imageUrl: imageUrl,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _detail = AdminArticleDetailModel(
+          article: article,
+          workflowEvents: detail.workflowEvents,
+          relatedNotifications: detail.relatedNotifications,
+          reportedCommentCount: detail.reportedCommentCount,
+          totalCommentCount: detail.totalCommentCount,
+        );
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Article metadata updated.')),
+      );
+      await _load();
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+    } finally {
+      if (mounted) {
+        setState(() => _savingMetadata = false);
+      }
     }
   }
 
@@ -280,6 +397,29 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          _InsightCard(
+            title: 'Story Metadata',
+            subtitle:
+                'Review the assigned category and image URL used by the client.',
+            child: _MetadataEditorCard(
+              categoryController: _categoryController,
+              tagsController: _tagsController,
+              imageUrlController: _imageUrlController,
+              categoryOptions: articleCategoryOptionsFor(
+                _categoryController.text,
+              ),
+              saving: _savingMetadata,
+              imagePreviewUrl: _imageUrlController.text.trim().isEmpty
+                  ? article.imageUrl
+                  : _imageUrlController.text.trim(),
+              onCategorySelected: (value) => setState(() {
+                _categoryController.text = value;
+              }),
+              onOpenImage: _openImageUrl,
+              onSave: _saveMetadata,
             ),
           ),
           const SizedBox(height: 18),
@@ -678,6 +818,137 @@ class _StatusChip extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+}
+
+class _MetadataEditorCard extends StatelessWidget {
+  const _MetadataEditorCard({
+    required this.categoryController,
+    required this.tagsController,
+    required this.imageUrlController,
+    required this.categoryOptions,
+    required this.saving,
+    required this.imagePreviewUrl,
+    required this.onCategorySelected,
+    required this.onOpenImage,
+    required this.onSave,
+  });
+
+  final TextEditingController categoryController;
+  final TextEditingController tagsController;
+  final TextEditingController imageUrlController;
+  final List<String> categoryOptions;
+  final bool saving;
+  final String? imagePreviewUrl;
+  final ValueChanged<String> onCategorySelected;
+  final VoidCallback onOpenImage;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPreview = (imagePreviewUrl ?? '').trim().isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: categoryController,
+          decoration: const InputDecoration(
+            labelText: 'Category',
+            hintText: 'Politics',
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: categoryOptions
+              .map(
+                (option) => ActionChip(
+                  label: Text(option),
+                  onPressed: () => onCategorySelected(option),
+                ),
+              )
+              .toList(growable: false),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: tagsController,
+          decoration: const InputDecoration(
+            labelText: 'Tags',
+            hintText: 'Politics, Abuja, Elections',
+          ),
+          minLines: 1,
+          maxLines: 3,
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: parseArticleTagDraft(tagsController.text)
+              .map(
+                (tag) => Chip(
+                  label: Text(tag),
+                  visualDensity: VisualDensity.compact,
+                ),
+              )
+              .toList(growable: false),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: imageUrlController,
+          decoration: InputDecoration(
+            labelText: 'Image URL',
+            hintText: 'https://publisher.com/image.jpg',
+            suffixIcon: imageUrlController.text.trim().isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Open image',
+                    onPressed: onOpenImage,
+                    icon: const Icon(Icons.open_in_new_rounded),
+                  ),
+          ),
+        ),
+        if (hasPreview) ...[
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: 200,
+              width: double.infinity,
+              child: NewsThumbnail(
+                imageUrl: imagePreviewUrl,
+                fallbackLabel: categoryController.text.trim(),
+                alignment: Alignment.topCenter,
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 16),
+        SelectableText(
+          imageUrlController.text.trim().isEmpty
+              ? 'No image URL stored for this article yet.'
+              : imageUrlController.text.trim(),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6E675C)),
+        ),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton.icon(
+            onPressed: saving ? null : onSave,
+            icon: saving
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.save_outlined),
+            label: const Text('Save metadata'),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -25,6 +25,7 @@ abstract class AdminRemoteDataSource {
     String? status,
     String? query,
     String? source,
+    String? tag,
     DateTime? publishedFrom,
     DateTime? publishedTo,
     int offset,
@@ -37,6 +38,7 @@ abstract class AdminRemoteDataSource {
     required String title,
     required String source,
     required String category,
+    List<String> tags = const <String>[],
     String? summary,
     required String sourceUrl,
     String? imageUrl,
@@ -51,6 +53,7 @@ abstract class AdminRemoteDataSource {
     String? title,
     String? source,
     String? category,
+    List<String>? tags,
     String? summary,
     String? sourceUrl,
     String? imageUrl,
@@ -210,6 +213,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     String? status,
     String? query,
     String? source,
+    String? tag,
     DateTime? publishedFrom,
     DateTime? publishedTo,
     int offset = 0,
@@ -223,6 +227,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         if (status != null && status.trim().isNotEmpty) 'status': status.trim(),
         if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
         if (source != null && source.trim().isNotEmpty) 'source': source.trim(),
+        if (tag != null && tag.trim().isNotEmpty) 'tag': tag.trim(),
         if (publishedFrom != null)
           'published_from': publishedFrom.toUtc().toIso8601String(),
         if (publishedTo != null)
@@ -251,6 +256,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     required String title,
     required String source,
     required String category,
+    List<String> tags = const <String>[],
     String? summary,
     required String sourceUrl,
     String? imageUrl,
@@ -265,6 +271,10 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         'title': title.trim(),
         'source': source.trim(),
         'category': category.trim(),
+        'tags': tags
+            .map((tag) => tag.trim())
+            .where((tag) => tag.isNotEmpty)
+            .toList(growable: false),
         'summary': summary?.trim(),
         'source_url': sourceUrl.trim(),
         'image_url': imageUrl?.trim(),
@@ -283,6 +293,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     String? title,
     String? source,
     String? category,
+    List<String>? tags,
     String? summary,
     String? sourceUrl,
     String? imageUrl,
@@ -299,6 +310,12 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     }
     if (category != null) {
       payload['category'] = category.trim();
+    }
+    if (tags != null) {
+      payload['tags'] = tags
+          .map((tag) => tag.trim())
+          .where((tag) => tag.isNotEmpty)
+          .toList(growable: false);
     }
     if (summary != null) {
       payload['summary'] = summary.trim();

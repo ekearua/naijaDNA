@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:naijapulse/core/app_runtime.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
@@ -132,6 +133,10 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
   }
 
   Future<void> _openNotification(AppNotification item) async {
+    final canOpenAdminArticle =
+        (_session?.canManageEditorialContent ?? false) &&
+        AppRuntime.supportsAdminRoutes;
+
     if (!item.isRead) {
       try {
         await _remote.markRead(item.id);
@@ -182,7 +187,7 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
     }
 
     if (item.type == 'article_published') {
-      if (_session?.canManageEditorialContent ?? false) {
+      if (canOpenAdminArticle) {
         await context.push(AppRouter.adminArticleDetailPath(item.articleId!));
         return;
       }
@@ -192,7 +197,7 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
 
     if (item.type.startsWith('article_')) {
       await context.push(
-        _session?.canManageEditorialContent ?? false
+        canOpenAdminArticle
             ? AppRouter.adminArticleDetailPath(item.articleId!)
             : AppRouter.newsSubmitPath,
       );

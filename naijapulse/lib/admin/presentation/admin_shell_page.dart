@@ -163,7 +163,7 @@ class _AdminShellPageState extends State<AdminShellPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'NaijaPulse Admin',
+                                  'naijaDNA Admin',
                                   style: Theme.of(context).textTheme.titleLarge
                                       ?.copyWith(
                                         color: Colors.white,
@@ -436,60 +436,64 @@ class _AdminSidebar extends StatelessWidget {
                 crossAxisAlignment: compact
                     ? CrossAxisAlignment.center
                     : CrossAxisAlignment.start,
-                children: items.map((item) {
-                  final selected =
-                      currentPath == item.path ||
-                      currentPath.startsWith('${item.path}/');
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(18),
-                      onTap: () => context.go(item.path),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: compact ? 10 : 14,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? const Color(0xFFE6F2ED)
-                              : Colors.transparent,
+                children: items
+                    .map((item) {
+                      final selected =
+                          currentPath == item.path ||
+                          currentPath.startsWith('${item.path}/');
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: compact
-                              ? MainAxisAlignment.center
-                              : MainAxisAlignment.start,
-                          children: [
-                            Icon(
-                              item.icon,
-                              color: selected
-                                  ? const Color(0xFF0F6B4B)
-                                  : const Color(0xFF6E675C),
+                          onTap: () => context.go(item.path),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: compact ? 10 : 14,
+                              vertical: 14,
                             ),
-                            if (!compact) ...[
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  item.label,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        fontWeight: selected
-                                            ? FontWeight.w700
-                                            : FontWeight.w500,
-                                        color: selected
-                                            ? const Color(0xFF0F6B4B)
-                                            : const Color(0xFF3A362F),
-                                      ),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? const Color(0xFFE6F2ED)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: compact
+                                  ? MainAxisAlignment.center
+                                  : MainAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  item.icon,
+                                  color: selected
+                                      ? const Color(0xFF0F6B4B)
+                                      : const Color(0xFF6E675C),
                                 ),
-                              ),
-                            ],
-                          ],
+                                if (!compact) ...[
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      item.label,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: selected
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: selected
+                                                ? const Color(0xFF0F6B4B)
+                                                : const Color(0xFF3A362F),
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(growable: false),
+                      );
+                    })
+                    .toList(growable: false),
               ),
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:naijapulse/admin/data/datasource/admin_remote_datasource.dart';
+import 'package:naijapulse/admin/presentation/article_category_options.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
@@ -37,6 +38,7 @@ class _AdminArticleEditorPageState extends State<AdminArticleEditorPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _sourceController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _summaryController = TextEditingController();
   final TextEditingController _sourceUrlController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
@@ -64,6 +66,7 @@ class _AdminArticleEditorPageState extends State<AdminArticleEditorPage> {
     _titleController.dispose();
     _sourceController.dispose();
     _categoryController.dispose();
+    _tagsController.dispose();
     _summaryController.dispose();
     _sourceUrlController.dispose();
     _imageUrlController.dispose();
@@ -86,6 +89,7 @@ class _AdminArticleEditorPageState extends State<AdminArticleEditorPage> {
         _titleController.text = article.title;
         _sourceController.text = article.source;
         _categoryController.text = article.category;
+        _tagsController.text = articleTagDraftFromList(article.tags);
         _summaryController.text = article.summary ?? '';
         _sourceUrlController.text = article.articleUrl ?? '';
         _imageUrlController.text = article.imageUrl ?? '';
@@ -120,6 +124,7 @@ class _AdminArticleEditorPageState extends State<AdminArticleEditorPage> {
               title: _titleController.text,
               source: _sourceController.text,
               category: _categoryController.text,
+              tags: parseArticleTagDraft(_tagsController.text),
               summary: _summaryController.text,
               sourceUrl: _sourceUrlController.text,
               imageUrl: _imageUrlController.text,
@@ -131,6 +136,7 @@ class _AdminArticleEditorPageState extends State<AdminArticleEditorPage> {
               title: _titleController.text,
               source: _sourceController.text,
               category: _categoryController.text,
+              tags: parseArticleTagDraft(_tagsController.text),
               summary: _summaryController.text,
               sourceUrl: _sourceUrlController.text,
               imageUrl: _imageUrlController.text,
@@ -288,6 +294,56 @@ class _AdminArticleEditorPageState extends State<AdminArticleEditorPage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  _LabeledField(
+                    label: 'Tags',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: _tagsController,
+                          decoration: _inputDecoration(
+                            'Comma-separated tags like Politics, Abuja, Elections',
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children:
+                              articleCategoryOptionsFor(
+                                    _categoryController.text,
+                                  )
+                                  .map(
+                                    (option) => ActionChip(
+                                      label: Text(option),
+                                      onPressed: () {
+                                        final tags = parseArticleTagDraft(
+                                          _tagsController.text,
+                                        );
+                                        if (tags.any(
+                                          (tag) =>
+                                              tag.toLowerCase() ==
+                                              option.toLowerCase(),
+                                        )) {
+                                          return;
+                                        }
+                                        final nextTags = <String>[
+                                          ...tags,
+                                          option,
+                                        ];
+                                        setState(() {
+                                          _tagsController.text =
+                                              articleTagDraftFromList(nextTags);
+                                        });
+                                      },
+                                    ),
+                                  )
+                                  .toList(growable: false),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _LabeledField(

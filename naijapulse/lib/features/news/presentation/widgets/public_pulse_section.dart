@@ -157,7 +157,7 @@ class _PublicPulseCardState extends State<PublicPulseCard> {
                         child: Text(
                           widget.poll.hasVoted
                               ? 'Thanks for voting - ${widget.poll.totalVotes} votes'
-                              : '@naijapulse - ${widget.poll.totalVotes} participants',
+                              : '@naijadna - ${widget.poll.totalVotes} participants',
                           style: Theme.of(context).textTheme.bodyMedium,
                           overflow: TextOverflow.ellipsis,
                         ),

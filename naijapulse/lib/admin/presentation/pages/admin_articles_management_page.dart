@@ -33,6 +33,7 @@ class _AdminArticlesManagementPageState
   final AdminRemoteDataSource _remote =
       InjectionContainer.sl<AdminRemoteDataSource>();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _tagController = TextEditingController();
 
   List<NewsArticle> _articles = const <NewsArticle>[];
   List<String> _availableSources = const <String>[];
@@ -49,6 +50,7 @@ class _AdminArticlesManagementPageState
   void initState() {
     super.initState();
     _searchController.addListener(_handleSearchChanged);
+    _tagController.addListener(_handleSearchChanged);
     _loadSources();
     _loadArticles();
   }
@@ -56,7 +58,9 @@ class _AdminArticlesManagementPageState
   @override
   void dispose() {
     _searchController.removeListener(_handleSearchChanged);
+    _tagController.removeListener(_handleSearchChanged);
     _searchController.dispose();
+    _tagController.dispose();
     super.dispose();
   }
 
@@ -96,6 +100,7 @@ class _AdminArticlesManagementPageState
         status: _selectedStatus == 'all' ? null : _selectedStatus,
         query: _searchController.text,
         source: _selectedSource,
+        tag: _tagController.text,
         publishedFrom: _publishedFrom,
         publishedTo: _publishedTo,
         offset: _offset,
@@ -253,7 +258,7 @@ class _AdminArticlesManagementPageState
             },
             decoration: InputDecoration(
               hintText:
-                  'Search articles by title, source, category, or summary',
+                  'Search articles by title, source, category, summary, or tag',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: _searchController.text.trim().isEmpty
                   ? null
@@ -340,6 +345,30 @@ class _AdminArticlesManagementPageState
                     });
                     _loadArticles();
                   },
+                ),
+              ),
+              SizedBox(
+                width: 220,
+                child: TextField(
+                  controller: _tagController,
+                  onSubmitted: (_) {
+                    setState(() => _offset = 0);
+                    _loadArticles();
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Tag',
+                    prefixIcon: const Icon(Icons.sell_outlined),
+                    suffixIcon: _tagController.text.trim().isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Clear tag filter',
+                            onPressed: () {
+                              _tagController.clear();
+                              _loadArticles();
+                            },
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                  ),
                 ),
               ),
               _DateFilterChip(
@@ -609,6 +638,22 @@ class _ArticleCard extends StatelessWidget {
                       color: const Color(0xFF4F4A43),
                     ),
                   ),
+                  if (article.tags.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: article.tags
+                          .take(5)
+                          .map(
+                            (tag) => Chip(
+                              label: Text(tag),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                  ],
                   if (article.summary?.trim().isNotEmpty ?? false) ...[
                     const SizedBox(height: 12),
                     Text(

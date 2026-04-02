@@ -235,7 +235,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 18),
             Text(
-              'Restricted access is reserved for your personal NaijaPulse account. Use the admin dashboard only if you have editorial credentials.',
+              'Restricted access is reserved for your personal naijaDNA account. Use the admin dashboard only if you have editorial credentials.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: AppTheme.textMeta,
               ),
@@ -275,7 +275,7 @@ class _LoginPageState extends State<LoginPage> {
         const SizedBox(width: 12),
         Expanded(
           child: Text(
-            'NaijaPulse',
+            'naijaDNA',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),

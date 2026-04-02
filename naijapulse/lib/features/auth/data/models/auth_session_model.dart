@@ -46,6 +46,34 @@ class AuthSessionModel extends AuthSession {
     );
   }
 
+  factory AuthSessionModel.fromUserJson(
+    Map<String, dynamic> user, {
+    required String accessToken,
+    required String tokenType,
+    required int expiresInSeconds,
+  }) {
+    return AuthSessionModel(
+      userId: (user['id'] ?? '').toString(),
+      email: (user['email'] ?? '').toString(),
+      displayName: (user['display_name'] ?? user['displayName'] ?? '')
+          .toString(),
+      role: (user['role'] ?? 'user').toString(),
+      canAccessStreamsEntitlement:
+          (user['entitlements'] as Map<String, dynamic>?)?['can_access_streams']
+              as bool?,
+      canHostStreamsEntitlement:
+          (user['entitlements'] as Map<String, dynamic>?)?['can_host_streams']
+              as bool?,
+      canContributeStoriesEntitlement:
+          (user['entitlements']
+                  as Map<String, dynamic>?)?['can_contribute_stories']
+              as bool?,
+      accessToken: accessToken,
+      tokenType: tokenType,
+      expiresInSeconds: expiresInSeconds,
+    );
+  }
+
   factory AuthSessionModel.fromEntity(AuthSession entity) {
     return AuthSessionModel(
       userId: entity.userId,

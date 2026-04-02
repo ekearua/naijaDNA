@@ -101,7 +101,10 @@ class InjectionContainer {
       () => AuthLocalDataSourceImpl(sharedPreferences: sl<SharedPreferences>()),
     );
     sl.registerLazySingleton<AuthSessionController>(
-      () => AuthSessionController(localDataSource: sl<AuthLocalDataSource>()),
+      () => AuthSessionController(
+        localDataSource: sl<AuthLocalDataSource>(),
+        remoteDataSource: sl<AuthRemoteDataSource>(),
+      ),
     );
 
     // Repositories - auth

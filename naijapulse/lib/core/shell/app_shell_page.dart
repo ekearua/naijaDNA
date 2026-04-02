@@ -176,7 +176,7 @@ class _AppShellPageState extends State<AppShellPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'NaijaPulse',
+                  'naijaDNA',
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: headerForeground,
                     fontSize: 17,

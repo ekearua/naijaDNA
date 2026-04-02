@@ -123,7 +123,7 @@ class _LoadingPageState extends State<LoadingPage>
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'NaijaPulse',
+                    'naijaDNA',
                     style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),

@@ -315,7 +315,7 @@ class _RegisterPageState extends State<RegisterPage> {
         const SizedBox(width: 12),
         Expanded(
           child: Text(
-            'NaijaPulse',
+            'naijaDNA',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -438,7 +438,7 @@ class _RegisterEditorialPanel extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            'Set up your account once and keep your saved reads, alerts, and topic preferences ready wherever you open NaijaPulse.',
+            'Set up your account once and keep your saved reads, alerts, and topic preferences ready wherever you open naijaDNA.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.white.withValues(alpha: 0.88),
               height: 1.5,

@@ -5,6 +5,7 @@ class NewsArticle extends Equatable {
   final String title;
   final String source;
   final String category;
+  final List<String> tags;
   final String? sourceDomain;
   final String? sourceType;
   final String? summary;
@@ -24,6 +25,7 @@ class NewsArticle extends Equatable {
     required this.source,
     required this.category,
     required this.publishedAt,
+    this.tags = const <String>[],
     this.sourceDomain,
     this.sourceType,
     this.summary,
@@ -48,6 +50,7 @@ class NewsArticle extends Equatable {
     title,
     source,
     category,
+    tags,
     sourceDomain,
     sourceType,
     summary,

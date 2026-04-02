@@ -130,7 +130,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'NaijaPulse Admin',
+                                    'naijaDNA Admin',
                                     style: Theme.of(context)
                                         .textTheme
                                         .labelLarge
@@ -167,7 +167,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                       textInputAction: TextInputAction.next,
                                       decoration: _inputDecoration(
                                         icon: Icons.email_outlined,
-                                        hintText: 'editor@naijapulse.ng',
+                                        hintText: 'editor@naijadna.ng',
                                       ),
                                       validator: (value) {
                                         final input = (value ?? '').trim();
@@ -366,7 +366,7 @@ class _AdminAuthHero extends StatelessWidget {
                 Icon(Icons.newspaper_rounded, color: Colors.white),
                 SizedBox(width: 10),
                 Text(
-                  'NaijaPulse Admin',
+                  'naijaDNA Admin',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
