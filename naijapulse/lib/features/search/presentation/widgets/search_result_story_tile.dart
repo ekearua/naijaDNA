@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
+import 'package:naijapulse/features/news/presentation/widgets/saved_article_controls.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
 
 class SearchResultStoryTile extends StatelessWidget {
@@ -82,15 +83,11 @@ class SearchResultStoryTile extends StatelessWidget {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      AppIcon(
-                        Icons.bookmark_border_rounded,
-                        size: AppIconSize.xSmall,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Save',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      SavedArticleInlineAction(
+                        article: story,
+                        compact: true,
+                        unsavedTone: AppIconTone.secondary,
+                        savedTone: AppIconTone.accent,
                       ),
                       if (hasComments) ...[
                         const SizedBox(width: 10),

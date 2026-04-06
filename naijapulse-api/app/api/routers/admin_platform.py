@@ -8,6 +8,9 @@ from app.api.deps import (
 from app.schemas.admin import (
     AdminHomepageConfigResponse,
     AdminCreateSourceRequest,
+    AdminNewsroomAccessRequestItem,
+    AdminNewsroomAccessRequestsResponse,
+    AdminReviewNewsroomAccessRequest,
     AdminReviewUserAccessRequest,
     AdminSourcesResponse,
     AdminUserAccessRequestItem,
@@ -391,6 +394,58 @@ async def review_admin_user_access_request(
 ) -> AdminUserAccessRequestItem:
     try:
         return await admin_platform_service.review_user_access_request(
+            actor_user_id=x_user_id,
+            request_id=request_id,
+            payload=payload,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except AdminValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get(
+    "/newsroom/access-requests",
+    response_model=AdminNewsroomAccessRequestsResponse,
+)
+async def get_admin_newsroom_access_requests(
+    status_filter: str | None = Query(default=None, alias="status"),
+    limit: int = Query(default=100, ge=1, le=200),
+    x_user_id: str | None = Header(default=None),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+) -> AdminNewsroomAccessRequestsResponse:
+    try:
+        return await admin_platform_service.list_newsroom_access_requests(
+            actor_user_id=x_user_id,
+            status=status_filter,
+            limit=limit,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except AdminValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.post(
+    "/newsroom/access-requests/{request_id}/review",
+    response_model=AdminNewsroomAccessRequestItem,
+)
+async def review_admin_newsroom_access_request(
+    request_id: str,
+    payload: AdminReviewNewsroomAccessRequest,
+    x_user_id: str | None = Header(default=None),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+) -> AdminNewsroomAccessRequestItem:
+    try:
+        return await admin_platform_service.review_newsroom_access_request(
             actor_user_id=x_user_id,
             request_id=request_id,
             payload=payload,

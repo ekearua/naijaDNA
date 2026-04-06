@@ -3,6 +3,7 @@ import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/meta_badge.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
+import 'package:naijapulse/features/news/presentation/widgets/saved_article_controls.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
 
 class SearchFeedStoryTile extends StatelessWidget {
@@ -90,6 +91,19 @@ class SearchFeedStoryTile extends StatelessWidget {
                     fallbackLabel: story.category,
                   ),
                 ),
+              ),
+              const SizedBox(width: 8),
+              SavedArticleIconButton(
+                article: story,
+                compact: true,
+                style: AppIconButtonStyle.tonal,
+              ),
+            ] else ...[
+              const SizedBox(width: 10),
+              SavedArticleIconButton(
+                article: story,
+                compact: true,
+                style: AppIconButtonStyle.tonal,
               ),
             ],
           ],

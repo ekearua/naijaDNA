@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -311,9 +312,6 @@ class InjectionContainer {
         authLocalDataSource: sl<AuthLocalDataSource>(),
       ),
     );
-    sl.registerLazySingleton<FirebaseMessaging>(
-      () => FirebaseMessaging.instance,
-    );
     sl.registerLazySingleton<NotificationsInboxController>(
       () => NotificationsInboxController(
         remoteDataSource: sl<NotificationsRemoteDataSource>(),
@@ -327,17 +325,22 @@ class InjectionContainer {
         authSessionController: sl<AuthSessionController>(),
       ),
     );
-    sl.registerLazySingleton<PushNotificationsService>(
-      () => PushNotificationsService(
-        messaging: sl<FirebaseMessaging>(),
-        remoteDataSource: sl<NotificationsRemoteDataSource>(),
-        notificationsInboxController: sl<NotificationsInboxController>(),
-        notificationActionService: sl<NotificationActionService>(),
-        authSessionController: sl<AuthSessionController>(),
-        sharedPreferences: sl<SharedPreferences>(),
-      ),
-      dispose: (service) => service.dispose(),
-    );
+    if (_supportsPushNotifications) {
+      sl.registerLazySingleton<FirebaseMessaging>(
+        () => FirebaseMessaging.instance,
+      );
+      sl.registerLazySingleton<PushNotificationsService>(
+        () => PushNotificationsService(
+          messaging: sl<FirebaseMessaging>(),
+          remoteDataSource: sl<NotificationsRemoteDataSource>(),
+          notificationsInboxController: sl<NotificationsInboxController>(),
+          notificationActionService: sl<NotificationActionService>(),
+          authSessionController: sl<AuthSessionController>(),
+          sharedPreferences: sl<SharedPreferences>(),
+        ),
+        dispose: (service) => service.dispose(),
+      );
+    }
     sl.registerLazySingleton<AdminRemoteDataSource>(
       () => AdminRemoteDataSourceImpl(
         apiClient: sl<ApiClient>(),
@@ -347,7 +350,9 @@ class InjectionContainer {
     sl.registerLazySingleton<ConnectivityCubit>(ConnectivityCubit.new);
 
     await sl<NotificationsInboxController>().initialize();
-    await sl<PushNotificationsService>().initialize();
+    if (_supportsPushNotifications) {
+      await sl<PushNotificationsService>().initialize();
+    }
 
     _isInitialized = true;
   }
@@ -368,5 +373,12 @@ class InjectionContainer {
       headers['X-Device-Id'] = deviceId.trim();
     }
     return headers;
+  }
+
+  static bool get _supportsPushNotifications {
+    if (kIsWeb) {
+      return false;
+    }
+    return defaultTargetPlatform == TargetPlatform.android;
   }
 }

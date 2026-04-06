@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
+import 'package:naijapulse/features/news/presentation/widgets/saved_article_controls.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
 import 'package:naijapulse/features/news/presentation/widgets/story_action_pill.dart';
 
@@ -8,7 +9,6 @@ class TopStoryHeroCard extends StatelessWidget {
   const TopStoryHeroCard({
     required this.story,
     this.onTap,
-    this.onSaveTap,
     this.onDiscussTap,
     this.onLikeTap,
     this.onShareTap,
@@ -17,7 +17,6 @@ class TopStoryHeroCard extends StatelessWidget {
 
   final NewsArticle story;
   final VoidCallback? onTap;
-  final VoidCallback? onSaveTap;
   final VoidCallback? onDiscussTap;
   final VoidCallback? onLikeTap;
   final VoidCallback? onShareTap;
@@ -105,11 +104,10 @@ class TopStoryHeroCard extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        StoryActionPill(
-                          icon: Icons.bookmark_border_rounded,
-                          label: 'Save',
-                          iconColor: Color(0xFF3A4652),
-                          onTap: onSaveTap,
+                        SavedArticleActionChip(
+                          article: story,
+                          inverse: true,
+                          compact: true,
                         ),
                         SizedBox(width: 8),
                         StoryActionPill(

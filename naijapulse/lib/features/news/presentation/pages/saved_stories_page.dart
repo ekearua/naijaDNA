@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import 'package:naijapulse/core/theme/theme.dart';
 import 'package:naijapulse/core/widgets/empty_state_card.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/data/datasource/local/saved_story_local_datasource.dart';
+import 'package:naijapulse/features/news/data/datasource/remote/news_remote_datasource.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
 import 'package:naijapulse/features/news/presentation/bloc/news_bloc.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
@@ -23,39 +26,51 @@ class SavedStoriesPage extends StatefulWidget {
 class _SavedStoriesPageState extends State<SavedStoriesPage> {
   final SavedStoryLocalDataSource _savedStore =
       InjectionContainer.sl<SavedStoryLocalDataSource>();
+  final NewsRemoteDataSource _remote =
+      InjectionContainer.sl<NewsRemoteDataSource>();
   Set<String> _savedIds = <String>{};
+  List<NewsArticle> _savedStories = const <NewsArticle>[];
   bool _loading = true;
+  bool _hydratingMissingStories = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedIds();
+    _savedStore.savedStoriesListenable.addListener(_handleSavedStoriesChanged);
+    _loadSavedContent();
   }
 
-  Future<void> _loadSavedIds() async {
+  @override
+  void dispose() {
+    _savedStore.savedStoriesListenable.removeListener(
+      _handleSavedStoriesChanged,
+    );
+    super.dispose();
+  }
+
+  Future<void> _loadSavedContent() async {
     final ids = await _savedStore.getSavedArticleIds();
+    final stories = await _savedStore.getSavedStories();
     if (!mounted) {
       return;
     }
     setState(() {
       _savedIds = ids;
+      _savedStories = stories;
       _loading = false;
     });
+    unawaited(_hydrateMissingStories(ids, stories));
   }
 
   Future<void> _removeSavedStory(String articleId) async {
-    await _savedStore.toggleSaved(articleId);
-    await _loadSavedIds();
+    await _savedStore.removeSaved(articleId);
   }
 
   @override
   Widget build(BuildContext context) {
     final content = BlocBuilder<NewsBloc, NewsState>(
       builder: (context, state) {
-        final allStories = _mergeStories(state);
-        final savedStories = allStories
-            .where((story) => _savedIds.contains(story.id))
-            .toList();
+        final savedStories = _resolveSavedStories(state);
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(18, 16, 18, 28),
@@ -88,7 +103,7 @@ class _SavedStoriesPageState extends State<SavedStoriesPage> {
             else if (savedStories.isEmpty)
               const EmptyStateCard(
                 message:
-                    'Saved stories will appear here once those articles are loaded into the current feed snapshot.',
+                    'We could not load your saved stories yet. Reopen this screen when you are back online.',
               )
             else ...[
               _SavedHeroCard(
@@ -150,6 +165,70 @@ class _SavedStoriesPageState extends State<SavedStoriesPage> {
 
   void _openStory(NewsArticle story) {
     context.push(AppRouter.newsDetailPath(story.id), extra: story);
+  }
+
+  void _handleSavedStoriesChanged() {
+    _loadSavedContent();
+  }
+
+  Future<void> _hydrateMissingStories(
+    Set<String> ids,
+    List<NewsArticle> knownStories,
+  ) async {
+    if (_hydratingMissingStories || ids.isEmpty) {
+      return;
+    }
+
+    final knownIds = knownStories.map((story) => story.id).toSet();
+    final missingIds = ids.difference(knownIds).toList(growable: false);
+    if (missingIds.isEmpty) {
+      return;
+    }
+
+    _hydratingMissingStories = true;
+    try {
+      final fetchedStories = await Future.wait(
+        missingIds.map(_fetchStorySnapshotSafely),
+      );
+      for (final story in fetchedStories.whereType<NewsArticle>()) {
+        await _savedStore.saveStorySnapshot(story);
+      }
+    } finally {
+      _hydratingMissingStories = false;
+    }
+  }
+
+  Future<NewsArticle?> _fetchStorySnapshotSafely(String articleId) async {
+    try {
+      return await _remote.fetchStoryById(articleId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<NewsArticle> _resolveSavedStories(NewsState state) {
+    final liveStories = _mergeStories(state);
+    final liveById = <String, NewsArticle>{
+      for (final story in liveStories) story.id: story,
+    };
+    final savedSnapshotById = <String, NewsArticle>{
+      for (final story in _savedStories) story.id: story,
+    };
+
+    final orderedStories = <NewsArticle>[];
+    for (final story in _savedStories) {
+      orderedStories.add(liveById[story.id] ?? story);
+    }
+
+    final remainingLiveStories =
+        _savedIds
+            .where((id) => !savedSnapshotById.containsKey(id))
+            .map((id) => liveById[id])
+            .whereType<NewsArticle>()
+            .toList()
+          ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+    orderedStories.addAll(remainingLiveStories);
+    return orderedStories;
   }
 
   List<NewsArticle> _mergeStories(NewsState state) {

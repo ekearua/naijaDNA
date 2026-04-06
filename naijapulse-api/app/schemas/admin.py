@@ -166,6 +166,31 @@ class AdminReviewUserAccessRequest(BaseModel):
     review_note: Optional[str] = Field(default=None, max_length=2000)
 
 
+class AdminNewsroomAccessRequestItem(BaseModel):
+    id: str
+    full_name: str
+    work_email: str
+    requested_role: str
+    bureau: Optional[str] = None
+    status: Literal["pending", "approved", "rejected"] = "pending"
+    reason: str
+    review_note: Optional[str] = None
+    reviewed_by_user_id: Optional[str] = None
+    granted_user_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AdminNewsroomAccessRequestsResponse(BaseModel):
+    items: List[AdminNewsroomAccessRequestItem] = Field(default_factory=list)
+    total: int = Field(default=0, ge=0)
+
+
+class AdminReviewNewsroomAccessRequest(BaseModel):
+    action: Literal["approve", "reject"]
+    review_note: Optional[str] = Field(default=None, max_length=2000)
+
+
 class CacheNamespaceDiagnostics(BaseModel):
     namespace: str
     version: int = Field(..., ge=1)

@@ -254,11 +254,7 @@ class UsersService:
                 select(UserRecord).where(func.lower(UserRecord.email) == email.lower())
             )
             user = result.scalar_one_or_none()
-            if (
-                user is None
-                or not user.is_active
-                or not user.password_hash
-            ):
+            if user is None or not user.is_active:
                 return ForgotPasswordResponse(
                     message=message,
                     expires_in_seconds=self._password_reset_ttl_seconds,
@@ -266,7 +262,7 @@ class UsersService:
 
             token = self._issue_password_reset_token(
                 user_id=user.id,
-                password_hash=user.password_hash,
+                password_hash=user.password_hash or "",
             )
             reset_url = self._build_password_reset_url(
                 reset_path=reset_path,

@@ -999,6 +999,8 @@ class _UserHomePageState extends State<UserHomePage> {
               PreferencesNavigationRow(
                 title: 'Notifications Inbox',
                 leadingIcon: Icons.notifications_outlined,
+                badgeCount: unreadCount,
+                selected: unreadCount > 0,
                 valueLabel: _authSession == null
                     ? null
                     : unreadCount > 0

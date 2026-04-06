@@ -32,6 +32,8 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       InjectionContainer.sl<AdminRemoteDataSource>();
 
   List<AdminUserModel> _users = const <AdminUserModel>[];
+  List<AdminNewsroomAccessRequestModel> _newsroomRequests =
+      const <AdminNewsroomAccessRequestModel>[];
   List<AdminUserAccessRequestModel> _requests =
       const <AdminUserAccessRequestModel>[];
   String _selectedRole = 'all';
@@ -60,6 +62,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
             _ => null,
           },
         ),
+        _remote.fetchNewsroomAccessRequests(status: 'pending', limit: 50),
         _remote.fetchUserAccessRequests(status: 'pending', limit: 50),
       ]);
       if (!mounted) {
@@ -67,7 +70,8 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       }
       setState(() {
         _users = results[0] as List<AdminUserModel>;
-        _requests = results[1] as List<AdminUserAccessRequestModel>;
+        _newsroomRequests = results[1] as List<AdminNewsroomAccessRequestModel>;
+        _requests = results[2] as List<AdminUserAccessRequestModel>;
       });
     } catch (error) {
       if (!mounted) {
@@ -91,14 +95,33 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     }
   }
 
-  Future<void> _reviewRequest(
+  Future<_ReviewDecision?> _promptReviewDecision({
+    required String action,
+    required String subject,
+  }) {
+    return showDialog<_ReviewDecision>(
+      context: context,
+      builder: (context) =>
+          _ReviewDecisionDialog(action: action, subject: subject),
+    );
+  }
+
+  Future<void> _reviewUserRequest(
     AdminUserAccessRequestModel request,
     String action,
   ) async {
+    final decision = await _promptReviewDecision(
+      action: action,
+      subject: _accessTypeLabel(request.accessType),
+    );
+    if (decision == null) {
+      return;
+    }
     try {
       await _remote.reviewUserAccessRequest(
         requestId: request.id,
         action: action,
+        reviewNote: decision.reviewNote,
       );
       if (!mounted) {
         return;
@@ -107,6 +130,44 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
         SnackBar(
           content: Text(
             '${_accessTypeLabel(request.accessType)} ${action == 'approve' ? 'approved' : 'rejected'}.',
+          ),
+        ),
+      );
+      await _load();
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+    }
+  }
+
+  Future<void> _reviewNewsroomRequest(
+    AdminNewsroomAccessRequestModel request,
+    String action,
+  ) async {
+    final decision = await _promptReviewDecision(
+      action: action,
+      subject: request.requestedRole,
+    );
+    if (decision == null) {
+      return;
+    }
+    try {
+      await _remote.reviewNewsroomAccessRequest(
+        requestId: request.id,
+        action: action,
+        reviewNote: decision.reviewNote,
+      );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Newsroom request for ${request.requestedRole} ${action == 'approve' ? 'approved' : 'rejected'}.',
           ),
         ),
       );
@@ -205,7 +266,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Pending Access Requests',
+            'Pending Newsroom Requests',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -218,12 +279,39 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
             )
           else if (_errorMessage != null)
             _StateCard(
-              title: 'Could not load user access',
+              title: 'Could not load newsroom access',
               message: _errorMessage!,
               actionLabel: 'Try again',
               onPressed: _load,
             )
           else ...[
+            if (_newsroomRequests.isEmpty)
+              _StateCard(
+                title: 'No pending newsroom requests',
+                message:
+                    'Editorial staff can request newsroom or admin access from the public request form.',
+                actionLabel: 'Refresh',
+                onPressed: _load,
+              )
+            else
+              ..._newsroomRequests.map(
+                (request) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _NewsroomAccessRequestCard(
+                    request: request,
+                    onApprove: () => _reviewNewsroomRequest(request, 'approve'),
+                    onReject: () => _reviewNewsroomRequest(request, 'reject'),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 18),
+            Text(
+              'Pending Access Requests',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 10),
             if (_requests.isEmpty)
               _StateCard(
                 title: 'No pending requests',
@@ -238,8 +326,8 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _AccessRequestCard(
                     request: request,
-                    onApprove: () => _reviewRequest(request, 'approve'),
-                    onReject: () => _reviewRequest(request, 'reject'),
+                    onApprove: () => _reviewUserRequest(request, 'approve'),
+                    onReject: () => _reviewUserRequest(request, 'reject'),
                   ),
                 ),
               ),
@@ -342,6 +430,107 @@ class _AccessRequestCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         request.userEmail ?? request.userId,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: const Color(0xFF6E675C),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  children: [
+                    OutlinedButton(
+                      onPressed: onReject,
+                      child: const Text('Reject'),
+                    ),
+                    const SizedBox(height: 8),
+                    FilledButton(
+                      onPressed: onApprove,
+                      child: const Text('Approve'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              request.reason,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A4338)),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Requested ${adminDateTimeLabel(request.createdAt)}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6E675C)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NewsroomAccessRequestCard extends StatelessWidget {
+  const _NewsroomAccessRequestCard({
+    required this.request,
+    required this.onApprove,
+    required this.onReject,
+  });
+
+  final AdminNewsroomAccessRequestModel request;
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitleParts = <String>[
+      request.workEmail,
+      if (request.bureau?.trim().isNotEmpty ?? false) request.bureau!.trim(),
+    ];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE2DBCF)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _Badge(
+                            label: request.requestedRole,
+                            color: const Color(0xFF2563EB),
+                          ),
+                          _Badge(
+                            label: request.status,
+                            color: const Color(0xFF0F766E),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        request.fullName,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitleParts.join(' | '),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: const Color(0xFF6E675C),
                         ),
@@ -821,6 +1010,84 @@ class _StateCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ReviewDecision {
+  const _ReviewDecision({this.reviewNote});
+
+  final String? reviewNote;
+}
+
+class _ReviewDecisionDialog extends StatefulWidget {
+  const _ReviewDecisionDialog({required this.action, required this.subject});
+
+  final String action;
+  final String subject;
+
+  @override
+  State<_ReviewDecisionDialog> createState() => _ReviewDecisionDialogState();
+}
+
+class _ReviewDecisionDialogState extends State<_ReviewDecisionDialog> {
+  late final TextEditingController _noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final actionLabel = widget.action == 'approve' ? 'Approve' : 'Reject';
+    return AlertDialog(
+      title: Text('$actionLabel request'),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This will $actionLabel ${widget.subject}. You can include an optional note in the email.',
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: _noteController,
+              minLines: 3,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Review note (optional)',
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(
+            _ReviewDecision(
+              reviewNote: (_noteController.text).trim().isEmpty
+                  ? null
+                  : _noteController.text.trim(),
+            ),
+          ),
+          child: Text(actionLabel),
+        ),
+      ],
     );
   }
 }

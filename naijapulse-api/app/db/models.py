@@ -387,6 +387,19 @@ class AdminAccessRequestRecord(Base):
     bureau: Mapped[str | None] = mapped_column(String(120), nullable=True)
     reason: Mapped[str] = mapped_column(Text())
     status: Mapped[str] = mapped_column(String(32), default="pending", index=True)
+    reviewed_by_user_id: Mapped[str | None] = mapped_column(
+        String(128),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    granted_user_id: Mapped[str | None] = mapped_column(
+        String(128),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    review_note: Mapped[str | None] = mapped_column(Text(), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
 

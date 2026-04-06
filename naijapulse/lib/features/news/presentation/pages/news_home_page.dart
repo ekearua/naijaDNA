@@ -18,6 +18,7 @@ import 'package:naijapulse/features/news/data/models/homepage_content_model.dart
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
 import 'package:naijapulse/features/news/presentation/bloc/news_bloc.dart';
 import 'package:naijapulse/features/news/presentation/helpers/news_engagement_helper.dart';
+import 'package:naijapulse/features/news/presentation/widgets/saved_article_controls.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
 import 'package:naijapulse/features/news/presentation/widgets/public_pulse_section.dart';
 import 'package:naijapulse/features/polls/presentation/bloc/polls_bloc.dart';
@@ -68,10 +69,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
   void _openStory(NewsArticle story) {
     context.read<NewsBloc>().add(NewsStoryOpened(story.id));
     context.push(AppRouter.newsDetailPath(story.id), extra: story);
-  }
-
-  Future<void> _saveStory(NewsArticle story) async {
-    await NewsEngagementHelper.saveArticle(context, story);
   }
 
   Future<void> _shareStory(NewsArticle story) async {
@@ -346,7 +343,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
           child: _EditorialStoryCard(
             story: story,
             onTap: () => _openStory(story),
-            onSaveTap: () => _saveStory(story),
             onShareTap: () => _shareStory(story),
           ),
         ),
@@ -471,7 +467,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
                     _TopStoriesCarousel(
                       stories: topStories,
                       onStoryTap: _openStory,
-                      onSaveTap: _saveStory,
                       onShareTap: _shareStory,
                       onDiscussTap: _discussStory,
                     ),
@@ -491,7 +486,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
                         child: _EditorialStoryCard(
                           story: story,
                           onTap: () => _openStory(story),
-                          onSaveTap: () => _saveStory(story),
                           onShareTap: () => _shareStory(story),
                           onMoreLikeThis: latestStoriesArePersonalized
                               ? () => _handleForYouMoreLikeThis(story)
@@ -521,7 +515,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
                         child: _EditorialStoryCard(
                           story: story,
                           onTap: () => _openStory(story),
-                          onSaveTap: () => _saveStory(story),
                           onShareTap: () => _shareStory(story),
                         ),
                       ),
@@ -831,14 +824,12 @@ class _TopStoriesCarousel extends StatelessWidget {
   const _TopStoriesCarousel({
     required this.stories,
     required this.onStoryTap,
-    required this.onSaveTap,
     required this.onShareTap,
     required this.onDiscussTap,
   });
 
   final List<NewsArticle> stories;
   final ValueChanged<NewsArticle> onStoryTap;
-  final ValueChanged<NewsArticle> onSaveTap;
   final ValueChanged<NewsArticle> onShareTap;
   final ValueChanged<NewsArticle> onDiscussTap;
 
@@ -861,7 +852,6 @@ class _TopStoriesCarousel extends StatelessWidget {
                 child: _FeaturedStoryCard(
                   story: story,
                   onTap: () => onStoryTap(story),
-                  onSaveTap: () => onSaveTap(story),
                   onShareTap: () => onShareTap(story),
                   onDiscussTap: () => onDiscussTap(story),
                 ),
@@ -878,14 +868,12 @@ class _FeaturedStoryCard extends StatelessWidget {
   const _FeaturedStoryCard({
     required this.story,
     required this.onTap,
-    required this.onSaveTap,
     required this.onShareTap,
     required this.onDiscussTap,
   });
 
   final NewsArticle story;
   final VoidCallback onTap;
-  final VoidCallback onSaveTap;
   final VoidCallback onShareTap;
   final VoidCallback onDiscussTap;
 
@@ -999,12 +987,7 @@ class _FeaturedStoryCard extends StatelessWidget {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      AppActionChip(
-                        icon: Icons.bookmark_border_rounded,
-                        label: 'Save',
-                        onTap: onSaveTap,
-                        inverse: true,
-                      ),
+                      SavedArticleActionChip(article: story, inverse: true),
                       AppActionChip(
                         icon: Icons.forum_outlined,
                         label: 'Discuss',
@@ -1070,7 +1053,6 @@ class _EditorialStoryCard extends StatelessWidget {
   const _EditorialStoryCard({
     required this.story,
     required this.onTap,
-    required this.onSaveTap,
     required this.onShareTap,
     this.onMoreLikeThis,
     this.onHideStory,
@@ -1078,7 +1060,6 @@ class _EditorialStoryCard extends StatelessWidget {
   });
   final NewsArticle story;
   final VoidCallback onTap;
-  final VoidCallback onSaveTap;
   final VoidCallback onShareTap;
   final VoidCallback? onMoreLikeThis;
   final VoidCallback? onHideStory;
@@ -1228,11 +1209,10 @@ class _EditorialStoryCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      AppInlineAction(
-                        icon: Icons.bookmark_border_rounded,
-                        label: 'Save',
-                        onTap: onSaveTap,
-                        tone: AppIconTone.secondary,
+                      SavedArticleInlineAction(
+                        article: story,
+                        unsavedTone: AppIconTone.secondary,
+                        savedTone: AppIconTone.accent,
                       ),
                       const SizedBox(width: 16),
                       AppInlineAction(

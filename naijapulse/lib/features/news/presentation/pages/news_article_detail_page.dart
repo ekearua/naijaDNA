@@ -17,6 +17,7 @@ import 'package:naijapulse/features/news/data/models/news_readable_text_model.da
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
 import 'package:naijapulse/features/news/presentation/bloc/news_bloc.dart';
 import 'package:naijapulse/features/news/presentation/helpers/news_engagement_helper.dart';
+import 'package:naijapulse/features/news/presentation/widgets/saved_article_controls.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
 
 class NewsArticleDetailPage extends StatefulWidget {
@@ -552,8 +553,7 @@ class _ArticleDetailScaffold extends StatelessWidget {
                     _MetadataRow(story: story),
                     const SizedBox(height: 16),
                     _ActionPills(
-                      onSave: () =>
-                          NewsEngagementHelper.saveArticle(context, story),
+                      story: story,
                       onListen: onListen,
                       listenLabel: _listenLabel(ttsState),
                       onDiscuss: () => context.push(
@@ -941,14 +941,14 @@ class _StoryTagWrap extends StatelessWidget {
 
 class _ActionPills extends StatelessWidget {
   const _ActionPills({
-    required this.onSave,
+    required this.story,
     required this.onListen,
     required this.listenLabel,
     required this.onDiscuss,
     this.onOpenSource,
   });
 
-  final VoidCallback onSave;
+  final NewsArticle story;
   final VoidCallback onListen;
   final String listenLabel;
   final VoidCallback onDiscuss;
@@ -968,13 +968,10 @@ class _ActionPills extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: [
-        AppActionChip(
-          icon: Icons.bookmark_border_rounded,
-          label: 'Save',
-          selected: true,
+        SavedArticleActionChip(
+          article: story,
           selectedColor: mutedBackground,
           selectedForegroundColor: mutedForeground,
-          onTap: onSave,
         ),
         AppActionChip(
           icon: Icons.forum_outlined,

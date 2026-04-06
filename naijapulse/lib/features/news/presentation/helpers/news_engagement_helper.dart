@@ -70,25 +70,33 @@ class NewsEngagementHelper {
   ) async {
     final savedStore = InjectionContainer.sl<SavedStoryLocalDataSource>();
     final remote = InjectionContainer.sl<NewsRemoteDataSource>();
+    bool nowSaved;
 
     try {
-      final nowSaved = await savedStore.toggleSaved(article.id);
-      if (nowSaved) {
-        await remote.recordFeedEvent(articleId: article.id, eventType: 'save');
-      }
-      if (!context.mounted) {
-        return;
-      }
-      _showSnackBar(
-        context,
-        nowSaved ? 'Saved for later.' : 'Removed from saved stories.',
-      );
+      nowSaved = await savedStore.toggleSavedArticle(article);
     } catch (error) {
       if (!context.mounted) {
         return;
       }
       _showSnackBar(context, mapFailure(error).message);
+      return;
     }
+
+    if (nowSaved) {
+      try {
+        await remote.recordFeedEvent(articleId: article.id, eventType: 'save');
+      } catch (_) {
+        // Saving locally should still succeed even if analytics fails.
+      }
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+    _showSnackBar(
+      context,
+      nowSaved ? 'Saved for later.' : 'Removed from saved stories.',
+    );
   }
 
   static Future<void> shareArticle(

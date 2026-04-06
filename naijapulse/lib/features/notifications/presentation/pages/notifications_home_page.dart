@@ -275,8 +275,13 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
             alignment: Alignment.centerLeft,
             child: AppActionChip(
               icon: Icons.done_all_rounded,
-              label: _markingAllRead ? 'Marking...' : 'Mark all read',
+              label: _markingAllRead
+                  ? 'Marking...'
+                  : _unreadCount > 0
+                  ? 'Mark all read'
+                  : 'All caught up',
               compact: true,
+              selected: _unreadCount == 0,
               onTap: _markingAllRead ? null : _markAllRead,
             ),
           ),

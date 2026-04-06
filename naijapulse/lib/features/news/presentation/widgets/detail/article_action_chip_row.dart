@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
+import 'package:naijapulse/features/news/domain/entities/news_article.dart';
+import 'package:naijapulse/features/news/presentation/widgets/saved_article_controls.dart';
 
 class ArticleActionChipRow extends StatelessWidget {
   const ArticleActionChipRow({
+    required this.article,
     this.onLikeTap,
     this.onDiscussTap,
-    this.onSaveTap,
     this.onShareTap,
     super.key,
   });
 
+  final NewsArticle article;
   final VoidCallback? onLikeTap;
   final VoidCallback? onDiscussTap;
-  final VoidCallback? onSaveTap;
   final VoidCallback? onShareTap;
 
   @override
@@ -20,59 +23,23 @@ class ArticleActionChipRow extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        _actionChip(
-          context,
-          Icons.thumb_up_alt_outlined,
-          'Like',
+        AppActionChip(
+          icon: Icons.thumb_up_alt_outlined,
+          label: 'Like',
           onTap: onLikeTap,
         ),
-        _actionChip(
-          context,
-          Icons.chat_bubble_outline_rounded,
-          'Discuss',
+        AppActionChip(
+          icon: Icons.chat_bubble_outline_rounded,
+          label: 'Discuss',
           onTap: onDiscussTap,
         ),
-        _actionChip(
-          context,
-          Icons.bookmark_border_rounded,
-          'Save',
-          onTap: onSaveTap,
+        SavedArticleActionChip(article: article),
+        AppActionChip(
+          icon: Icons.share_outlined,
+          label: 'Share',
+          onTap: onShareTap,
         ),
-        _actionChip(context, Icons.share_outlined, 'Share', onTap: onShareTap),
       ],
-    );
-  }
-
-  Widget _actionChip(
-    BuildContext context,
-    IconData icon,
-    String label, {
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).dividerColor),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 22, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

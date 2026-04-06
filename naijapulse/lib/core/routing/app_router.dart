@@ -270,7 +270,8 @@ class AppRouter {
     ),
     GoRoute(
       path: adminForgotPasswordPath,
-      builder: (context, state) => const AdminForgotPasswordPage(),
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: AdminForgotPasswordPage()),
     ),
     GoRoute(
       path: adminRequestAccessPath,
@@ -279,14 +280,29 @@ class AppRouter {
     ),
     GoRoute(
       path: adminResetPasswordPath,
-      builder: (context, state) => AdminResetPasswordPage(
-        initialToken: state.uri.queryParameters['token'],
+      builder: (context, state) => _StandaloneAuthScope(
+        child: AdminResetPasswordPage(
+          initialToken: state.uri.queryParameters['token'],
+        ),
       ),
     ),
     GoRoute(
-      path: resetPasswordPath,
+      path: loginPath,
       builder: (context, state) =>
-          ResetPasswordPage(initialToken: state.uri.queryParameters['token']),
+          const _StandaloneAuthScope(child: LoginPage()),
+    ),
+    GoRoute(
+      path: forgotPasswordPath,
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: ForgotPasswordPage()),
+    ),
+    GoRoute(
+      path: resetPasswordPath,
+      builder: (context, state) => _StandaloneAuthScope(
+        child: ResetPasswordPage(
+          initialToken: state.uri.queryParameters['token'],
+        ),
+      ),
     ),
     GoRoute(
       path: alertsPath,

@@ -1,4 +1,10 @@
+import base64
+import hashlib
+import hmac
+import secrets
 from datetime import datetime, timedelta
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from uuid import uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -6,6 +12,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.config import Settings, get_settings
 from app.db.models import (
+    AdminAccessRequestRecord,
     ArticleCommentRecord,
     ArticleWorkflowEventRecord,
     CommentReportRecord,
@@ -22,7 +29,10 @@ from app.db.models import (
 from app.schemas.admin import (
     AdminHomepageConfigResponse,
     AdminCreateSourceRequest,
+    AdminNewsroomAccessRequestItem,
+    AdminNewsroomAccessRequestsResponse,
     AdminReviewUserAccessRequest,
+    AdminReviewNewsroomAccessRequest,
     AdminSourcesResponse,
     AdminUpdateSourceRequest,
     AdminUpdateUserRequest,
@@ -633,6 +643,132 @@ class AdminPlatformService:
                     review_note=review_note,
                 )
             return self._to_user_access_request_item(request_record, user)
+
+    async def list_newsroom_access_requests(
+        self,
+        *,
+        actor_user_id: str | None,
+        status: str | None = None,
+        limit: int = 100,
+    ) -> AdminNewsroomAccessRequestsResponse:
+        async with self._session_factory() as session:
+            await self._load_actor(session, actor_user_id, admin_only=True)
+            statement = (
+                select(AdminAccessRequestRecord)
+                .order_by(AdminAccessRequestRecord.created_at.desc())
+                .limit(limit)
+            )
+            if status is not None and status.strip():
+                statement = statement.where(
+                    AdminAccessRequestRecord.status == status.strip().lower()
+                )
+            result = await session.execute(statement)
+            items = [
+                self._to_newsroom_access_request_item(row)
+                for row in result.scalars().all()
+            ]
+            return AdminNewsroomAccessRequestsResponse(items=items, total=len(items))
+
+    async def review_newsroom_access_request(
+        self,
+        *,
+        actor_user_id: str | None,
+        request_id: str,
+        payload: AdminReviewNewsroomAccessRequest,
+    ) -> AdminNewsroomAccessRequestItem:
+        async with self._session_factory() as session:
+            actor = await self._load_actor(session, actor_user_id, admin_only=True)
+            result = await session.execute(
+                select(AdminAccessRequestRecord).where(
+                    AdminAccessRequestRecord.id == request_id
+                )
+            )
+            request_record = result.scalar_one_or_none()
+            if request_record is None:
+                raise AdminEntityNotFoundError("Newsroom access request was not found.")
+
+            if request_record.status != "pending":
+                raise AdminValidationError(
+                    "This newsroom access request has already been reviewed."
+                )
+
+            action = payload.action.strip().lower()
+            review_note = (payload.review_note or "").strip() or None
+            request_record.status = "approved" if action == "approve" else "rejected"
+            request_record.reviewed_by_user_id = actor.id
+            request_record.review_note = review_note
+            request_record.updated_at = datetime.utcnow()
+
+            recipient_email = request_record.work_email
+            recipient_name = request_record.full_name
+            requested_role = request_record.requested_role
+            setup_url: str | None = None
+
+            if action == "approve":
+                role = self._map_newsroom_role(requested_role)
+                existing_user_result = await session.execute(
+                    select(UserRecord).where(
+                        func.lower(UserRecord.email) == recipient_email.lower()
+                    )
+                )
+                user = existing_user_result.scalar_one_or_none()
+                if user is None:
+                    now = datetime.utcnow()
+                    user = UserRecord(
+                        id=f"user-{uuid4().hex[:12]}",
+                        email=recipient_email,
+                        password_hash=None,
+                        display_name=recipient_name,
+                        avatar_url=None,
+                        is_active=True,
+                        role=role,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                    session.add(user)
+                else:
+                    user.email = recipient_email
+                    if not (user.display_name or "").strip():
+                        user.display_name = recipient_name
+                    user.is_active = True
+                    user.role = self._merge_newsroom_role(
+                        existing_role=user.role,
+                        requested_role=role,
+                    )
+                    user.updated_at = datetime.utcnow()
+
+                request_record.granted_user_id = user.id
+                token = self._issue_password_reset_token(
+                    user_id=user.id,
+                    password_hash=user.password_hash or "",
+                )
+                setup_url = self._build_password_reset_url(
+                    reset_path="/admin/reset-password",
+                    token=token,
+                )
+
+            await session.commit()
+            item = self._to_newsroom_access_request_item(request_record)
+
+        if recipient_email and self._email_service.enabled:
+            if action == "approve" and setup_url:
+                await self._email_service.send_newsroom_access_approved_email(
+                    to_email=recipient_email,
+                    recipient_name=recipient_name,
+                    requested_role=requested_role,
+                    setup_url=setup_url,
+                    review_note=review_note,
+                )
+            else:
+                await self._email_service.send_access_request_reviewed_email(
+                    to_email=recipient_email,
+                    recipient_name=recipient_name,
+                    request_label=f"newsroom access ({requested_role})",
+                    approved=False,
+                    review_note=review_note,
+                )
+
+        return item
 
     async def get_cache_diagnostics(
         self,
@@ -1518,6 +1654,90 @@ class AdminPlatformService:
             created_at=request_row.created_at,
             updated_at=request_row.updated_at,
         )
+
+    def _to_newsroom_access_request_item(
+        self,
+        request_row: AdminAccessRequestRecord,
+    ) -> AdminNewsroomAccessRequestItem:
+        return AdminNewsroomAccessRequestItem(
+            id=request_row.id,
+            full_name=request_row.full_name,
+            work_email=request_row.work_email,
+            requested_role=request_row.requested_role,
+            bureau=request_row.bureau,
+            status=request_row.status,
+            reason=request_row.reason,
+            review_note=request_row.review_note,
+            reviewed_by_user_id=request_row.reviewed_by_user_id,
+            granted_user_id=request_row.granted_user_id,
+            created_at=request_row.created_at,
+            updated_at=request_row.updated_at,
+        )
+
+    def _map_newsroom_role(self, requested_role: str) -> str:
+        normalized = requested_role.strip().lower()
+        if "admin" in normalized:
+            return "admin"
+        return "editor"
+
+    def _merge_newsroom_role(self, *, existing_role: str, requested_role: str) -> str:
+        normalized_existing = (existing_role or "").strip().lower()
+        if normalized_existing == "admin":
+            return "admin"
+        if requested_role == "admin":
+            return "admin"
+        if normalized_existing == "editor":
+            return "editor"
+        return requested_role
+
+    def _build_password_reset_url(self, *, reset_path: str, token: str) -> str:
+        if reset_path.startswith("/admin"):
+            base_url = (
+                self._settings.email_admin_web_base_url
+                or self._settings.email_web_base_url
+            )
+        else:
+            base_url = (
+                self._settings.email_web_base_url
+                or self._settings.email_admin_web_base_url
+            )
+
+        if not base_url:
+            return f"{reset_path}?token={token}"
+
+        parsed = urlparse(base_url)
+        if parsed.scheme and parsed.netloc:
+            target = f"{base_url.rstrip('/')}{reset_path}"
+        else:
+            target = reset_path
+
+        parsed_target = urlparse(target)
+        query_items = parse_qsl(parsed_target.query, keep_blank_values=True)
+        query_items = [(key, value) for key, value in query_items if key != "token"]
+        query_items.append(("token", token))
+        return urlunparse(
+            parsed_target._replace(query=urlencode(query_items, doseq=True))
+        )
+
+    def _issue_password_reset_token(
+        self,
+        *,
+        user_id: str,
+        password_hash: str,
+    ) -> str:
+        expiry = datetime.utcnow() + timedelta(minutes=30)
+        fingerprint = self._password_hash_fingerprint(password_hash)
+        payload = f"{user_id}:{int(expiry.timestamp())}:{fingerprint}:{secrets.token_hex(8)}"
+        signature = hmac.new(
+            self._settings.auth_token_secret.encode("utf-8"),
+            payload.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+        raw_token = f"{payload}:{signature}"
+        return base64.urlsafe_b64encode(raw_token.encode("utf-8")).decode("utf-8")
+
+    def _password_hash_fingerprint(self, password_hash: str) -> str:
+        return hashlib.sha256(password_hash.encode("utf-8")).hexdigest()[:16]
 
     def _to_notification_item(self, row: NotificationRecord):
         from app.schemas.notifications import NotificationItem

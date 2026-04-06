@@ -7,7 +7,6 @@ class TopStoriesCarousel extends StatelessWidget {
   const TopStoriesCarousel({
     required this.stories,
     this.onStoryTap,
-    this.onSaveTap,
     this.onDiscussTap,
     this.onLikeTap,
     this.onShareTap,
@@ -16,7 +15,6 @@ class TopStoriesCarousel extends StatelessWidget {
 
   final List<NewsArticle> stories;
   final ValueChanged<NewsArticle>? onStoryTap;
-  final ValueChanged<NewsArticle>? onSaveTap;
   final ValueChanged<NewsArticle>? onDiscussTap;
   final ValueChanged<NewsArticle>? onLikeTap;
   final ValueChanged<NewsArticle>? onShareTap;
@@ -45,9 +43,6 @@ class TopStoriesCarousel extends StatelessWidget {
                 onTap: onStoryTap == null
                     ? null
                     : () => onStoryTap!(stories[index]),
-                onSaveTap: onSaveTap == null
-                    ? null
-                    : () => onSaveTap!(stories[index]),
                 onDiscussTap: onDiscussTap == null
                     ? null
                     : () => onDiscussTap!(stories[index]),

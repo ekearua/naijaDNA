@@ -180,6 +180,50 @@ class EmailService:
             html_body=html,
         )
 
+    async def send_newsroom_access_approved_email(
+        self,
+        *,
+        to_email: str,
+        recipient_name: str | None,
+        requested_role: str,
+        setup_url: str,
+        review_note: str | None,
+    ) -> bool:
+        title_name = self._display_name(recipient_name, to_email)
+        note_block = ""
+        if review_note and review_note.strip():
+            note_block = f"\nReview note: {review_note.strip()}\n"
+        subject = f"Your newsroom access request for {requested_role} was approved"
+        text = (
+            f"Hello {title_name},\n\n"
+            f"Your newsroom access request for {requested_role} was approved.\n"
+            "Use the link below to set your password and complete your account setup.\n\n"
+            f"Complete setup: {setup_url}\n"
+            f"{note_block}\n"
+            f"If you have questions, reply to this email or contact {self._support_address or self._from_address}.\n\n"
+            "naijaDNA"
+        )
+        note_html = ""
+        if review_note and review_note.strip():
+            note_html = (
+                f"<p><strong>Review note:</strong> {escape(review_note.strip())}</p>"
+            )
+        html = f"""
+        <p>Hello {escape(title_name)},</p>
+        <p>Your newsroom access request for <strong>{escape(requested_role)}</strong> was approved.</p>
+        <p>Use the link below to set your password and complete your account setup.</p>
+        <p><a href="{escape(setup_url)}">Complete account setup</a></p>
+        {note_html}
+        <p>If you have questions, reply to this email or contact {escape(self._support_address or self._from_address)}.</p>
+        <p>naijaDNA</p>
+        """
+        return await self._send_email(
+            to_email=to_email,
+            subject=subject,
+            text_body=text,
+            html_body=html,
+        )
+
     async def _send_email(
         self,
         *,

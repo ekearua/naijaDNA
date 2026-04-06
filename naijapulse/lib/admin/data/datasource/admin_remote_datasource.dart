@@ -129,7 +129,18 @@ abstract class AdminRemoteDataSource {
     int limit,
   });
 
+  Future<List<AdminNewsroomAccessRequestModel>> fetchNewsroomAccessRequests({
+    String? status,
+    int limit,
+  });
+
   Future<AdminUserAccessRequestModel> reviewUserAccessRequest({
+    required String requestId,
+    required String action,
+    String? reviewNote,
+  });
+
+  Future<AdminNewsroomAccessRequestModel> reviewNewsroomAccessRequest({
     required String requestId,
     required String action,
     String? reviewNote,
@@ -591,6 +602,30 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   }
 
   @override
+  Future<List<AdminNewsroomAccessRequestModel>> fetchNewsroomAccessRequests({
+    String? status,
+    int limit = 100,
+  }) async {
+    final response = await _getAuthed(
+      '/admin/newsroom/access-requests',
+      queryParameters: {
+        'limit': limit,
+        if (status?.trim().isNotEmpty ?? false) 'status': status!.trim(),
+      },
+    );
+    final rawItems = response['items'];
+    if (rawItems is! List<dynamic>) {
+      throw const ParseException(
+        'Invalid response format for newsroom access requests.',
+      );
+    }
+    return rawItems
+        .whereType<Map<String, dynamic>>()
+        .map(AdminNewsroomAccessRequestModel.fromJson)
+        .toList();
+  }
+
+  @override
   Future<AdminUserAccessRequestModel> reviewUserAccessRequest({
     required String requestId,
     required String action,
@@ -605,6 +640,23 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       },
     );
     return AdminUserAccessRequestModel.fromJson(response);
+  }
+
+  @override
+  Future<AdminNewsroomAccessRequestModel> reviewNewsroomAccessRequest({
+    required String requestId,
+    required String action,
+    String? reviewNote,
+  }) async {
+    final response = await _postAuthed(
+      '/admin/newsroom/access-requests/${requestId.trim()}/review',
+      data: {
+        'action': action.trim().toLowerCase(),
+        if (reviewNote?.trim().isNotEmpty ?? false)
+          'review_note': reviewNote!.trim(),
+      },
+    );
+    return AdminNewsroomAccessRequestModel.fromJson(response);
   }
 
   @override

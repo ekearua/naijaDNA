@@ -179,6 +179,52 @@ class AdminUserAccessRequestModel {
       );
 }
 
+class AdminNewsroomAccessRequestModel {
+  const AdminNewsroomAccessRequestModel({
+    required this.id,
+    required this.fullName,
+    required this.workEmail,
+    required this.requestedRole,
+    required this.status,
+    required this.reason,
+    required this.createdAt,
+    required this.updatedAt,
+    this.bureau,
+    this.reviewNote,
+    this.reviewedByUserId,
+    this.grantedUserId,
+  });
+
+  final String id;
+  final String fullName;
+  final String workEmail;
+  final String requestedRole;
+  final String? bureau;
+  final String status;
+  final String reason;
+  final String? reviewNote;
+  final String? reviewedByUserId;
+  final String? grantedUserId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  factory AdminNewsroomAccessRequestModel.fromJson(Map<String, dynamic> json) =>
+      AdminNewsroomAccessRequestModel(
+        id: (json['id'] as String?) ?? '',
+        fullName: (json['full_name'] as String?) ?? '',
+        workEmail: (json['work_email'] as String?) ?? '',
+        requestedRole: (json['requested_role'] as String?) ?? '',
+        bureau: json['bureau'] as String?,
+        status: (json['status'] as String?) ?? 'pending',
+        reason: (json['reason'] as String?) ?? '',
+        reviewNote: json['review_note'] as String?,
+        reviewedByUserId: json['reviewed_by_user_id'] as String?,
+        grantedUserId: json['granted_user_id'] as String?,
+        createdAt: parseBackendDateTime(json['created_at']),
+        updatedAt: parseBackendDateTime(json['updated_at']),
+      );
+}
+
 class AdminVerificationDeskModel {
   const AdminVerificationDeskModel({
     required this.items,
