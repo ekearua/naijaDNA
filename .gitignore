@@ -47,11 +47,13 @@ naijapulse/.flutter-plugins-dependencies
 # Android
 naijapulse/android/.gradle/
 naijapulse/android/local.properties
+naijapulse/android/app/google-services.json
 naijapulse/android/app/debug/
 naijapulse/android/app/profile/
 naijapulse/android/app/release/
 
 # iOS / macOS generated
+naijapulse/ios/Runner/GoogleService-Info.plist
 naijapulse/ios/Pods/
 naijapulse/ios/Flutter/.last_build_id
 naijapulse/macos/Flutter/ephemeral/
@@ -62,4 +64,3 @@ naijapulse/windows/flutter/ephemeral/
 
 # Generated docs / reports
 doc/api/
-
