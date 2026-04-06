@@ -57,6 +57,7 @@ from app.schemas.comments import ReportedCommentItem
 from app.schemas.ingestion import IngestionStatusResponse
 from app.schemas.news import HomepageCategoryFeed, HomepageSecondaryChipFeed, NewsSourceInfo
 from app.schemas.users import User, UserEntitlements
+from app.services.email_service import EmailService
 from app.services.news_service import NewsArticleNotFoundError, NewsService
 from app.services.response_cache_service import ResponseCacheService
 
@@ -83,10 +84,12 @@ class AdminPlatformService:
         session_factory: async_sessionmaker[AsyncSession],
         *,
         news_service: NewsService,
+        email_service: EmailService,
         settings: Settings | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._news_service = news_service
+        self._email_service = email_service
         self._settings = settings or get_settings()
 
     async def get_dashboard_summary(
@@ -616,7 +619,19 @@ class AdminPlatformService:
                     user.contribution_access_granted = True
 
             user.updated_at = datetime.utcnow()
+            recipient_email = (user.email or "").strip()
+            recipient_name = user.display_name
+            review_note = request_record.review_note
+            access_label = self._describe_user_access_type(request_record.access_type)
             await session.commit()
+            if recipient_email and self._email_service.enabled:
+                await self._email_service.send_access_request_reviewed_email(
+                    to_email=recipient_email,
+                    recipient_name=recipient_name,
+                    request_label=access_label,
+                    approved=action == "approve",
+                    review_note=review_note,
+                )
             return self._to_user_access_request_item(request_record, user)
 
     async def get_cache_diagnostics(
@@ -1393,6 +1408,13 @@ class AdminPlatformService:
         if normalized not in allowed:
             raise AdminValidationError("Invalid user role.")
         return normalized
+
+    def _describe_user_access_type(self, access_type: str) -> str:
+        return {
+            "stream_access": "stream access",
+            "stream_hosting": "stream hosting access",
+            "contribution_access": "story contribution access",
+        }.get(access_type, "additional access")
 
     def _derive_source_configured(
         self,

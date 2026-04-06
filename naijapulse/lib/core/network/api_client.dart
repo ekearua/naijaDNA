@@ -77,6 +77,29 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final response = await _dio.delete<Map<String, dynamic>>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: headers == null ? null : Options(headers: headers),
+      );
+      final body = response.data;
+      if (body == null) {
+        throw const ParseException('Response body is empty.');
+      }
+      return body;
+    } on DioException catch (error) {
+      throw _mapDioError(error);
+    }
+  }
+
   AppException _mapDioError(DioException error) {
     final requestUri = error.requestOptions.uri.toString();
     // Each transport failure maps to a stable exception used by repositories/blocs.

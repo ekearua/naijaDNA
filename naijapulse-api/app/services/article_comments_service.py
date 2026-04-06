@@ -9,7 +9,6 @@ from app.db.models import (
     CommentReactionRecord,
     CommentReportRecord,
     NewsArticleRecord,
-    NotificationRecord,
     UserPreferenceRecord,
     UserRecord,
 )
@@ -19,6 +18,7 @@ from app.schemas.comments import (
     CommentReactionResponse,
     ReportedCommentItem,
 )
+from app.services.notifications_service import NotificationsService, PendingNotificationDelivery
 
 
 class MissingUserContextError(Exception):
@@ -52,8 +52,14 @@ class CommentModerationError(Exception):
 class ArticleCommentsService:
     """Create and list threaded article comments plus reply/report events."""
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        *,
+        notifications_service: NotificationsService,
+    ) -> None:
         self._session_factory = session_factory
+        self._notifications_service = notifications_service
 
     async def list_comments(
         self,
@@ -192,7 +198,7 @@ class ArticleCommentsService:
             parent.updated_at = now
             session.add(reply)
 
-            await self._create_reply_notification(
+            pending_notification = await self._create_reply_notification(
                 session,
                 parent=parent,
                 article=article,
@@ -202,6 +208,7 @@ class ArticleCommentsService:
 
             await session.commit()
             await session.refresh(reply)
+            await self._notifications_service.deliver_push(pending_notification)
             return self._to_reply_schema(reply, report_count=0)
 
     async def toggle_like(
@@ -228,6 +235,7 @@ class ArticleCommentsService:
                 )
             )
             existing = existing_result.scalar_one_or_none()
+            pending_notification: PendingNotificationDelivery | None = None
             if existing is None:
                 session.add(
                     CommentReactionRecord(
@@ -240,7 +248,7 @@ class ArticleCommentsService:
                 comment.like_count += 1
                 liked = True
                 article = await self._load_article_or_raise(session, comment.article_id)
-                await self._create_like_notification(
+                pending_notification = await self._create_like_notification(
                     session,
                     comment=comment,
                     article=article,
@@ -253,6 +261,8 @@ class ArticleCommentsService:
 
             comment.updated_at = datetime.utcnow()
             await session.commit()
+            if liked:
+                await self._notifications_service.deliver_push(pending_notification)
             return CommentReactionResponse(
                 comment_id=comment.id,
                 reaction_type="like",
@@ -458,9 +468,9 @@ class ArticleCommentsService:
         article: NewsArticleRecord,
         actor: UserRecord,
         reply: ArticleCommentRecord,
-    ) -> None:
+    ) -> PendingNotificationDelivery | None:
         if parent.user_id is None or parent.user_id == actor.id:
-            return
+            return None
 
         preference_result = await session.execute(
             select(UserPreferenceRecord).where(
@@ -469,21 +479,18 @@ class ArticleCommentsService:
         )
         preferences = preference_result.scalar_one_or_none()
         if preferences is not None and not preferences.comment_replies:
-            return
+            return None
 
-        session.add(
-            NotificationRecord(
-                user_id=parent.user_id,
-                type="comment_reply",
-                title="New reply to your comment",
-                body=f"{self._user_display_name(actor)} replied on \"{article.title}\".",
-                actor_user_id=actor.id,
-                actor_name=self._user_display_name(actor),
-                article_id=article.id,
-                comment_id=reply.id,
-                is_read=False,
-                created_at=datetime.utcnow(),
-            )
+        return await self._notifications_service.create_notification(
+            session,
+            user_id=parent.user_id,
+            type="comment_reply",
+            title="New reply to your comment",
+            body=f"{self._user_display_name(actor)} replied on \"{article.title}\".",
+            actor_user_id=actor.id,
+            actor_name=self._user_display_name(actor),
+            article_id=article.id,
+            comment_id=reply.id,
         )
 
     async def _create_like_notification(
@@ -493,9 +500,9 @@ class ArticleCommentsService:
         comment: ArticleCommentRecord,
         article: NewsArticleRecord,
         actor: UserRecord,
-    ) -> None:
+    ) -> PendingNotificationDelivery | None:
         if comment.user_id is None or comment.user_id == actor.id:
-            return
+            return None
 
         preference_result = await session.execute(
             select(UserPreferenceRecord).where(
@@ -504,21 +511,18 @@ class ArticleCommentsService:
         )
         preferences = preference_result.scalar_one_or_none()
         if preferences is not None and not preferences.comment_replies:
-            return
+            return None
 
-        session.add(
-            NotificationRecord(
-                user_id=comment.user_id,
-                type="comment_like",
-                title="Someone liked your comment",
-                body=f"{self._user_display_name(actor)} liked your comment on \"{article.title}\".",
-                actor_user_id=actor.id,
-                actor_name=self._user_display_name(actor),
-                article_id=article.id,
-                comment_id=comment.id,
-                is_read=False,
-                created_at=datetime.utcnow(),
-            )
+        return await self._notifications_service.create_notification(
+            session,
+            user_id=comment.user_id,
+            type="comment_like",
+            title="Someone liked your comment",
+            body=f"{self._user_display_name(actor)} liked your comment on \"{article.title}\".",
+            actor_user_id=actor.id,
+            actor_name=self._user_display_name(actor),
+            article_id=article.id,
+            comment_id=comment.id,
         )
 
     def _normalize_user_id(self, value: str | None) -> str:

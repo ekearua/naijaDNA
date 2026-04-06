@@ -24,6 +24,17 @@ abstract class NotificationsRemoteDataSource {
   Future<void> markRead(int notificationId);
 
   Future<int> markAllRead();
+
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+    String? userIdOverride,
+  });
+
+  Future<void> unregisterDeviceToken({
+    required String token,
+    String? userIdOverride,
+  });
 }
 
 class NotificationsRemoteDataSourceImpl
@@ -53,10 +64,7 @@ class NotificationsRemoteDataSourceImpl
     final response = await _apiClient.get(
       '/notifications',
       headers: {'x-user-id': userId},
-      queryParameters: {
-        'limit': limit,
-        'unread_only': unreadOnly,
-      },
+      queryParameters: {'limit': limit, 'unread_only': unreadOnly},
     );
 
     final rawItems = response['items'];
@@ -107,6 +115,47 @@ class NotificationsRemoteDataSourceImpl
       headers: {'x-user-id': userId},
     );
     return ((response['marked_count'] as num?) ?? 0).toInt();
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+    String? userIdOverride,
+  }) async {
+    final userId = userIdOverride ?? await _currentUserId();
+    if (userId == null) {
+      throw const ServerException(
+        'Sign in is required to register this device for notifications.',
+        statusCode: 401,
+      );
+    }
+
+    await _apiClient.post(
+      '/notifications/devices',
+      headers: {'x-user-id': userId},
+      data: {'token': token.trim(), 'platform': platform.trim()},
+    );
+  }
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String token,
+    String? userIdOverride,
+  }) async {
+    final userId = userIdOverride ?? await _currentUserId();
+    if (userId == null) {
+      throw const ServerException(
+        'Sign in is required to unregister this device.',
+        statusCode: 401,
+      );
+    }
+
+    await _apiClient.delete(
+      '/notifications/devices',
+      headers: {'x-user-id': userId},
+      data: {'token': token.trim()},
+    );
   }
 
   Future<String?> _currentUserId() async {

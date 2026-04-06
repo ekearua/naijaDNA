@@ -12,9 +12,7 @@
             "program": "lib/main.dart",
             "flutterMode": "debug",
             "toolArgs": [
-                "--web-port=7357",
-                "--web-launch-url=http://localhost:7357/admin/login",
-                "--dart-define=API_BASE_URL=https://countless-lahoma-uncontemporaneously.ngrok-free.dev/api/v1"
+                "--dart-define=API_BASE_URL=https://naijadna.onrender.com/api/v1"
             ]
         },
         {
@@ -40,7 +38,7 @@
             "toolArgs": [
                 "--web-port=7357",
                 "--web-launch-url=http://localhost:7357/admin/login",
-                "--dart-define=API_BASE_URL=https://countless-lahoma-uncontemporaneously.ngrok-free.dev/api/v1"
+                "--dart-define=API_BASE_URL=https://naijadna.onrender.com/api/v1"
             ]
         },
         {

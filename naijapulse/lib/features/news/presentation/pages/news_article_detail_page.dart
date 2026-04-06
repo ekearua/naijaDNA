@@ -10,6 +10,7 @@ import 'package:naijapulse/core/routing/app_router.dart';
 import 'package:naijapulse/core/routing/external_link.dart';
 import 'package:naijapulse/core/services/article_tts_service.dart';
 import 'package:naijapulse/core/theme/theme.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/data/datasource/remote/news_remote_datasource.dart';
 import 'package:naijapulse/features/news/data/models/news_readable_text_model.dart';
@@ -453,28 +454,34 @@ class _ArticleDetailScaffold extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        leading: IconButton.filledTonal(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-              return;
-            }
-            context.go(AppRouter.homePath);
-          },
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.black.withValues(alpha: 0.18),
-            foregroundColor: Colors.white,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: AppIconButton(
+            icon: Icons.arrow_back_rounded,
+            tooltip: 'Back',
+            semanticLabel: 'Go back',
+            style: AppIconButtonStyle.contrast,
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+                return;
+              }
+              context.go(AppRouter.homePath);
+            },
           ),
-          icon: const Icon(Icons.arrow_back_rounded),
         ),
         actions: [
-          IconButton.filledTonal(
-            onPressed: hasValidSource ? () => _openSource(context, uri) : null,
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.black.withValues(alpha: 0.18),
-              foregroundColor: Colors.white,
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: AppIconButton(
+              icon: Icons.open_in_new_rounded,
+              tooltip: 'Open source',
+              semanticLabel: 'Open source article',
+              style: AppIconButtonStyle.contrast,
+              onPressed: hasValidSource
+                  ? () => _openSource(context, uri)
+                  : null,
             ),
-            icon: const Icon(Icons.open_in_new_rounded),
           ),
         ],
       ),
@@ -915,25 +922,16 @@ class _StoryTagWrap extends StatelessWidget {
       runSpacing: 8,
       children: visibleTags
           .map(
-            (tag) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppTheme.darkSurfaceMuted
-                    : const Color(0xFFF2EEE7),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: isDark
-                      ? AppTheme.darkDivider
-                      : const Color(0xFFE1D8CB),
-                ),
-              ),
-              child: Text(
-                tag,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
+            (tag) => AppActionChip(
+              label: tag,
+              compact: true,
+              selected: true,
+              selectedColor: isDark
+                  ? AppTheme.darkSurfaceMuted
+                  : const Color(0xFFF6F7F8),
+              selectedForegroundColor: isDark
+                  ? AppTheme.darkTextPrimary
+                  : AppTheme.textPrimary,
             ),
           )
           .toList(growable: false),
@@ -970,75 +968,39 @@ class _ActionPills extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: [
-        _ActionPill(
+        AppActionChip(
+          icon: Icons.bookmark_border_rounded,
           label: 'Save',
-          backgroundColor: mutedBackground,
-          foregroundColor: mutedForeground,
+          selected: true,
+          selectedColor: mutedBackground,
+          selectedForegroundColor: mutedForeground,
           onTap: onSave,
         ),
-        _ActionPill(
+        AppActionChip(
+          icon: Icons.forum_outlined,
           label: 'Discuss',
-          backgroundColor: mutedBackground,
-          foregroundColor: mutedForeground,
+          selected: true,
+          selectedColor: mutedBackground,
+          selectedForegroundColor: mutedForeground,
           onTap: onDiscuss,
         ),
-        _ActionPill(
+        AppActionChip(
+          icon: Icons.volume_up_rounded,
           label: listenLabel,
-          backgroundColor: AppTheme.primary.withValues(alpha: 0.14),
-          foregroundColor: AppTheme.primary,
+          selected: true,
+          selectedColor: AppTheme.primary.withValues(alpha: 0.14),
+          selectedForegroundColor: AppTheme.primary,
           onTap: onListen,
         ),
-        _ActionPill(
+        AppActionChip(
+          icon: Icons.open_in_new_rounded,
           label: 'Open Source',
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.white,
+          selected: true,
+          selectedColor: AppTheme.primary,
+          selectedForegroundColor: Colors.white,
           onTap: onOpenSource,
         ),
       ],
-    );
-  }
-}
-
-class _ActionPill extends StatelessWidget {
-  const _ActionPill({
-    required this.label,
-    required this.backgroundColor,
-    required this.foregroundColor,
-    required this.onTap,
-  });
-
-  final String label;
-  final Color backgroundColor;
-  final Color foregroundColor;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        decoration: BoxDecoration(
-          color: onTap == null
-              ? backgroundColor.withValues(alpha: 0.45)
-              : backgroundColor,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
-          ),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: foregroundColor,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1257,6 +1219,12 @@ class _RelatedStoryCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 10),
+            const AppIcon(
+              Icons.chevron_right_rounded,
+              size: AppIconSize.small,
+              tone: AppIconTone.muted,
+            ),
           ],
         ),
       ),
@@ -1382,15 +1350,18 @@ class _ArticleSourceWebViewPageState extends State<_ArticleSourceWebViewPage> {
               : const SizedBox.shrink(),
         ),
         actions: [
-          IconButton(
+          AppIconButton(
+            icon: Icons.forum_outlined,
             onPressed: () => context.push(
               AppRouter.articleDiscussionPath(widget.story.id),
               extra: widget.story,
             ),
-            icon: const Icon(Icons.forum_outlined),
             tooltip: 'Discussion',
+            semanticLabel: 'Open discussion',
+            style: AppIconButtonStyle.tonal,
           ),
-          IconButton(
+          AppIconButton(
+            icon: Icons.refresh_rounded,
             onPressed: () {
               setState(() {
                 _errorMessage = null;
@@ -1398,8 +1369,9 @@ class _ArticleSourceWebViewPageState extends State<_ArticleSourceWebViewPage> {
               });
               _controller.loadRequest(widget.uri);
             },
-            icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Reload',
+            semanticLabel: 'Reload article source',
+            style: AppIconButtonStyle.tonal,
           ),
         ],
       ),

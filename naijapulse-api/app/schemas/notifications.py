@@ -34,3 +34,17 @@ class NotificationReadResponse(BaseModel):
 class NotificationReadAllResponse(BaseModel):
     status: str = "ok"
     marked_count: int = Field(..., ge=0)
+
+
+class DeviceTokenUpsertRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=512)
+    platform: str = Field(default="unknown", min_length=2, max_length=24)
+
+
+class DeviceTokenDeleteRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=512)
+
+
+class DeviceTokenResponse(BaseModel):
+    status: str = "ok"
+    token: str

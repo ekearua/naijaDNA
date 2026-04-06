@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/meta_badge.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
@@ -59,10 +60,10 @@ class SearchFeedStoryTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(
+                      const AppIcon(
                         Icons.radio_button_checked_rounded,
-                        size: 11,
-                        color: Theme.of(context).colorScheme.primary,
+                        size: AppIconSize.xSmall,
+                        tone: AppIconTone.accent,
                       ),
                       const SizedBox(width: 5),
                       Expanded(

@@ -35,6 +35,19 @@ class Settings(BaseSettings):
     enable_gnews_source: bool = False
     auth_token_secret: str = "change-me-in-env"
     auth_access_token_ttl_seconds: int = 60 * 60 * 24 * 7
+    firebase_service_account_json: str = ""
+    email_enabled: bool = False
+    email_smtp_host: str = ""
+    email_smtp_port: int = 587
+    email_smtp_username: str = ""
+    email_smtp_password: str = ""
+    email_smtp_security: str = "starttls"
+    email_from_address: str = ""
+    email_from_name: str = "naijaDNA"
+    email_reply_to: str = ""
+    email_support_address: str = ""
+    email_web_base_url: str = "http://localhost:7357"
+    email_admin_web_base_url: str = "http://localhost:7357"
     stream_viewer_presence_ttl_seconds: int = 75
     livekit_url: str = ""
     livekit_api_key: str = ""
@@ -93,6 +106,15 @@ class Settings(BaseSettings):
                 self.livekit_url.strip(),
                 self.livekit_api_key.strip(),
                 self.livekit_api_secret.strip(),
+            )
+        )
+
+    @property
+    def email_configured(self) -> bool:
+        return all(
+            (
+                self.email_smtp_host.strip(),
+                self.email_from_address.strip(),
             )
         )
 

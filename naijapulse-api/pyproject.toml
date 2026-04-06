@@ -16,4 +16,5 @@ dependencies = [
     "asyncpg>=0.29.0",
     "alembic>=1.13.2",
     "livekit-api>=1.0.2",
+    "firebase-admin>=7.3.0",
 ]

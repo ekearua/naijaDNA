@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/app_runtime.dart';
 import 'core/di/injection_container.dart';
@@ -18,9 +19,28 @@ Future<void> bootstrapApp({
     usePathUrlStrategy();
   }
 
+  await _initializeFirebase();
   AppRuntime.configure(variant);
   await InjectionContainer.init();
   runApp(_NaijaDNAApp(title: title, routerConfig: routerConfig));
+}
+
+Future<void> _initializeFirebase() async {
+  if (kIsWeb) {
+    return;
+  }
+
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.android:
+      await Firebase.initializeApp();
+      return;
+    case TargetPlatform.iOS:
+    case TargetPlatform.fuchsia:
+    case TargetPlatform.linux:
+    case TargetPlatform.macOS:
+    case TargetPlatform.windows:
+      return;
+  }
 }
 
 class _NaijaDNAApp extends StatefulWidget {

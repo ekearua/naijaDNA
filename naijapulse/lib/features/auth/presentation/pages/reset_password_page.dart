@@ -159,7 +159,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Paste the reset token from your recovery link, then set a new password for your account.',
+            'Use the secure link from your email to set a new password. If you opened this page from the link, the token is already filled in below.',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),

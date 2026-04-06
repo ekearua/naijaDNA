@@ -837,6 +837,12 @@ class PersonalizationService:
             title=row.title,
             source=row.source,
             category=row.category,
+            tags=[
+                tag.tag.strip()
+                for tag in row.tags
+                if tag.tag and tag.tag.strip()
+            ]
+            or [row.category],
             summary=plain_text_excerpt(row.summary),
             url=row.url,
             image_url=image_url,

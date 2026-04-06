@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:naijapulse/core/app_runtime.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
+import 'package:naijapulse/core/theme/theme.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/features/auth/domain/entities/auth_session.dart';
 import 'package:naijapulse/features/auth/domain/usecases/get_cached_session.dart';
+import 'package:naijapulse/features/notifications/data/notification_action_service.dart';
 import 'package:naijapulse/features/notifications/data/notifications_inbox_controller.dart';
 import 'package:naijapulse/features/notifications/data/datasource/remote/notifications_remote_datasource.dart';
 import 'package:naijapulse/features/notifications/domain/entities/app_notification.dart';
@@ -25,6 +27,8 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
       InjectionContainer.sl<NotificationsRemoteDataSource>();
   final NotificationsInboxController _inboxController =
       InjectionContainer.sl<NotificationsInboxController>();
+  final NotificationActionService _notificationActionService =
+      InjectionContainer.sl<NotificationActionService>();
 
   AuthSession? _session;
   List<AppNotification> _notifications = const <AppNotification>[];
@@ -133,78 +137,31 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
   }
 
   Future<void> _openNotification(AppNotification item) async {
-    final canOpenAdminArticle =
-        (_session?.canManageEditorialContent ?? false) &&
-        AppRuntime.supportsAdminRoutes;
-
-    if (!item.isRead) {
-      try {
-        await _remote.markRead(item.id);
-        if (mounted) {
-          setState(() {
-            _notifications = _notifications
-                .map(
-                  (entry) => entry.id == item.id
-                      ? AppNotification(
-                          id: entry.id,
-                          type: entry.type,
-                          title: entry.title,
-                          body: entry.body,
-                          actorUserId: entry.actorUserId,
-                          actorName: entry.actorName,
-                          articleId: entry.articleId,
-                          commentId: entry.commentId,
-                          isRead: true,
-                          createdAt: entry.createdAt,
-                        )
-                      : entry,
-                )
-                .toList();
-            _unreadCount = (_unreadCount - 1).clamp(0, 9999);
-          });
-        }
-        _inboxController.markOneReadLocally();
-      } catch (_) {}
-    }
-
-    if (!mounted) {
+    await _notificationActionService.openNotification(item);
+    if (!mounted || item.isRead) {
       return;
     }
-
-    if (item.articleId == null) {
-      return;
-    }
-
-    if ((item.type == 'comment_reply' || item.type == 'comment_like') &&
-        item.commentId != null) {
-      await context.push(
-        AppRouter.articleDiscussionPath(
-          item.articleId!,
-          commentId: item.commentId,
-        ),
-      );
-      return;
-    }
-
-    if (item.type == 'article_published') {
-      if (canOpenAdminArticle) {
-        await context.push(AppRouter.adminArticleDetailPath(item.articleId!));
-        return;
-      }
-      await context.push(AppRouter.newsDetailPath(item.articleId!));
-      return;
-    }
-
-    if (item.type.startsWith('article_')) {
-      await context.push(
-        canOpenAdminArticle
-            ? AppRouter.adminArticleDetailPath(item.articleId!)
-            : AppRouter.newsSubmitPath,
-      );
-      return;
-    }
-
-    await context.push(AppRouter.newsDetailPath(item.articleId!));
+    setState(() {
+      _notifications = _notifications
+          .map(
+            (entry) => entry.id == item.id
+                ? AppNotification(
+                    id: entry.id,
+                    type: entry.type,
+                    title: entry.title,
+                    body: entry.body,
+                    actorUserId: entry.actorUserId,
+                    actorName: entry.actorName,
+                    articleId: entry.articleId,
+                    commentId: entry.commentId,
+                    isRead: true,
+                    createdAt: entry.createdAt,
+                  )
+                : entry,
+          )
+          .toList();
+      _unreadCount = (_unreadCount - 1).clamp(0, 9999);
+    });
   }
 
   @override
@@ -232,10 +189,10 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const AppIcon(
                 Icons.notifications_outlined,
-                size: 40,
-                color: Theme.of(context).colorScheme.primary,
+                size: AppIconSize.large,
+                tone: AppIconTone.accent,
               ),
               const SizedBox(height: 12),
               Text(
@@ -316,10 +273,11 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: _markingAllRead ? null : _markAllRead,
-              icon: const Icon(Icons.done_all_rounded),
-              label: Text(_markingAllRead ? 'Marking...' : 'Mark all read'),
+            child: AppActionChip(
+              icon: Icons.done_all_rounded,
+              label: _markingAllRead ? 'Marking...' : 'Mark all read',
+              compact: true,
+              onTap: _markingAllRead ? null : _markAllRead,
             ),
           ),
           const SizedBox(height: 8),
@@ -327,11 +285,23 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
             (item) => Card(
               margin: const EdgeInsets.only(bottom: 10),
               child: ListTile(
-                leading: Icon(
-                  _iconFor(item.type),
-                  color: item.isRead
-                      ? Theme.of(context).colorScheme.outline
-                      : Theme.of(context).colorScheme.primary,
+                leading: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: item.isRead
+                        ? Theme.of(context).colorScheme.surfaceContainerLow
+                        : AppTheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: AppIcon(
+                    _iconFor(item.type),
+                    size: AppIconSize.small,
+                    color: item.isRead
+                        ? Theme.of(context).colorScheme.outline
+                        : AppTheme.primary,
+                  ),
                 ),
                 title: Text(
                   item.title,
@@ -342,6 +312,20 @@ class _NotificationsHomePageState extends State<NotificationsHomePage> {
                 subtitle: Text(
                   '${item.body}\n${relativeTimeLabel(item.createdAt)}',
                 ),
+                trailing: item.isRead
+                    ? const AppIcon(
+                        Icons.chevron_right_rounded,
+                        size: AppIconSize.small,
+                        tone: AppIconTone.muted,
+                      )
+                    : Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                 isThreeLine: true,
                 onTap: () => _openNotification(item),
               ),

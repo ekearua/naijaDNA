@@ -284,6 +284,11 @@ class AppRouter {
       ),
     ),
     GoRoute(
+      path: resetPasswordPath,
+      builder: (context, state) =>
+          ResetPasswordPage(initialToken: state.uri.queryParameters['token']),
+    ),
+    GoRoute(
       path: alertsPath,
       builder: (context, state) =>
           const _StandaloneFeedScope(child: NotificationsHomePage()),

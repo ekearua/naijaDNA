@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
@@ -23,23 +24,42 @@ class AppBottomNavBar extends StatelessWidget {
           onDestinationSelected: onTap,
           destinations: [
             const NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
+              icon: AppIcon(Icons.home_outlined, size: AppIconSize.large),
+              selectedIcon: AppIcon(
+                Icons.home_rounded,
+                size: AppIconSize.large,
+                tone: AppIconTone.accent,
+              ),
               label: 'Home',
             ),
             const NavigationDestination(
-              icon: Icon(Icons.sensors_outlined),
-              selectedIcon: Icon(Icons.sensors_rounded),
+              icon: AppIcon(Icons.sensors_outlined, size: AppIconSize.large),
+              selectedIcon: AppIcon(
+                Icons.sensors_rounded,
+                size: AppIconSize.large,
+                tone: AppIconTone.accent,
+              ),
               label: 'Live',
             ),
             const NavigationDestination(
-              icon: Icon(Icons.explore_outlined),
-              selectedIcon: Icon(Icons.explore_rounded),
+              icon: AppIcon(Icons.explore_outlined, size: AppIconSize.large),
+              selectedIcon: AppIcon(
+                Icons.explore_rounded,
+                size: AppIconSize.large,
+                tone: AppIconTone.accent,
+              ),
               label: 'Explore',
             ),
             const NavigationDestination(
-              icon: Icon(Icons.bookmark_border_rounded),
-              selectedIcon: Icon(Icons.bookmark_rounded),
+              icon: AppIcon(
+                Icons.bookmark_border_rounded,
+                size: AppIconSize.large,
+              ),
+              selectedIcon: AppIcon(
+                Icons.bookmark_rounded,
+                size: AppIconSize.large,
+                tone: AppIconTone.accent,
+              ),
               label: 'Saved',
             ),
             NavigationDestination(
@@ -71,28 +91,11 @@ class _NavBadgeIcon extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Icon(icon),
+        AppIcon(icon, size: AppIconSize.large),
         if (count > 0)
-          Positioned(
-            right: -8,
-            top: -6,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              constraints: const BoxConstraints(minWidth: 18),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                count > 99 ? '99+' : '$count',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onError,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
+          Positioned(right: -8, top: -6, child: const SizedBox.shrink()),
+        if (count > 0)
+          Positioned(right: -8, top: -6, child: AppBadge(count: count)),
       ],
     );
   }

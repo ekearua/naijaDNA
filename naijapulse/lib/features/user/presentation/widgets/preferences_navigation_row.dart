@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 
 class PreferencesNavigationRow extends StatelessWidget {
   const PreferencesNavigationRow({
     required this.title,
     this.valueLabel,
+    this.leadingIcon,
     this.showDivider = true,
     this.onTap,
     super.key,
@@ -11,6 +13,7 @@ class PreferencesNavigationRow extends StatelessWidget {
 
   final String title;
   final String? valueLabel;
+  final IconData? leadingIcon;
   final bool showDivider;
   final VoidCallback? onTap;
 
@@ -29,6 +32,14 @@ class PreferencesNavigationRow extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
         child: Row(
           children: [
+            if (leadingIcon != null) ...[
+              AppIcon(
+                leadingIcon!,
+                size: AppIconSize.small,
+                tone: AppIconTone.secondary,
+              ),
+              const SizedBox(width: 12),
+            ],
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -48,9 +59,10 @@ class PreferencesNavigationRow extends StatelessWidget {
               ),
               const SizedBox(width: 6),
             ],
-            Icon(
+            const AppIcon(
               Icons.chevron_right_rounded,
-              color: Theme.of(context).colorScheme.outline,
+              size: AppIconSize.small,
+              tone: AppIconTone.muted,
             ),
           ],
         ),

@@ -139,7 +139,7 @@ class _AdminResetPasswordPageState extends State<AdminResetPasswordPage> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Use the reset token generated from the recovery flow, then set a new password for your admin account.',
+                                'Use the secure link from your email to set a new password for your admin account. If you opened this page from that link, the token is already filled in below.',
                                 style: Theme.of(context).textTheme.bodyLarge
                                     ?.copyWith(color: const Color(0xFF4B453E)),
                               ),

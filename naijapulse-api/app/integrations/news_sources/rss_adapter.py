@@ -79,12 +79,14 @@ class RssNewsSourceAdapter:
             published_at=published_at,
         )
         image_url = self._extract_image(entry, fallback_link=link)
+        tags = self._extract_tags(entry, category=category)
 
         return NewsArticle(
             id=article_id,
             title=title or "Untitled",
             source=source_name,
             category=category,
+            tags=tags,
             summary=summary,
             url=link or None,
             image_url=image_url or None,
@@ -145,6 +147,27 @@ class RssNewsSourceAdapter:
             source=source_name,
             fallback=fallback,
         )
+
+    def _extract_tags(self, entry: Any, *, category: str) -> list[str]:
+        values: list[str] = [category]
+        tags = getattr(entry, "tags", None) or []
+        for item in tags:
+            term = item.get("term") if isinstance(item, dict) else None
+            if term:
+                values.append(str(term).strip())
+
+        normalized: list[str] = []
+        seen: set[str] = set()
+        for raw in values:
+            tag = str(raw or "").strip()
+            if not tag:
+                continue
+            key = tag.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            normalized.append(tag)
+        return normalized
 
     def _extract_image(self, entry: Any, *, fallback_link: str) -> str:
         entry_image = getattr(entry, "image", None)

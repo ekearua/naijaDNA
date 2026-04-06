@@ -7,6 +7,7 @@ import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
 import 'package:naijapulse/core/theme/theme.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/data/datasource/remote/news_remote_datasource.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
@@ -149,9 +150,10 @@ class _SearchPageState extends State<SearchPage> {
                   runSpacing: 10,
                   children: suggestedQueries
                       .map(
-                        (query) => ActionChip(
-                          label: Text(query),
-                          onPressed: () => _applyQuery(query),
+                        (query) => AppActionChip(
+                          label: query,
+                          compact: true,
+                          onTap: () => _applyQuery(query),
                         ),
                       )
                       .toList(),
@@ -539,9 +541,12 @@ class _ExploreHeader extends StatelessWidget {
     return Row(
       children: [
         if (showBackButton)
-          IconButton(
+          AppIconButton(
+            icon: Icons.arrow_back_rounded,
             onPressed: onBackTap,
-            icon: const Icon(Icons.arrow_back_rounded),
+            tooltip: 'Back',
+            semanticLabel: 'Go back',
+            style: AppIconButtonStyle.tonal,
           ),
         if (showBackButton) const SizedBox(width: 4),
         Text(
@@ -570,7 +575,11 @@ class _ExploreSectionHeader extends StatelessWidget {
           child: Text(title, style: Theme.of(context).textTheme.headlineSmall),
         ),
         if (trailingIcon != null)
-          Icon(trailingIcon, color: Theme.of(context).colorScheme.primary),
+          AppIcon(
+            trailingIcon!,
+            size: AppIconSize.small,
+            tone: AppIconTone.accent,
+          ),
       ],
     );
   }
@@ -681,7 +690,11 @@ class _CategoryTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.grid_view_rounded, color: AppTheme.primary, size: 18),
+            const AppIcon(
+              Icons.grid_view_rounded,
+              size: AppIconSize.small,
+              tone: AppIconTone.accent,
+            ),
             const Spacer(),
             Text(
               label,
@@ -733,9 +746,17 @@ class _RecentSearchesCard extends StatelessWidget {
           ...items.map(
             (item) => ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.history_rounded),
+              leading: const AppIcon(
+                Icons.history_rounded,
+                size: AppIconSize.small,
+                tone: AppIconTone.secondary,
+              ),
               title: Text(item),
-              trailing: const Icon(Icons.chevron_right_rounded),
+              trailing: const AppIcon(
+                Icons.chevron_right_rounded,
+                size: AppIconSize.small,
+                tone: AppIconTone.muted,
+              ),
               onTap: () => onTap(item),
             ),
           ),

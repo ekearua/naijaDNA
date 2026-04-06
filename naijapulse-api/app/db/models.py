@@ -107,6 +107,37 @@ class NewsArticleRecord(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    tags: Mapped[list["ArticleTagRecord"]] = relationship(
+        back_populates="article",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+        order_by="ArticleTagRecord.tag.asc()",
+    )
+
+
+class ArticleTagRecord(Base):
+    __tablename__ = "article_tags"
+    __table_args__ = (
+        UniqueConstraint(
+            "article_id",
+            "normalized_tag",
+            name="uq_article_tags_article_normalized_tag",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
+    article_id: Mapped[str] = mapped_column(
+        String(96),
+        ForeignKey("news_articles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    tag: Mapped[str] = mapped_column(String(120), nullable=False)
+    normalized_tag: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
+
+    article: Mapped[NewsArticleRecord] = relationship(back_populates="tags")
 
 
 class NewsSourceRecord(Base):

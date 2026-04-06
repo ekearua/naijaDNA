@@ -9,6 +9,7 @@ import 'package:naijapulse/core/error/failures.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
 import 'package:naijapulse/core/sync/sync_cubit.dart';
 import 'package:naijapulse/core/theme/theme.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/empty_state_card.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/auth/data/auth_session_controller.dart';
@@ -41,8 +42,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
   String? _selectedCategoryFilter;
   String? _selectedSecondaryChipKey;
   List<NewsArticle> _forYouStories = const <NewsArticle>[];
-  bool _loadingForYou = true;
-  String? _forYouError;
   final Set<String> _recordedForYouImpressions = <String>{};
 
   @override
@@ -128,10 +127,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
   }
 
   Future<void> _loadForYouStories() async {
-    setState(() {
-      _loadingForYou = true;
-      _forYouError = null;
-    });
     try {
       final stories = await _remote.fetchPersonalizedStories(
         limit: 12,
@@ -146,11 +141,9 @@ class _NewsHomePageState extends State<NewsHomePage> {
       if (!mounted) {
         return;
       }
-      setState(() => _forYouError = mapFailure(error).message);
-    } finally {
-      if (mounted) {
-        setState(() => _loadingForYou = false);
-      }
+      setState(() {
+        _forYouStories = const <NewsArticle>[];
+      });
     }
   }
 
@@ -171,6 +164,7 @@ class _NewsHomePageState extends State<NewsHomePage> {
         ),
       ).catchError((_) {
         // Impression telemetry should never interrupt the feed.
+        return <bool>[];
       }),
     );
   }
@@ -319,6 +313,18 @@ class _NewsHomePageState extends State<NewsHomePage> {
         .toList(growable: false);
   }
 
+  List<NewsArticle> _excludeStoriesById(
+    List<NewsArticle> stories,
+    Set<String> excludedIds,
+  ) {
+    if (excludedIds.isEmpty) {
+      return stories;
+    }
+    return stories
+        .where((story) => !excludedIds.contains(story.id))
+        .toList(growable: false);
+  }
+
   List<Widget> _buildCategorySectionWidgets(
     HomepageCategoryFeedModel categorySection,
   ) {
@@ -381,6 +387,11 @@ class _NewsHomePageState extends State<NewsHomePage> {
     final topStories = _filterStoriesByCategory(
       homepage?.topStories.toList(growable: false) ?? const <NewsArticle>[],
       selectedCategoryFilter,
+    );
+    final topStoryIds = topStories.map((story) => story.id).toSet();
+    final dedupedLatestStories = _excludeStoriesById(
+      latestStories,
+      topStoryIds,
     );
     final selectedSecondaryChip = _findSelectedSecondaryChip(homepage);
     final filteredSecondaryChipStories = selectedSecondaryChip == null
@@ -466,7 +477,7 @@ class _NewsHomePageState extends State<NewsHomePage> {
                     ),
                     const SizedBox(height: 24),
                   ],
-                  if (latestStories.isNotEmpty) ...[
+                  if (dedupedLatestStories.isNotEmpty) ...[
                     _SectionHeading(
                       title: 'Latest Stories',
                       subtitle: latestStoriesArePersonalized
@@ -474,7 +485,7 @@ class _NewsHomePageState extends State<NewsHomePage> {
                           : null,
                     ),
                     const SizedBox(height: 14),
-                    ...latestStories.map(
+                    ...dedupedLatestStories.map(
                       (story) => Padding(
                         padding: const EdgeInsets.only(bottom: 18),
                         child: _EditorialStoryCard(
@@ -599,28 +610,12 @@ class _NewsHomePageState extends State<NewsHomePage> {
               ),
             ),
             const Spacer(),
-            Container(
-              decoration: BoxDecoration(
-                color: headerSurface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: headerForeground.withValues(alpha: 0.08),
-                ),
-              ),
-              child: IconButton(
-                onPressed: () => context.push(AppRouter.searchPath),
-                icon: Icon(
-                  Icons.search_rounded,
-                  color: headerForeground,
-                  size: 18,
-                ),
-                constraints: const BoxConstraints.tightFor(
-                  width: 36,
-                  height: 36,
-                ),
-                padding: EdgeInsets.zero,
-                tooltip: 'Search',
-              ),
+            AppIconButton(
+              icon: Icons.search_rounded,
+              onPressed: () => context.push(AppRouter.searchPath),
+              tooltip: 'Search',
+              semanticLabel: 'Search articles',
+              style: AppIconButtonStyle.glass,
             ),
           ],
         ),
@@ -714,94 +709,36 @@ class _EditorialChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: InkWell(
-                onTap: () => onSelected(null),
-                borderRadius: BorderRadius.circular(14),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: selectedCategory == null
-                        ? AppTheme.primary
-                        : theme.colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: selectedCategory == null
-                          ? AppTheme.primary.withValues(alpha: 0.14)
-                          : theme.dividerColor.withValues(alpha: 0.12),
-                    ),
-                  ),
-                  child: Text(
-                    'All',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: selectedCategory == null
-                          ? Colors.white
-                          : theme.colorScheme.onSurface,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: AppActionChip(
+              label: 'All',
+              selected: selectedCategory == null,
+              selectedColor: AppTheme.primary,
+              selectedForegroundColor: Colors.white,
+              onTap: () => onSelected(null),
             ),
-            ...categories.map((category) {
-              final isSelected =
-                  category.toLowerCase() == selectedCategory?.toLowerCase();
-              final color = categoryColor(category);
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: InkWell(
-                  onTap: () => onSelected(category),
-                  borderRadius: BorderRadius.circular(14),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? color.withValues(alpha: 0.88)
-                          : theme.colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isSelected
-                            ? color.withValues(alpha: 0.14)
-                            : theme.dividerColor.withValues(alpha: 0.12),
-                      ),
-                    ),
-                    child: Text(
-                      category,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: isSelected
-                            ? Colors.white
-                            : theme.colorScheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ],
-        ),
+          ),
+          ...categories.map((category) {
+            final isSelected =
+                category.toLowerCase() == selectedCategory?.toLowerCase();
+            final color = categoryColor(category);
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: AppActionChip(
+                label: category,
+                selected: isSelected,
+                selectedColor: color.withValues(alpha: 0.12),
+                selectedForegroundColor: color,
+                onTap: () => onSelected(category),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -820,18 +757,15 @@ class _SecondaryChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(
-          alpha: isDark ? 0.72 : 0.92,
+        color: Theme.of(context).colorScheme.surface.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.72 : 0.92,
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark
+          color: Theme.of(context).brightness == Brightness.dark
               ? Colors.white.withValues(alpha: 0.08)
               : AppTheme.textPrimary.withValues(alpha: 0.06),
         ),
@@ -841,8 +775,8 @@ class _SecondaryChipRow extends StatelessWidget {
         children: [
           Text(
             'Focus rails',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: isDark
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white.withValues(alpha: 0.72)
                   : AppTheme.primary,
               letterSpacing: 0.6,
@@ -859,24 +793,13 @@ class _SecondaryChipRow extends StatelessWidget {
                         _parseColor(chip.colorHex) ?? AppTheme.primary;
                     return Padding(
                       padding: const EdgeInsets.only(right: 10),
-                      child: FilterChip(
-                        label: Text(chip.label),
+                      child: AppActionChip(
+                        label: chip.label,
                         selected: isSelected,
-                        onSelected: (_) => onSelected(chip.key),
+                        compact: true,
                         selectedColor: color.withValues(alpha: 0.14),
-                        backgroundColor: theme.colorScheme.surfaceContainerLow,
-                        checkmarkColor: color,
-                        labelStyle: theme.textTheme.labelLarge?.copyWith(
-                          color: isSelected
-                              ? color
-                              : theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        side: BorderSide(
-                          color: isSelected
-                              ? color.withValues(alpha: 0.4)
-                              : theme.dividerColor.withValues(alpha: 0.28),
-                        ),
+                        selectedForegroundColor: color,
+                        onTap: () => onSelected(chip.key),
                       ),
                     );
                   })
@@ -972,8 +895,6 @@ class _FeaturedStoryCard extends StatelessWidget {
     final summary =
         _distinctStorySummary(story) ??
         'Deep reporting, sharp context, and what it means next.';
-    final badgeBackground = Colors.black.withValues(alpha: 0.3);
-    final badgeBorder = Colors.white.withValues(alpha: 0.14);
 
     return InkWell(
       onTap: onTap,
@@ -1021,37 +942,15 @@ class _FeaturedStoryCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: badgeBackground,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: badgeBorder),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          story.isFactChecked
-                              ? Icons.verified_user_rounded
-                              : Icons.newspaper_rounded,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          story.isFactChecked ? 'Fact-Checked' : story.category,
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                letterSpacing: 0.8,
-                              ),
-                        ),
-                      ],
-                    ),
+                  AppActionChip(
+                    label: story.isFactChecked
+                        ? 'Fact-Checked'
+                        : story.category,
+                    icon: story.isFactChecked
+                        ? Icons.verified_user_rounded
+                        : Icons.newspaper_rounded,
+                    inverse: true,
+                    compact: true,
                   ),
                   const Spacer(),
                   ConstrainedBox(
@@ -1100,20 +999,23 @@ class _FeaturedStoryCard extends StatelessWidget {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      _HeroActionButton(
+                      AppActionChip(
                         icon: Icons.bookmark_border_rounded,
                         label: 'Save',
                         onTap: onSaveTap,
+                        inverse: true,
                       ),
-                      _HeroActionButton(
+                      AppActionChip(
                         icon: Icons.forum_outlined,
                         label: 'Discuss',
                         onTap: onDiscussTap,
+                        inverse: true,
                       ),
-                      _HeroActionButton(
+                      AppActionChip(
                         icon: Icons.share_outlined,
                         label: 'Share',
                         onTap: onShareTap,
+                        inverse: true,
                       ),
                     ],
                   ),
@@ -1121,46 +1023,6 @@ class _FeaturedStoryCard extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroActionButton extends StatelessWidget {
-  const _HeroActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: AppTheme.textPrimary),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelLarge?.copyWith(color: AppTheme.textPrimary),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -1204,71 +1066,6 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
-class _HomeSearchPrompt extends StatelessWidget {
-  const _HomeSearchPrompt({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withValues(
-              alpha: isDark ? 0.94 : 0.98,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : AppTheme.textPrimary.withValues(alpha: 0.08),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.search_rounded,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.82)
-                    : AppTheme.primary,
-                size: 22,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Search stories, topics, people, and places',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.9)
-                        : AppTheme.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 18,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.7)
-                    : AppTheme.textSecondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _EditorialStoryCard extends StatelessWidget {
   const _EditorialStoryCard({
     required this.story,
@@ -1294,27 +1091,22 @@ class _EditorialStoryCard extends StatelessWidget {
     final summary = _distinctStorySummary(story);
     final hasFeedbackActions =
         onMoreLikeThis != null || onHideStory != null || onHideSource != null;
-    final cardColor = isDark
-        ? const Color(0xFF1A1F24)
-        : const Color(0xFFF3F1EC);
+    final cardColor = isDark ? const Color(0xFF171A1E) : Colors.white;
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : const Color(0xFFDDD7CE);
-    final chipBackground = isDark
-        ? const Color(0xFF2C333A)
-        : const Color(0xFFE6E1D7);
+        ? Colors.white.withValues(alpha: 0.05)
+        : const Color(0xFFEEEAE4);
     final chipTextColor = isDark
-        ? Colors.white.withValues(alpha: 0.92)
-        : const Color(0xFF332D25);
-    final secondaryTextColor = isDark
-        ? Colors.white.withValues(alpha: 0.8)
-        : const Color(0xFF5F584F);
-    final summaryTextColor = isDark
         ? Colors.white.withValues(alpha: 0.88)
-        : const Color(0xFF4E473F);
+        : const Color(0xFF2A2A2A);
+    final secondaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.72)
+        : const Color(0xFF6A6A6A);
+    final summaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.84)
+        : const Color(0xFF4D4D4D);
     final actionTextColor = isDark
-        ? Colors.white.withValues(alpha: 0.82)
-        : AppTheme.textPrimary;
+        ? Colors.white.withValues(alpha: 0.76)
+        : const Color(0xFF3E3E3E);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(24),
@@ -1333,7 +1125,7 @@ class _EditorialStoryCard extends StatelessWidget {
                   top: Radius.circular(24),
                 ),
                 child: SizedBox(
-                  height: 220,
+                  height: 236,
                   width: double.infinity,
                   child: NewsThumbnail(
                     imageUrl: story.imageUrl,
@@ -1350,29 +1142,23 @@ class _EditorialStoryCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: chipBackground,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          story.category,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: chipTextColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      AppActionChip(
+                        label: story.category,
+                        compact: true,
+                        selected: true,
+                        selectedColor: isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : const Color(0xFFF7F7F5),
+                        selectedForegroundColor: chipTextColor,
+                        onTap: onTap,
                       ),
                       const Spacer(),
                       if (hasFeedbackActions)
                         PopupMenuButton<String>(
                           tooltip: 'Personalize feed',
-                          icon: Icon(
+                          icon: AppIcon(
                             Icons.more_horiz_rounded,
+                            size: AppIconSize.small,
                             color: secondaryTextColor,
                           ),
                           onSelected: (value) {
@@ -1415,7 +1201,8 @@ class _EditorialStoryCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontSize: 20,
-                      height: 1.18,
+                      height: 1.16,
+                      fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white : AppTheme.textPrimary,
                     ),
                   ),
@@ -1441,22 +1228,24 @@ class _EditorialStoryCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _InlineAction(
+                      AppInlineAction(
                         icon: Icons.bookmark_border_rounded,
                         label: 'Save',
                         onTap: onSaveTap,
+                        tone: AppIconTone.secondary,
                       ),
                       const SizedBox(width: 16),
-                      _InlineAction(
+                      AppInlineAction(
                         icon: Icons.share_outlined,
                         label: 'Share',
                         onTap: onShareTap,
+                        tone: AppIconTone.secondary,
                       ),
                       if ((story.commentCount ?? 0) > 0) ...[
                         const SizedBox(width: 16),
-                        Icon(
+                        AppIcon(
                           Icons.forum_outlined,
-                          size: 16,
+                          size: AppIconSize.xSmall,
                           color: actionTextColor,
                         ),
                         const SizedBox(width: 6),
@@ -1470,51 +1259,6 @@ class _EditorialStoryCard extends StatelessWidget {
                     ],
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InlineAction extends StatelessWidget {
-  const _InlineAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 17,
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.82)
-                  : AppTheme.textPrimary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.82)
-                    : AppTheme.textPrimary,
               ),
             ),
           ],

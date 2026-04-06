@@ -13,6 +13,7 @@ class NewsArticle(BaseModel):
     title: str
     source: str
     category: str
+    tags: List[str] = Field(default_factory=list)
     summary: Optional[str] = None
     comment_count: Optional[int] = None
     url: Optional[HttpUrl] = None
@@ -88,6 +89,7 @@ class NewsSourcesResponse(BaseModel):
 class CreateNewsArticleRequest(BaseModel):
     title: str = Field(..., min_length=5, max_length=500)
     category: str = Field(..., min_length=2, max_length=120)
+    tags: List[str] = Field(default_factory=list)
     summary: Optional[str] = Field(default=None, max_length=5000)
     content_url: Optional[HttpUrl] = None
     image_url: Optional[HttpUrl] = None
@@ -98,6 +100,7 @@ class AdminCreateNewsArticleRequest(BaseModel):
     title: str = Field(..., min_length=5, max_length=500)
     source: str = Field(..., min_length=2, max_length=255)
     category: str = Field(..., min_length=2, max_length=120)
+    tags: List[str] = Field(default_factory=list)
     summary: Optional[str] = Field(default=None, max_length=5000)
     source_url: HttpUrl
     image_url: Optional[HttpUrl] = None
@@ -116,6 +119,7 @@ class AdminUpdateNewsArticleRequest(BaseModel):
     title: Optional[str] = Field(default=None, min_length=5, max_length=500)
     source: Optional[str] = Field(default=None, min_length=2, max_length=255)
     category: Optional[str] = Field(default=None, min_length=2, max_length=120)
+    tags: Optional[List[str]] = None
     summary: Optional[str] = Field(default=None, max_length=5000)
     source_url: Optional[HttpUrl] = None
     image_url: Optional[HttpUrl] = None

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/core/widgets/news_thumbnail.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
 import 'package:naijapulse/features/news/presentation/widgets/news_time.dart';
@@ -63,10 +64,10 @@ class SearchResultStoryTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(
+                      const AppIcon(
                         Icons.radio_button_checked_rounded,
-                        size: 10,
-                        color: Theme.of(context).colorScheme.primary,
+                        size: AppIconSize.xSmall,
+                        tone: AppIconTone.accent,
                       ),
                       const SizedBox(width: 5),
                       Expanded(
@@ -81,9 +82,9 @@ class SearchResultStoryTile extends StatelessWidget {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      Icon(
+                      AppIcon(
                         Icons.bookmark_border_rounded,
-                        size: 13,
+                        size: AppIconSize.xSmall,
                         color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                       const SizedBox(width: 4),
@@ -93,9 +94,9 @@ class SearchResultStoryTile extends StatelessWidget {
                       ),
                       if (hasComments) ...[
                         const SizedBox(width: 10),
-                        Icon(
+                        AppIcon(
                           Icons.chat_bubble_outline_rounded,
-                          size: 13,
+                          size: AppIconSize.xSmall,
                           color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                         const SizedBox(width: 4),
@@ -110,9 +111,9 @@ class SearchResultStoryTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 2),
-            Icon(
+            AppIcon(
               Icons.more_horiz_rounded,
-              size: 16,
+              size: AppIconSize.xSmall,
               color: Theme.of(context).textTheme.bodySmall?.color,
             ),
           ],

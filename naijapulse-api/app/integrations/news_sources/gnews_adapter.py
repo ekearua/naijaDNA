@@ -194,6 +194,7 @@ class GNewsNewsSourceAdapter:
                 title=title,
                 source=source_name,
                 category=category,
+                tags=[category],
                 summary=summary or None,
                 url=article_url or None,
                 image_url=image_url or None,

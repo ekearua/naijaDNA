@@ -14,12 +14,14 @@ from app.db.session import DatabaseSessionManager
 from app.services.article_comments_service import ArticleCommentsService
 from app.services.admin_platform_service import AdminPlatformService
 from app.services.article_readability_service import ArticleReadabilityService
+from app.services.email_service import EmailService
 from app.services.ingestion_pipeline_service import IngestionPipelineService
 from app.services.livekit_service import LiveKitService
 from app.services.news_service import NewsService
 from app.services.notifications_service import NotificationsService
 from app.services.personalization_service import PersonalizationService
 from app.services.polls_service import PollsService
+from app.services.push_notification_service import PushNotificationService
 from app.services.response_cache_service import ResponseCacheService
 from app.services.source_registry_service import SourceRegistryService
 from app.services.streams_service import StreamsService
@@ -38,23 +40,47 @@ async def lifespan(app: FastAPI):
     session_factory = app.state.db.session_factory
 
     # Core services are created once on startup and reused per request.
-    app.state.news_service = NewsService(session_factory=session_factory)
+    app.state.push_notification_service = PushNotificationService(
+        service_account_json=settings.firebase_service_account_json,
+    )
+    app.state.email_service = EmailService(
+        enabled=settings.email_enabled,
+        smtp_host=settings.email_smtp_host,
+        smtp_port=settings.email_smtp_port,
+        smtp_username=settings.email_smtp_username,
+        smtp_password=settings.email_smtp_password,
+        smtp_security=settings.email_smtp_security,
+        from_address=settings.email_from_address,
+        from_name=settings.email_from_name,
+        reply_to=settings.email_reply_to,
+        support_address=settings.email_support_address,
+    )
+    app.state.notifications_service = NotificationsService(
+        session_factory=session_factory,
+        push_service=app.state.push_notification_service,
+    )
+    app.state.news_service = NewsService(
+        session_factory=session_factory,
+        notifications_service=app.state.notifications_service,
+    )
     app.state.article_readability_service = ArticleReadabilityService()
     app.state.article_comments_service = ArticleCommentsService(
-        session_factory=session_factory
+        session_factory=session_factory,
+        notifications_service=app.state.notifications_service,
     )
     app.state.admin_platform_service = AdminPlatformService(
         session_factory=session_factory,
         news_service=app.state.news_service,
+        email_service=app.state.email_service,
         settings=settings,
-    )
-    app.state.notifications_service = NotificationsService(
-        session_factory=session_factory
     )
     app.state.users_service = UsersService(
         session_factory=session_factory,
         token_secret=settings.auth_token_secret,
         access_token_ttl_seconds=settings.auth_access_token_ttl_seconds,
+        email_service=app.state.email_service,
+        email_web_base_url=settings.email_web_base_url,
+        email_admin_web_base_url=settings.email_admin_web_base_url,
     )
     app.state.polls_service = PollsService(session_factory=session_factory)
     app.state.personalization_service = PersonalizationService(

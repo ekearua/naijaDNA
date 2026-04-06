@@ -117,7 +117,7 @@ class _AdminForgotPasswordPageState extends State<AdminForgotPasswordPage> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Enter the editorial account email you use for naijaDNA Admin. We will generate a reset link that opens the secure reset form.',
+                          'Enter the editorial account email you use for naijaDNA Admin. We will send a secure reset link to that address.',
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(
                                 color: const Color(0xFF4B453E),
@@ -248,16 +248,6 @@ class _AdminForgotPasswordPageState extends State<AdminForgotPasswordPage> {
                                           ?.copyWith(
                                             color: const Color(0xFF0B4F38),
                                           ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    FilledButton.tonalIcon(
-                                      onPressed: () {
-                                        context.go(_resetUrl!);
-                                      },
-                                      icon: const Icon(
-                                        Icons.lock_reset_rounded,
-                                      ),
-                                      label: const Text('Open reset form'),
                                     ),
                                   ],
                                 ],

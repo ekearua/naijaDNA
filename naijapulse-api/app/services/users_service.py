@@ -1,9 +1,10 @@
 import base64
 import hashlib
 import hmac
+import logging
 import secrets
 from datetime import datetime, timedelta
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote, urlencode, urlparse, urlunparse
 from uuid import uuid4
 
 from sqlalchemy import func, select
@@ -37,6 +38,10 @@ from app.schemas.users import (
     UserEntitlements,
     UserPreferences,
 )
+from app.services.email_service import EmailService
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserNotFoundError(Exception):
@@ -72,11 +77,17 @@ class UsersService:
         *,
         token_secret: str,
         access_token_ttl_seconds: int,
+        email_service: EmailService,
+        email_web_base_url: str,
+        email_admin_web_base_url: str,
     ) -> None:
         self._session_factory = session_factory
         self._token_secret = token_secret
         self._access_token_ttl_seconds = access_token_ttl_seconds
         self._password_reset_ttl_seconds = 60 * 30
+        self._email_service = email_service
+        self._email_web_base_url = email_web_base_url.strip()
+        self._email_admin_web_base_url = email_admin_web_base_url.strip()
 
     async def create_user(self, payload: CreateUserRequest) -> User:
         user_id = self._normalize_user_id(payload.id)
@@ -247,7 +258,6 @@ class UsersService:
                 user is None
                 or not user.is_active
                 or not user.password_hash
-                or user.role not in {"editor", "admin"}
             ):
                 return ForgotPasswordResponse(
                     message=message,
@@ -258,11 +268,32 @@ class UsersService:
                 user_id=user.id,
                 password_hash=user.password_hash,
             )
+            reset_url = self._build_password_reset_url(
+                reset_path=reset_path,
+                token=token,
+            )
+            if self._email_service.enabled and user.email:
+                expires_minutes = max(1, self._password_reset_ttl_seconds // 60)
+                sent = await self._email_service.send_password_reset_email(
+                    to_email=user.email,
+                    recipient_name=user.display_name,
+                    reset_url=reset_url,
+                    expires_minutes=expires_minutes,
+                )
+                if sent:
+                    return ForgotPasswordResponse(
+                        message=message,
+                        expires_in_seconds=self._password_reset_ttl_seconds,
+                    )
+                logger.warning(
+                    "Password reset email was not delivered for user_id=%s; returning development reset URL fallback.",
+                    user.id,
+                )
             return ForgotPasswordResponse(
                 message=message,
                 expires_in_seconds=self._password_reset_ttl_seconds,
                 reset_token=token,
-                reset_url=f"{reset_path}?token={quote(token, safe='')}",
+                reset_url=reset_url,
             )
 
     async def reset_password(
@@ -284,7 +315,15 @@ class UsersService:
 
             user.password_hash = self._hash_password(password)
             user.updated_at = datetime.utcnow()
+            email = (user.email or "").strip()
+            display_name = user.display_name
             await session.commit()
+
+        if email and self._email_service.enabled:
+            await self._email_service.send_password_changed_confirmation(
+                to_email=email,
+                recipient_name=display_name,
+            )
 
         return ResetPasswordResponse(message="Password updated successfully.")
 
@@ -355,6 +394,13 @@ class UsersService:
             request_id = access_request.id
             request_status = access_request.status
             await session.commit()
+            if self._email_service.enabled and work_email:
+                await self._email_service.send_access_request_received_email(
+                    to_email=work_email,
+                    recipient_name=full_name,
+                    request_label=f"newsroom access ({requested_role})",
+                    request_id=request_id,
+                )
 
         return AdminAccessRequestResponse(
             message=(
@@ -472,6 +518,13 @@ class UsersService:
             )
             session.add(record)
             await session.commit()
+            if user.email and self._email_service.enabled:
+                await self._email_service.send_access_request_received_email(
+                    to_email=user.email,
+                    recipient_name=user.display_name,
+                    request_label=self._describe_user_access_type(access_type),
+                    request_id=record.id,
+                )
             return self._to_access_request_schema(record)
 
     async def list_user_access_requests(
@@ -631,10 +684,41 @@ class UsersService:
     def _normalize_reset_path(self, value: str | None) -> str:
         candidate = (value or "").strip()
         if not candidate:
-            return "/admin/reset-password"
+            return "/auth/reset-password"
         if not candidate.startswith("/"):
             raise InvalidUserPayloadError("reset_path must start with '/'.")
         return candidate
+
+    def _build_password_reset_url(self, *, reset_path: str, token: str) -> str:
+        if reset_path.startswith("/admin"):
+            base_url = self._email_admin_web_base_url or self._email_web_base_url
+        else:
+            base_url = self._email_web_base_url or self._email_admin_web_base_url
+
+        if not base_url:
+            return f"{reset_path}?token={quote(token, safe='')}"
+
+        parsed = urlparse(base_url)
+        if parsed.scheme and parsed.netloc:
+            normalized_base = base_url.rstrip("/")
+            target = f"{normalized_base}{reset_path}"
+        else:
+            target = reset_path
+
+        parsed_target = urlparse(target)
+        query_items = parse_qsl(parsed_target.query, keep_blank_values=True)
+        query_items = [(key, value) for key, value in query_items if key != "token"]
+        query_items.append(("token", token))
+        return urlunparse(
+            parsed_target._replace(query=urlencode(query_items, doseq=True))
+        )
+
+    def _describe_user_access_type(self, access_type: str) -> str:
+        return {
+            "stream_access": "stream access",
+            "stream_hosting": "stream hosting access",
+            "contribution_access": "story contribution access",
+        }.get(access_type, "additional access")
 
     def _normalize_text(self, value: str | None, *, max_length: int) -> str | None:
         normalized = (value or "").strip()

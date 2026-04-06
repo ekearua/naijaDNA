@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:naijapulse/admin/data/datasource/admin_remote_datasource.dart';
@@ -27,6 +28,8 @@ import 'package:naijapulse/features/news/domain/usecases/get_latest_stories.dart
 import 'package:naijapulse/features/news/domain/usecases/get_top_stories.dart';
 import 'package:naijapulse/features/news/domain/usecases/record_story_opened.dart';
 import 'package:naijapulse/features/news/presentation/bloc/news_bloc.dart';
+import 'package:naijapulse/features/notifications/data/notification_action_service.dart';
+import 'package:naijapulse/features/notifications/data/push_notifications_service.dart';
 import 'package:naijapulse/features/notifications/data/notifications_inbox_controller.dart';
 import 'package:naijapulse/features/notifications/data/datasource/remote/notifications_remote_datasource.dart';
 import 'package:naijapulse/features/polls/data/datasource/local/polls_local_datasource.dart';
@@ -308,11 +311,32 @@ class InjectionContainer {
         authLocalDataSource: sl<AuthLocalDataSource>(),
       ),
     );
+    sl.registerLazySingleton<FirebaseMessaging>(
+      () => FirebaseMessaging.instance,
+    );
     sl.registerLazySingleton<NotificationsInboxController>(
       () => NotificationsInboxController(
         remoteDataSource: sl<NotificationsRemoteDataSource>(),
         authSessionController: sl<AuthSessionController>(),
       ),
+    );
+    sl.registerLazySingleton<NotificationActionService>(
+      () => NotificationActionService(
+        remoteDataSource: sl<NotificationsRemoteDataSource>(),
+        inboxController: sl<NotificationsInboxController>(),
+        authSessionController: sl<AuthSessionController>(),
+      ),
+    );
+    sl.registerLazySingleton<PushNotificationsService>(
+      () => PushNotificationsService(
+        messaging: sl<FirebaseMessaging>(),
+        remoteDataSource: sl<NotificationsRemoteDataSource>(),
+        notificationsInboxController: sl<NotificationsInboxController>(),
+        notificationActionService: sl<NotificationActionService>(),
+        authSessionController: sl<AuthSessionController>(),
+        sharedPreferences: sl<SharedPreferences>(),
+      ),
+      dispose: (service) => service.dispose(),
     );
     sl.registerLazySingleton<AdminRemoteDataSource>(
       () => AdminRemoteDataSourceImpl(
@@ -323,6 +347,7 @@ class InjectionContainer {
     sl.registerLazySingleton<ConnectivityCubit>(ConnectivityCubit.new);
 
     await sl<NotificationsInboxController>().initialize();
+    await sl<PushNotificationsService>().initialize();
 
     _isInitialized = true;
   }

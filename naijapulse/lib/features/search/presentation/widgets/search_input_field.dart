@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 
 class SearchInputField extends StatelessWidget {
   const SearchInputField({
@@ -40,7 +41,11 @@ class SearchInputField extends StatelessWidget {
           hintText: hintText,
           filled: true,
           fillColor: theme.colorScheme.surfaceContainerLow,
-          prefixIcon: Icon(leadingIcon, size: 20),
+          prefixIcon: AppIcon(
+            leadingIcon,
+            size: AppIconSize.medium,
+            tone: AppIconTone.secondary,
+          ),
           prefixIconConstraints: const BoxConstraints(minWidth: 42),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 14,
@@ -70,11 +75,12 @@ class SearchInputField extends StatelessWidget {
                 )
               : controller.text.isEmpty
               ? null
-              : IconButton(
+              : AppIconButton(
+                  icon: Icons.close_rounded,
                   onPressed: onClear,
-                  icon: const Icon(Icons.close_rounded, size: 18),
-                  visualDensity: VisualDensity.compact,
                   tooltip: 'Clear search',
+                  semanticLabel: 'Clear search input',
+                  style: AppIconButtonStyle.tonal,
                 ),
         ),
       ),

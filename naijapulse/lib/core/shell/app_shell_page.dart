@@ -5,6 +5,7 @@ import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/routing/app_router.dart';
 import 'package:naijapulse/core/shell/widgets/app_bottom_nav_bar.dart';
 import 'package:naijapulse/core/theme/theme.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/features/auth/data/auth_session_controller.dart';
 import 'package:naijapulse/features/auth/domain/entities/auth_session.dart';
 import 'package:naijapulse/features/auth/domain/usecases/get_cached_session.dart';
@@ -190,32 +191,39 @@ class _AppShellPageState extends State<AppShellPage> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 6),
-              child: _HeaderActionButton(
+              child: AppIconButton(
                 icon: Icons.search_rounded,
                 tooltip: 'Search',
                 onPressed: _openSearch,
-                isDark: isDark,
+                style: AppIconButtonStyle.glass,
+                semanticLabel: 'Search articles',
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(right: 6),
-              child: _HeaderActionButton(
+              child: AppIconButton(
                 icon: Icons.notifications_none_rounded,
                 tooltip: 'Notifications',
                 onPressed: _openNotifications,
                 badgeCount: _notificationsInboxController.unreadCount,
-                isDark: isDark,
+                style: AppIconButtonStyle.glass,
+                semanticLabel: 'Open notifications',
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(right: 10),
-              child: _HeaderActionButton(
+              child: AppIconButton(
                 icon: _authSession == null
                     ? Icons.login_rounded
                     : Icons.person_outline_rounded,
+                selectedIcon: Icons.person_rounded,
+                selected: _authSession != null,
                 tooltip: _authSession == null ? 'Log in' : 'Profile',
                 onPressed: _loadingSession ? null : _openProfileOrAuth,
-                isDark: isDark,
+                style: AppIconButtonStyle.glass,
+                semanticLabel: _authSession == null
+                    ? 'Open login'
+                    : 'Open profile',
               ),
             ),
           ],
@@ -242,77 +250,6 @@ class _AppShellPageState extends State<AppShellPage> {
           profileUnreadCount: _notificationsInboxController.unreadCount,
         ),
       ),
-    );
-  }
-}
-
-class _HeaderActionButton extends StatelessWidget {
-  const _HeaderActionButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    required this.isDark,
-    this.badgeCount = 0,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onPressed;
-  final bool isDark;
-  final int badgeCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final foregroundColor = isDark ? Colors.white : AppTheme.textPrimary;
-    final surfaceColor = isDark
-        ? Colors.white.withValues(alpha: 0.16)
-        : Colors.white.withValues(alpha: 0.9);
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : AppTheme.textPrimary.withValues(alpha: 0.08);
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: surfaceColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor),
-          ),
-          child: IconButton(
-            onPressed: onPressed,
-            constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-            padding: EdgeInsets.zero,
-            iconSize: 17,
-            visualDensity: VisualDensity.compact,
-            icon: Icon(icon, color: foregroundColor),
-            tooltip: tooltip,
-          ),
-        ),
-        if (badgeCount > 0)
-          Positioned(
-            right: -2,
-            top: -4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              constraints: const BoxConstraints(minWidth: 18),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
-              ),
-              child: Text(
-                badgeCount > 99 ? '99+' : '$badgeCount',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onError,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

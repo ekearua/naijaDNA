@@ -51,7 +51,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Reset instructions generated for this account.'),
+          content: Text(
+            'If the account exists, reset instructions have been sent to the email address.',
+          ),
         ),
       );
     } catch (error) {
@@ -136,7 +138,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Provide your registered email to initiate a secure verification sequence.',
+              'Provide your registered email and we will send a secure password reset link.',
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: AppTheme.textSecondary,
               ),
@@ -146,7 +148,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
-                labelText: 'Verified Editorial Email',
+                labelText: 'Email address',
                 prefixIcon: Icon(Icons.mark_email_read_outlined),
               ),
               validator: (value) {
@@ -197,9 +199,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     color: theme.dividerColor.withValues(alpha: 0.35),
                   ),
                 ),
-                child: SelectableText(
-                  _resetUrl!,
-                  style: theme.textTheme.bodyMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Development reset link',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      _resetUrl!,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
             ],

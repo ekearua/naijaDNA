@@ -7,17 +7,17 @@ from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 from uuid import uuid4
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.text import plain_text_excerpt
 from app.db.models import (
+    ArticleTagRecord,
     ArticleWorkflowEventRecord,
     HomepageCategoryRecord,
     HomepageSecondaryChipRecord,
     HomepageStoryPlacementRecord,
     NewsArticleRecord,
-    NotificationRecord,
     UserRecord,
 )
 from app.integrations.news_sources.image_extraction import extract_first_image_from_html
@@ -30,6 +30,7 @@ from app.schemas.news import (
     HomepageSecondaryChipFeed,
     NewsArticle,
 )
+from app.services.notifications_service import NotificationsService, PendingNotificationDelivery
 
 
 class UserNotFoundError(Exception):
@@ -59,8 +60,14 @@ class NewsArticleNotFoundError(Exception):
 class NewsService:
     """Stores and serves normalized articles with DB-backed deduplication."""
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        *,
+        notifications_service: NotificationsService,
+    ) -> None:
         self._session_factory = session_factory
+        self._notifications_service = notifications_service
         self._lock = asyncio.Lock()
 
     async def initialize_defaults(self) -> None:
@@ -165,10 +172,16 @@ class NewsService:
             for row in chip_rows
         ]
 
+        top_stories = grouped.get(("top", None), [])
+        latest_stories = self._exclude_story_ids(
+            grouped.get(("latest", None), []),
+            excluded_ids={story.id for story in top_stories},
+        )
+
         return HomepageContentResponse(
             generated_at=datetime.utcnow(),
-            top_stories=grouped.get(("top", None), []),
-            latest_stories=grouped.get(("latest", None), []),
+            top_stories=top_stories,
+            latest_stories=latest_stories,
             categories=categories,
             secondary_chips=secondary_chips,
         )
@@ -212,6 +225,7 @@ class NewsService:
                         func.lower(
                             func.coalesce(NewsArticleRecord.summary, "")
                         ).contains(normalized_query),
+                        self._tag_contains_condition(normalized_query),
                     )
                 )
                 .order_by(NewsArticleRecord.published_at.desc())
@@ -265,6 +279,7 @@ class NewsService:
                             existing_record.summary = article.summary
                         if existing_record.source_domain is None and article.url is not None:
                             existing_record.source_domain = self._extract_source_domain(str(article.url))
+                        self._merge_article_tags(existing_record, article.tags)
                         existing_record.ingestion_provider = self._resolve_preferred_provider(
                             current=existing_record.ingestion_provider,
                             incoming=incoming_provider,
@@ -307,6 +322,7 @@ class NewsService:
                         created_at=datetime.utcnow(),
                         updated_at=datetime.utcnow(),
                     )
+                    self._replace_article_tags(record, self._normalize_tags(article.tags))
                     session.add(record)
                     session.add(
                         ArticleWorkflowEventRecord(
@@ -344,11 +360,13 @@ class NewsService:
             raise InvalidNewsPayloadError("Article category is required.")
 
         published_at = payload.published_at or datetime.utcnow()
+        tags = self._normalize_tags(payload.tags, category=category)
         candidate = NewsArticle(
             id=f"user-article-{uuid4().hex[:12]}",
             title=title,
             source="Community Contributor",
             category=category,
+            tags=tags,
             summary=(payload.summary or "").strip() or None,
             url=payload.content_url,
             image_url=payload.image_url,
@@ -407,6 +425,7 @@ class NewsService:
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow(),
                 )
+                self._replace_article_tags(record, candidate.tags)
                 session.add(record)
                 session.add(
                     ArticleWorkflowEventRecord(
@@ -429,6 +448,7 @@ class NewsService:
         status: str | None = None,
         query: str | None = None,
         source: str | None = None,
+        tag: str | None = None,
         published_from: datetime | None = None,
         published_to: datetime | None = None,
         offset: int = 0,
@@ -448,6 +468,8 @@ class NewsService:
                 filters.append(NewsArticleRecord.status == normalized_status)
             if source and source.strip():
                 filters.append(NewsArticleRecord.source.ilike(source.strip()))
+            if tag and tag.strip():
+                filters.append(self._tag_equals_condition(tag.strip().lower()))
             if published_from is not None:
                 filters.append(NewsArticleRecord.published_at >= published_from)
             if published_to is not None:
@@ -460,6 +482,7 @@ class NewsService:
                         NewsArticleRecord.source.ilike(normalized_query),
                         NewsArticleRecord.category.ilike(normalized_query),
                         NewsArticleRecord.summary.ilike(normalized_query),
+                        self._tag_contains_condition(query.strip().lower()),
                     )
                 )
 
@@ -498,6 +521,7 @@ class NewsService:
         )
         published_at = payload.published_at or datetime.utcnow()
         source_url = str(payload.source_url)
+        tags = self._normalize_tags(payload.tags, category=payload.category)
 
         async with self._lock:
             async with self._session_factory() as session:
@@ -509,6 +533,7 @@ class NewsService:
                     title=payload.title.strip(),
                     source=payload.source.strip(),
                     category=payload.category.strip(),
+                    tags=tags,
                     summary=(payload.summary or "").strip() or None,
                     url=payload.source_url,
                     source_domain=self._extract_source_domain(source_url),
@@ -564,6 +589,7 @@ class NewsService:
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow(),
                 )
+                self._replace_article_tags(record, candidate.tags)
                 session.add(record)
                 session.add(
                     ArticleWorkflowEventRecord(
@@ -606,6 +632,14 @@ class NewsService:
                     record.source = str(update_data["source"]).strip()
                 if "category" in update_data and update_data["category"] is not None:
                     record.category = str(update_data["category"]).strip()
+                if "tags" in update_data:
+                    self._replace_article_tags(
+                        record,
+                        self._normalize_tags(
+                            update_data["tags"] or [],
+                            category=record.category,
+                        ),
+                    )
                 if "summary" in update_data:
                     record.summary = (update_data["summary"] or "").strip() or None
                 if "source_url" in update_data and update_data["source_url"] is not None:
@@ -691,7 +725,16 @@ class NewsService:
                         created_at=datetime.utcnow(),
                     )
                 )
+                pending_notification = await self._create_editorial_notification(
+                    session,
+                    record=record,
+                    actor=actor,
+                    action=normalized_action,
+                    previous_status=previous_status,
+                    next_status=next_status,
+                )
                 await session.commit()
+                await self._notifications_service.deliver_push(pending_notification)
                 return self._to_schema(record)
 
     async def _query_stories(
@@ -960,7 +1003,7 @@ class NewsService:
             return row.ingestion_provider.strip().lower()
         return self._provider_from_article_id(row.id)
 
-    def _create_editorial_notification(
+    async def _create_editorial_notification(
         self,
         session: AsyncSession,
         *,
@@ -969,10 +1012,10 @@ class NewsService:
         action: str,
         previous_status: str,
         next_status: str,
-    ) -> None:
+    ) -> PendingNotificationDelivery | None:
         recipient_user_id = record.created_by_user_id
         if recipient_user_id is None or recipient_user_id == actor.id:
-            return
+            return None
 
         notification_type = {
             "approve": "article_approved",
@@ -982,7 +1025,7 @@ class NewsService:
             "submit": "article_submitted",
         }.get(action)
         if notification_type is None:
-            return
+            return None
 
         title = {
             "article_approved": "Your article was approved",
@@ -1000,19 +1043,16 @@ class NewsService:
             "article_submitted": f"\"{record.title}\" moved from {previous_status} to {next_status}.",
         }[notification_type]
 
-        session.add(
-            NotificationRecord(
-                user_id=recipient_user_id,
-                type=notification_type,
-                title=title,
-                body=body,
-                actor_user_id=actor.id,
-                actor_name=self._user_display_name(actor),
-                article_id=record.id,
-                comment_id=None,
-                is_read=False,
-                created_at=datetime.utcnow(),
-            )
+        return await self._notifications_service.create_notification(
+            session,
+            user_id=recipient_user_id,
+            type=notification_type,
+            title=title,
+            body=body,
+            actor_user_id=actor.id,
+            actor_name=self._user_display_name(actor),
+            article_id=record.id,
+            comment_id=None,
         )
 
     def _provider_from_article_id(self, article_id: str) -> str:
@@ -1097,6 +1137,7 @@ class NewsService:
             title=row.title,
             source=row.source,
             category=row.category,
+            tags=self._extract_row_tags(row),
             summary=cleaned_summary,
             comment_count=comment_count,
             url=row.url,
@@ -1116,6 +1157,95 @@ class NewsService:
             fact_checked=row.fact_checked,
             created_at=row.created_at,
             updated_at=row.updated_at,
+        )
+
+    def _normalize_tags(
+        self,
+        tags: list[str] | tuple[str, ...] | None,
+        *,
+        category: str | None = None,
+    ) -> list[str]:
+        values = list(tags or [])
+        if category and category.strip():
+            values.insert(0, category.strip())
+
+        normalized: list[str] = []
+        seen: set[str] = set()
+        for raw in values:
+            tag = str(raw or "").strip()
+            if not tag:
+                continue
+            key = tag.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            normalized.append(tag[:120])
+        return normalized
+
+    def _replace_article_tags(self, record: NewsArticleRecord, tags: list[str]) -> None:
+        record.tags.clear()
+        for tag in tags:
+            record.tags.append(
+                ArticleTagRecord(
+                    tag=tag,
+                    normalized_tag=tag.lower(),
+                )
+            )
+
+    def _merge_article_tags(self, record: NewsArticleRecord, tags: list[str]) -> None:
+        existing = {tag.normalized_tag for tag in record.tags}
+        for tag in self._normalize_tags(tags):
+            normalized = tag.lower()
+            if normalized in existing:
+                continue
+            existing.add(normalized)
+            record.tags.append(
+                ArticleTagRecord(
+                    tag=tag,
+                    normalized_tag=normalized,
+                )
+            )
+
+    def _extract_row_tags(self, row: NewsArticleRecord) -> list[str]:
+        tags = [tag.tag.strip() for tag in row.tags if tag.tag and tag.tag.strip()]
+        if not tags and row.category.strip():
+            return [row.category.strip()]
+        return tags
+
+    def _exclude_story_ids(
+        self,
+        stories: list[NewsArticle],
+        *,
+        excluded_ids: set[str],
+    ) -> list[NewsArticle]:
+        if not excluded_ids:
+            return stories
+        return [story for story in stories if story.id not in excluded_ids]
+
+    def _tag_contains_condition(self, normalized_query: str):
+        return (
+            select(ArticleTagRecord.id)
+            .where(
+                and_(
+                    ArticleTagRecord.article_id == NewsArticleRecord.id,
+                    func.lower(ArticleTagRecord.normalized_tag).contains(
+                        normalized_query
+                    ),
+                )
+            )
+            .exists()
+        )
+
+    def _tag_equals_condition(self, normalized_tag: str):
+        return (
+            select(ArticleTagRecord.id)
+            .where(
+                and_(
+                    ArticleTagRecord.article_id == NewsArticleRecord.id,
+                    ArticleTagRecord.normalized_tag == normalized_tag,
+                )
+            )
+            .exists()
         )
 
     def _clean_summary_for_response(

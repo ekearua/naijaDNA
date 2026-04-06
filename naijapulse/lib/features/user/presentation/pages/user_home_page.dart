@@ -10,6 +10,7 @@ import 'package:naijapulse/core/routing/app_router.dart';
 import 'package:naijapulse/core/theme/theme.dart';
 import 'package:naijapulse/core/theme/app_theme_controller.dart';
 import 'package:naijapulse/core/theme/app_theme_scope.dart';
+import 'package:naijapulse/core/widgets/app_interactions.dart';
 import 'package:naijapulse/features/auth/data/auth_session_controller.dart';
 import 'package:naijapulse/features/auth/domain/entities/auth_session.dart';
 import 'package:naijapulse/features/auth/domain/usecases/get_cached_session.dart';
@@ -997,6 +998,7 @@ class _UserHomePageState extends State<UserHomePage> {
             children: [
               PreferencesNavigationRow(
                 title: 'Notifications Inbox',
+                leadingIcon: Icons.notifications_outlined,
                 valueLabel: _authSession == null
                     ? null
                     : unreadCount > 0
@@ -1008,16 +1010,19 @@ class _UserHomePageState extends State<UserHomePage> {
                   AppRuntime.supportsAdminRoutes)
                 PreferencesNavigationRow(
                   title: 'Editorial Desk',
+                  leadingIcon: Icons.verified_user_outlined,
                   valueLabel: 'Review queue',
                   onTap: () => context.push(AppRouter.adminDashboardPath),
                 ),
               PreferencesNavigationRow(
                 title: 'Saved Stories',
+                leadingIcon: Icons.bookmark_border_rounded,
                 valueLabel: 'Shelf',
                 onTap: () => context.go(AppRouter.savedPath),
               ),
               PreferencesNavigationRow(
                 title: 'Request More Access',
+                leadingIcon: Icons.lock_outline_rounded,
                 valueLabel: isGuest
                     ? 'Sign in required'
                     : pendingAccessRequests > 0
@@ -1113,31 +1118,16 @@ class _UserHomePageState extends State<UserHomePage> {
         borderRadius: BorderRadius.circular(5),
       ),
       alignment: Alignment.center,
-      child: Icon(icon, size: 15, color: color),
+      child: AppIcon(icon, size: AppIconSize.xSmall, color: color),
     );
   }
 
   Widget _profileBadge({required IconData icon, required String label}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
+    return AppActionChip(
+      label: label,
+      icon: icon,
+      inverse: true,
+      compact: true,
     );
   }
 
