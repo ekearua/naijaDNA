@@ -26,6 +26,8 @@ class PollOption extends Equatable {
 class Poll extends Equatable {
   final String id;
   final String question;
+  final String? categoryId;
+  final String? categoryName;
   final List<PollOption> options;
   final DateTime endsAt;
   final bool hasVoted;
@@ -34,6 +36,8 @@ class Poll extends Equatable {
   const Poll({
     required this.id,
     required this.question,
+    this.categoryId,
+    this.categoryName,
     required this.options,
     required this.endsAt,
     this.hasVoted = false,
@@ -48,6 +52,8 @@ class Poll extends Equatable {
   Poll copyWith({
     String? id,
     String? question,
+    String? categoryId,
+    String? categoryName,
     List<PollOption>? options,
     DateTime? endsAt,
     bool? hasVoted,
@@ -56,6 +62,8 @@ class Poll extends Equatable {
     return Poll(
       id: id ?? this.id,
       question: question ?? this.question,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
       options: options ?? this.options,
       endsAt: endsAt ?? this.endsAt,
       hasVoted: hasVoted ?? this.hasVoted,
@@ -67,6 +75,8 @@ class Poll extends Equatable {
   List<Object?> get props => [
     id,
     question,
+    categoryId,
+    categoryName,
     options,
     endsAt,
     hasVoted,

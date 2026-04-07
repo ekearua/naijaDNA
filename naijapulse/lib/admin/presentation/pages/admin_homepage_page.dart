@@ -18,6 +18,12 @@ class AdminHomepagePage extends StatefulWidget {
 class _AdminHomepagePageState extends State<AdminHomepagePage> {
   final AdminRemoteDataSource _remote =
       InjectionContainer.sl<AdminRemoteDataSource>();
+  bool _latestAutofillEnabled = true;
+  final TextEditingController _latestItemLimitController =
+      TextEditingController();
+  final TextEditingController _latestWindowController = TextEditingController();
+  final TextEditingController _latestFallbackWindowController =
+      TextEditingController();
 
   AdminHomepageConfigModel? _config;
   List<NewsArticleModel>? _publishedStories;
@@ -31,6 +37,14 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _latestItemLimitController.dispose();
+    _latestWindowController.dispose();
+    _latestFallbackWindowController.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -41,7 +55,18 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       if (!mounted) {
         return;
       }
-      setState(() => _config = config);
+      setState(() {
+        _config = config;
+        _latestAutofillEnabled = config.settings.latestAutofillEnabled;
+        _latestItemLimitController.text = config.settings.latestItemLimit
+            .toString();
+        _latestWindowController.text = config.settings.latestWindowHours
+            .toString();
+        _latestFallbackWindowController.text = config
+            .settings
+            .latestFallbackWindowHours
+            .toString();
+      });
     } catch (error) {
       if (!mounted) {
         return;
@@ -82,7 +107,18 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       if (!mounted) {
         return;
       }
-      setState(() => _config = updated);
+      setState(() {
+        _config = updated;
+        _latestAutofillEnabled = updated.settings.latestAutofillEnabled;
+        _latestItemLimitController.text = updated.settings.latestItemLimit
+            .toString();
+        _latestWindowController.text = updated.settings.latestWindowHours
+            .toString();
+        _latestFallbackWindowController.text = updated
+            .settings
+            .latestFallbackWindowHours
+            .toString();
+      });
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(successMessage)));
@@ -308,6 +344,64 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     await _commitMutation(
       () => _remote.updateHomepagePlacements(_normalizePlacements(items)),
       message,
+    );
+  }
+
+  Future<void> _updateHomepageSettings() async {
+    final itemLimit = int.tryParse(_latestItemLimitController.text.trim());
+    final latestWindow = int.tryParse(_latestWindowController.text.trim());
+    final fallbackWindow = int.tryParse(
+      _latestFallbackWindowController.text.trim(),
+    );
+
+    if (itemLimit == null || itemLimit < 1 || itemLimit > 50) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a latest item limit between 1 and 50.'),
+        ),
+      );
+      return;
+    }
+
+    if (latestWindow == null || latestWindow < 1 || latestWindow > 168) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Enter a latest stories window between 1 and 168 hours.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (fallbackWindow == null || fallbackWindow < 1 || fallbackWindow > 336) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a fallback window between 1 and 336 hours.'),
+        ),
+      );
+      return;
+    }
+
+    if (fallbackWindow < latestWindow) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Fallback window must be greater than or equal to the latest stories window.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    await _commitMutation(
+      () => _remote.updateHomepageSettings(
+        latestAutofillEnabled: _latestAutofillEnabled,
+        latestItemLimit: itemLimit,
+        latestWindowHours: latestWindow,
+        latestFallbackWindowHours: fallbackWindow,
+      ),
+      'Homepage settings updated.',
     );
   }
 
@@ -694,6 +788,84 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
             ],
           ),
           const SizedBox(height: 20),
+          _BucketCard(
+            title: 'Homepage Settings',
+            subtitle:
+                'Control whether Latest Stories auto-fill is enabled, how many items are shown, and how far back the homepage looks for published stories.',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SwitchListTile.adaptive(
+                  value: _latestAutofillEnabled,
+                  onChanged: _saving
+                      ? null
+                      : (value) {
+                          setState(() => _latestAutofillEnabled = value);
+                        },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Enable Latest Stories auto-fill'),
+                  subtitle: const Text(
+                    'When off, Latest Stories only shows manual homepage placements.',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _latestItemLimitController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Latest item limit',
+                          hintText: '20',
+                          helperText: 'Allowed range: 1 to 50 items.',
+                        ),
+                        enabled: !_saving,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _latestWindowController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Primary window (hours)',
+                          hintText: '6',
+                          helperText: 'Allowed range: 1 to 168 hours.',
+                        ),
+                        enabled: !_saving,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _latestFallbackWindowController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Fallback window (hours)',
+                          hintText: '24',
+                          helperText:
+                              'Used if the primary window is too sparse.',
+                        ),
+                        enabled: !_saving,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton.icon(
+                    onPressed: _saving ? null : _updateHomepageSettings,
+                    icon: const Icon(Icons.tune_rounded),
+                    label: const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           _BucketCard(
             title: 'Homepage Categories',
             subtitle: 'These drive the category chip rail on the home screen.',

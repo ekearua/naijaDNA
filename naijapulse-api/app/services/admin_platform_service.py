@@ -18,6 +18,7 @@ from app.db.models import (
     CommentReportRecord,
     FeedEventRecord,
     HomepageCategoryRecord,
+    HomepageSettingsRecord,
     HomepageSecondaryChipRecord,
     HomepageStoryPlacementRecord,
     NewsArticleRecord,
@@ -53,6 +54,8 @@ from app.schemas.admin import (
     HomepageCategoryConfigItem,
     HomepageCategoryPatchRequest,
     HomepagePlacementPatchRequest,
+    HomepageSettingsConfigItem,
+    HomepageSettingsPatchRequest,
     HomepageSecondaryChipConfigItem,
     HomepageSecondaryChipPatchRequest,
     HomepageStoryPlacementDetail,
@@ -1006,6 +1009,7 @@ class AdminPlatformService:
     ) -> AdminHomepageConfigResponse:
         async with self._session_factory() as session:
             await self._load_actor(session, actor_user_id, admin_only=False)
+            settings_record = await self._load_homepage_settings(session)
             categories = await self._load_homepage_categories(session)
             chips = await self._load_homepage_secondary_chips(session)
             placements = await self._load_homepage_story_placements(session)
@@ -1017,6 +1021,12 @@ class AdminPlatformService:
         grouped = self._group_homepage_placements(placements, article_by_id)
         return AdminHomepageConfigResponse(
             generated_at=datetime.utcnow(),
+            settings=HomepageSettingsConfigItem(
+                latest_autofill_enabled=settings_record.latest_autofill_enabled,
+                latest_item_limit=settings_record.latest_item_limit,
+                latest_window_hours=settings_record.latest_window_hours,
+                latest_fallback_window_hours=settings_record.latest_fallback_window_hours,
+            ),
             categories=[
                 HomepageCategoryConfigItem(
                     key=item.id,
@@ -1068,6 +1078,29 @@ class AdminPlatformService:
                 for item in chips
             ],
         )
+
+    async def update_homepage_settings(
+        self,
+        *,
+        actor_user_id: str | None,
+        payload: HomepageSettingsPatchRequest,
+        response_cache_service: ResponseCacheService | None = None,
+    ) -> AdminHomepageConfigResponse:
+        async with self._session_factory() as session:
+            await self._load_actor(session, actor_user_id, admin_only=False)
+            settings_record = await self._load_homepage_settings(session)
+            settings_record.latest_autofill_enabled = payload.latest_autofill_enabled
+            settings_record.latest_item_limit = payload.latest_item_limit
+            settings_record.latest_window_hours = payload.latest_window_hours
+            settings_record.latest_fallback_window_hours = (
+                payload.latest_fallback_window_hours
+            )
+            settings_record.updated_at = datetime.utcnow()
+            await session.commit()
+
+        if response_cache_service is not None:
+            await response_cache_service.invalidate_namespace("homepage")
+        return await self.get_homepage_config(actor_user_id=actor_user_id)
 
     async def replace_homepage_categories(
         self,
@@ -1189,6 +1222,31 @@ class AdminPlatformService:
             )
         )
         return result.scalars().all()
+
+    async def _load_homepage_settings(
+        self,
+        session: AsyncSession,
+    ) -> HomepageSettingsRecord:
+        row = await session.get(HomepageSettingsRecord, 1)
+        if row is not None:
+            return row
+
+        now = datetime.utcnow()
+        row = HomepageSettingsRecord(
+            id=1,
+            latest_autofill_enabled=self._settings.homepage_latest_autofill_enabled,
+            latest_item_limit=max(1, self._settings.homepage_latest_item_limit),
+            latest_window_hours=max(1, self._settings.homepage_latest_window_hours),
+            latest_fallback_window_hours=max(
+                1,
+                self._settings.homepage_latest_fallback_window_hours,
+            ),
+            created_at=now,
+            updated_at=now,
+        )
+        session.add(row)
+        await session.commit()
+        return row
 
     async def _load_homepage_secondary_chips(
         self,

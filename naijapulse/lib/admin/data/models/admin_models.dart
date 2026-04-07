@@ -987,9 +987,40 @@ class AdminHomepagePlacementDetailModel {
       );
 }
 
+class AdminHomepageSettingsModel {
+  const AdminHomepageSettingsModel({
+    required this.latestAutofillEnabled,
+    required this.latestItemLimit,
+    required this.latestWindowHours,
+    required this.latestFallbackWindowHours,
+  });
+
+  final bool latestAutofillEnabled;
+  final int latestItemLimit;
+  final int latestWindowHours;
+  final int latestFallbackWindowHours;
+
+  factory AdminHomepageSettingsModel.fromJson(Map<String, dynamic> json) =>
+      AdminHomepageSettingsModel(
+        latestAutofillEnabled: json['latest_autofill_enabled'] != false,
+        latestItemLimit: ((json['latest_item_limit'] as num?) ?? 20).toInt(),
+        latestWindowHours: ((json['latest_window_hours'] as num?) ?? 6).toInt(),
+        latestFallbackWindowHours:
+            ((json['latest_fallback_window_hours'] as num?) ?? 24).toInt(),
+      );
+
+  Map<String, dynamic> toJson() => {
+    'latest_autofill_enabled': latestAutofillEnabled,
+    'latest_item_limit': latestItemLimit,
+    'latest_window_hours': latestWindowHours,
+    'latest_fallback_window_hours': latestFallbackWindowHours,
+  };
+}
+
 class AdminHomepageConfigModel {
   const AdminHomepageConfigModel({
     required this.generatedAt,
+    required this.settings,
     required this.categories,
     required this.secondaryChips,
     required this.topStories,
@@ -999,6 +1030,7 @@ class AdminHomepageConfigModel {
   });
 
   final DateTime generatedAt;
+  final AdminHomepageSettingsModel settings;
   final List<AdminHomepageCategoryConfigModel> categories;
   final List<AdminHomepageSecondaryChipConfigModel> secondaryChips;
   final List<AdminHomepagePlacementDetailModel> topStories;
@@ -1010,6 +1042,9 @@ class AdminHomepageConfigModel {
     Map<String, dynamic> json,
   ) => AdminHomepageConfigModel(
     generatedAt: parseBackendDateTime(json['generated_at']),
+    settings: AdminHomepageSettingsModel.fromJson(
+      (json['settings'] as Map<String, dynamic>?) ?? const <String, dynamic>{},
+    ),
     categories: ((json['categories'] as List<dynamic>?) ?? const <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map(AdminHomepageCategoryConfigModel.fromJson)

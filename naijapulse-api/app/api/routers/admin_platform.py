@@ -24,6 +24,7 @@ from app.schemas.admin import (
     DashboardSummaryResponse,
     HomepageCategoryPatchRequest,
     HomepagePlacementPatchRequest,
+    HomepageSettingsPatchRequest,
     HomepageSecondaryChipPatchRequest,
     VerificationDeskResponse,
 )
@@ -119,6 +120,29 @@ async def replace_admin_homepage_placements(
 ) -> AdminHomepageConfigResponse:
     try:
         return await admin_platform_service.replace_homepage_story_placements(
+            actor_user_id=x_user_id,
+            payload=payload,
+            response_cache_service=cache_service,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except AdminValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.patch("/homepage/settings", response_model=AdminHomepageConfigResponse)
+async def update_admin_homepage_settings(
+    payload: HomepageSettingsPatchRequest,
+    x_user_id: str | None = Header(default=None),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+    cache_service: ResponseCacheService = Depends(get_response_cache_service),
+) -> AdminHomepageConfigResponse:
+    try:
+        return await admin_platform_service.update_homepage_settings(
             actor_user_id=x_user_id,
             payload=payload,
             response_cache_service=cache_service,

@@ -61,6 +61,10 @@ class Settings(BaseSettings):
     cache_polls_active_ttl_seconds: int = 900
     cache_categories_ttl_seconds: int = 21600
     cache_tags_ttl_seconds: int = 21600
+    homepage_latest_autofill_enabled: bool = True
+    homepage_latest_item_limit: int = 20
+    homepage_latest_window_hours: int = 6
+    homepage_latest_fallback_window_hours: int = 24
     cors_origins: List[str] = Field(
         default_factory=lambda: [
             "http://localhost:3000",

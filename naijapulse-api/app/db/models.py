@@ -248,6 +248,22 @@ class HomepageStoryPlacementRecord(Base):
     article: Mapped[NewsArticleRecord] = relationship()
 
 
+class HomepageSettingsRecord(Base):
+    __tablename__ = "homepage_settings"
+
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=False)
+    latest_autofill_enabled: Mapped[bool] = mapped_column(Boolean(), default=True)
+    latest_item_limit: Mapped[int] = mapped_column(Integer(), default=20)
+    latest_window_hours: Mapped[int] = mapped_column(Integer(), default=6)
+    latest_fallback_window_hours: Mapped[int] = mapped_column(Integer(), default=24)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), default=datetime.utcnow
+    )
+
+
 class UserRecord(Base):
     __tablename__ = "users"
 
@@ -507,6 +523,120 @@ class PollVoteRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
 
     user: Mapped[UserRecord | None] = relationship(back_populates="poll_votes")
+
+
+class LiveUpdatePageRecord(Base):
+    __tablename__ = "live_update_pages"
+
+    id: Mapped[str] = mapped_column(String(96), primary_key=True)
+    slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    summary: Mapped[str] = mapped_column(Text())
+    hero_kicker: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    category: Mapped[str] = mapped_column(String(120), index=True)
+    cover_image_url: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="draft", index=True)
+    is_featured: Mapped[bool] = mapped_column(Boolean(), default=False, index=True)
+    is_breaking: Mapped[bool] = mapped_column(Boolean(), default=False, index=True)
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=False),
+        nullable=True,
+        index=True,
+    )
+    ended_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=False),
+        nullable=True,
+        index=True,
+    )
+    last_published_entry_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=False),
+        nullable=True,
+        index=True,
+    )
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String(128),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    updated_by_user_id: Mapped[str | None] = mapped_column(
+        String(128),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
+
+    entries: Mapped[list["LiveUpdateEntryRecord"]] = relationship(
+        back_populates="page",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="LiveUpdateEntryRecord.published_at.desc()",
+    )
+    created_by: Mapped["UserRecord | None"] = relationship(
+        foreign_keys=[created_by_user_id]
+    )
+    updated_by: Mapped["UserRecord | None"] = relationship(
+        foreign_keys=[updated_by_user_id]
+    )
+
+
+class LiveUpdateEntryRecord(Base):
+    __tablename__ = "live_update_entries"
+
+    id: Mapped[str] = mapped_column(String(96), primary_key=True)
+    page_id: Mapped[str] = mapped_column(
+        String(96),
+        ForeignKey("live_update_pages.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    block_type: Mapped[str] = mapped_column(String(32), index=True)
+    headline: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    body: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    image_caption: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    linked_article_id: Mapped[str | None] = mapped_column(
+        String(96),
+        ForeignKey("news_articles.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    linked_poll_id: Mapped[str | None] = mapped_column(
+        String(80),
+        ForeignKey("polls.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), index=True)
+    display_order: Mapped[int] = mapped_column(Integer(), default=0, index=True)
+    is_pinned: Mapped[bool] = mapped_column(Boolean(), default=False, index=True)
+    is_visible: Mapped[bool] = mapped_column(Boolean(), default=True, index=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String(128),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    updated_by_user_id: Mapped[str | None] = mapped_column(
+        String(128),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)
+
+    page: Mapped[LiveUpdatePageRecord] = relationship(back_populates="entries")
+    article: Mapped[NewsArticleRecord | None] = relationship()
+    poll: Mapped[PollRecord | None] = relationship()
+    created_by: Mapped["UserRecord | None"] = relationship(
+        foreign_keys=[created_by_user_id]
+    )
+    updated_by: Mapped["UserRecord | None"] = relationship(
+        foreign_keys=[updated_by_user_id]
+    )
 
 
 class UserPreferenceRecord(Base):

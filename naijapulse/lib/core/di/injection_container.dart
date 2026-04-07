@@ -20,6 +20,7 @@ import 'package:naijapulse/features/auth/domain/usecases/login_user.dart';
 import 'package:naijapulse/features/auth/domain/usecases/logout_user.dart';
 import 'package:naijapulse/features/auth/domain/usecases/register_user.dart';
 import 'package:naijapulse/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:naijapulse/features/live_updates/data/datasource/remote/live_updates_remote_datasource.dart';
 import 'package:naijapulse/features/news/data/datasource/local/news_local_datasource.dart';
 import 'package:naijapulse/features/news/data/datasource/local/saved_story_local_datasource.dart';
 import 'package:naijapulse/features/news/data/datasource/remote/news_remote_datasource.dart';
@@ -343,6 +344,12 @@ class InjectionContainer {
     }
     sl.registerLazySingleton<AdminRemoteDataSource>(
       () => AdminRemoteDataSourceImpl(
+        apiClient: sl<ApiClient>(),
+        authLocalDataSource: sl<AuthLocalDataSource>(),
+      ),
+    );
+    sl.registerLazySingleton<LiveUpdatesRemoteDataSource>(
+      () => LiveUpdatesRemoteDataSourceImpl(
         apiClient: sl<ApiClient>(),
         authLocalDataSource: sl<AuthLocalDataSource>(),
       ),

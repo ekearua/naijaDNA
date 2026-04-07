@@ -332,6 +332,16 @@ class _AdminShellPageState extends State<AdminShellPage> {
         path: AppRouter.adminHomepagePath,
       ),
       _AdminNavItem(
+        label: 'Live Updates',
+        icon: Icons.timeline_rounded,
+        path: AppRouter.adminLiveUpdatesPath,
+      ),
+      _AdminNavItem(
+        label: 'Polls',
+        icon: Icons.poll_outlined,
+        path: AppRouter.adminPollsPath,
+      ),
+      _AdminNavItem(
         label: 'Sources',
         icon: Icons.rss_feed_rounded,
         path: AppRouter.adminSourcesPath,

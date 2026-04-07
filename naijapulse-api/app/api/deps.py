@@ -4,6 +4,7 @@ from app.services.article_comments_service import ArticleCommentsService
 from app.services.admin_platform_service import AdminPlatformService
 from app.services.article_readability_service import ArticleReadabilityService
 from app.services.ingestion_pipeline_service import IngestionPipelineService
+from app.services.live_updates_service import LiveUpdatesService
 from app.services.livekit_service import LiveKitService
 from app.services.news_service import NewsService
 from app.services.notifications_service import NotificationsService
@@ -73,6 +74,11 @@ def get_notifications_service(request: Request) -> NotificationsService:
 def get_livekit_service(request: Request) -> LiveKitService:
     """Resolve singleton LiveKitService from app state."""
     return request.app.state.livekit_service
+
+
+def get_live_updates_service(request: Request) -> LiveUpdatesService:
+    """Resolve singleton LiveUpdatesService from app state."""
+    return request.app.state.live_updates_service
 
 
 def get_response_cache_service(request: Request) -> ResponseCacheService:

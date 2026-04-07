@@ -32,6 +32,8 @@ class PollModel extends Poll {
   const PollModel({
     required super.id,
     required super.question,
+    super.categoryId,
+    super.categoryName,
     required super.options,
     required super.endsAt,
     super.hasVoted,
@@ -47,6 +49,8 @@ class PollModel extends Poll {
     return PollModel(
       id: (json['id'] ?? '').toString(),
       question: (json['question'] ?? '').toString(),
+      categoryId: (json['categoryId'] ?? json['category_id']) as String?,
+      categoryName: (json['categoryName'] ?? json['category_name']) as String?,
       options: (json['options'] as List<dynamic>)
           .map(
             (option) =>
@@ -64,6 +68,8 @@ class PollModel extends Poll {
     return PollModel(
       id: entity.id,
       question: entity.question,
+      categoryId: entity.categoryId,
+      categoryName: entity.categoryName,
       options: entity.options
           .map((option) => PollOptionModel.fromEntity(option))
           .toList(),
@@ -84,6 +90,8 @@ class PollModel extends Poll {
     return PollModel(
       id: id,
       question: question,
+      categoryId: categoryId,
+      categoryName: categoryName,
       options: updatedOptions,
       endsAt: endsAt,
       hasVoted: true,
@@ -95,6 +103,8 @@ class PollModel extends Poll {
     return {
       'id': id,
       'question': question,
+      'categoryId': categoryId,
+      'categoryName': categoryName,
       'options': options
           .map((option) => PollOptionModel.fromEntity(option).toJson())
           .toList(),

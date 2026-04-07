@@ -5,6 +5,8 @@ import 'package:naijapulse/features/auth/data/datasource/local/auth_local_dataso
 import 'package:naijapulse/features/news/data/models/article_comment_model.dart';
 import 'package:naijapulse/features/news/data/models/news_article_model.dart';
 import 'package:naijapulse/features/news/data/models/reported_comment_model.dart';
+import 'package:naijapulse/features/polls/data/models/poll_category_model.dart';
+import 'package:naijapulse/features/polls/data/models/poll_model.dart';
 
 abstract class AdminRemoteDataSource {
   Future<AdminDashboardSummaryModel> fetchDashboardSummary();
@@ -124,6 +126,17 @@ abstract class AdminRemoteDataSource {
     bool? contributionAccessGranted,
   });
 
+  Future<List<PollModel>> fetchActivePolls();
+
+  Future<List<PollCategoryModel>> fetchPollCategories();
+
+  Future<PollModel> createPoll({
+    required String question,
+    required DateTime endsAt,
+    String? categoryId,
+    required List<String> optionLabels,
+  });
+
   Future<List<AdminUserAccessRequestModel>> fetchUserAccessRequests({
     String? status,
     int limit,
@@ -165,6 +178,13 @@ abstract class AdminRemoteDataSource {
   Future<AdminHomepageConfigModel> updateHomepagePlacements(
     List<AdminHomepagePlacementItemModel> items,
   );
+
+  Future<AdminHomepageConfigModel> updateHomepageSettings({
+    required bool latestAutofillEnabled,
+    required int latestItemLimit,
+    required int latestWindowHours,
+    required int latestFallbackWindowHours,
+  });
 }
 
 class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
@@ -578,6 +598,54 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   }
 
   @override
+  Future<List<PollModel>> fetchActivePolls() async {
+    final response = await _getAuthed('/polls/active');
+    final rawItems = response['items'];
+    if (rawItems is! List<dynamic>) {
+      throw const ParseException('Invalid response format for polls.');
+    }
+    return rawItems
+        .whereType<Map<String, dynamic>>()
+        .map(PollModel.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<List<PollCategoryModel>> fetchPollCategories() async {
+    final response = await _getAuthed('/categories');
+    final rawItems = response['items'];
+    if (rawItems is! List<dynamic>) {
+      throw const ParseException(
+        'Invalid response format for poll categories.',
+      );
+    }
+    return rawItems
+        .whereType<Map<String, dynamic>>()
+        .map(PollCategoryModel.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<PollModel> createPoll({
+    required String question,
+    required DateTime endsAt,
+    String? categoryId,
+    required List<String> optionLabels,
+  }) async {
+    final response = await _postAuthed(
+      '/polls',
+      data: {
+        'question': question.trim(),
+        'ends_at': endsAt.toUtc().toIso8601String(),
+        if (categoryId?.trim().isNotEmpty ?? false)
+          'category_id': categoryId!.trim(),
+        'options': _normalizePollOptions(optionLabels),
+      },
+    );
+    return PollModel.fromJson(response);
+  }
+
+  @override
   Future<List<AdminUserAccessRequestModel>> fetchUserAccessRequests({
     String? status,
     int limit = 100,
@@ -727,6 +795,25 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     return AdminHomepageConfigModel.fromJson(response);
   }
 
+  @override
+  Future<AdminHomepageConfigModel> updateHomepageSettings({
+    required bool latestAutofillEnabled,
+    required int latestItemLimit,
+    required int latestWindowHours,
+    required int latestFallbackWindowHours,
+  }) async {
+    final response = await _patchAuthed(
+      '/admin/homepage/settings',
+      data: {
+        'latest_autofill_enabled': latestAutofillEnabled,
+        'latest_item_limit': latestItemLimit,
+        'latest_window_hours': latestWindowHours,
+        'latest_fallback_window_hours': latestFallbackWindowHours,
+      },
+    );
+    return AdminHomepageConfigModel.fromJson(response);
+  }
+
   Future<Map<String, dynamic>> _getAuthed(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -782,6 +869,33 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         .whereType<Map<String, dynamic>>()
         .map(NewsArticleModel.fromJson)
         .toList();
+  }
+
+  List<Map<String, String>> _normalizePollOptions(List<String> optionLabels) {
+    final seen = <String>{};
+    final items = <Map<String, String>>[];
+    for (final raw in optionLabels) {
+      final label = raw.trim();
+      if (label.isEmpty) {
+        continue;
+      }
+      var optionId = label
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+          .replaceAll(RegExp(r'^-+|-+$'), '');
+      if (optionId.isEmpty) {
+        optionId = 'option';
+      }
+      final baseId = optionId;
+      var suffix = 2;
+      while (seen.contains(optionId)) {
+        optionId = '$baseId-$suffix';
+        suffix += 1;
+      }
+      seen.add(optionId);
+      items.add({'id': optionId, 'label': label});
+    }
+    return items;
   }
 
   Future<String?> _currentUserId() async {

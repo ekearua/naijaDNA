@@ -570,6 +570,8 @@ class PollsService:
         return Poll(
             id=poll.id,
             question=poll.question,
+            category_id=poll.category_id,
+            category_name=poll.category.name if poll.category is not None else None,
             options=options,
             ends_at=poll.ends_at,
             has_voted=has_voted,

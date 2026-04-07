@@ -301,8 +301,23 @@ class HomepagePlacementPatchRequest(BaseModel):
     items: List[HomepageStoryPlacementItem] = Field(default_factory=list)
 
 
+class HomepageSettingsConfigItem(BaseModel):
+    latest_autofill_enabled: bool = True
+    latest_item_limit: int = Field(default=20, ge=1, le=50)
+    latest_window_hours: int = Field(default=6, ge=1, le=168)
+    latest_fallback_window_hours: int = Field(default=24, ge=1, le=336)
+
+
+class HomepageSettingsPatchRequest(BaseModel):
+    latest_autofill_enabled: bool = True
+    latest_item_limit: int = Field(..., ge=1, le=50)
+    latest_window_hours: int = Field(..., ge=1, le=168)
+    latest_fallback_window_hours: int = Field(..., ge=1, le=336)
+
+
 class AdminHomepageConfigResponse(BaseModel):
     generated_at: datetime
+    settings: HomepageSettingsConfigItem
     categories: List[HomepageCategoryConfigItem] = Field(default_factory=list)
     secondary_chips: List[HomepageSecondaryChipConfigItem] = Field(default_factory=list)
     top_stories: List[HomepageStoryPlacementDetail] = Field(default_factory=list)

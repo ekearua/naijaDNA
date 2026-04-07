@@ -11,9 +11,11 @@ import 'package:naijapulse/admin/presentation/pages/admin_articles_management_pa
 import 'package:naijapulse/admin/presentation/pages/admin_dashboard_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_forgot_password_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_homepage_page.dart';
+import 'package:naijapulse/admin/presentation/pages/admin_live_updates_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_login_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_moderation_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_operations_page.dart';
+import 'package:naijapulse/admin/presentation/pages/admin_polls_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_request_access_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_reset_password_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_sources_page.dart';
@@ -31,6 +33,8 @@ import 'package:naijapulse/features/auth/presentation/pages/forgot_password_page
 import 'package:naijapulse/features/auth/presentation/pages/login_page.dart';
 import 'package:naijapulse/features/auth/presentation/pages/register_page.dart';
 import 'package:naijapulse/features/auth/presentation/pages/reset_password_page.dart';
+import 'package:naijapulse/features/live_updates/presentation/pages/live_update_detail_page.dart';
+import 'package:naijapulse/features/live_updates/presentation/pages/live_updates_hub_page.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
 import 'package:naijapulse/features/news/presentation/pages/article_discussion_page.dart';
 import 'package:naijapulse/features/news/presentation/bloc/news_bloc.dart';
@@ -57,6 +61,8 @@ class AppRouter {
   static const String loadingPath = '/';
   static const String homePath = '/home';
   static const String livePath = '/live';
+  static const String liveUpdatesPath = '/live-updates';
+  static const String liveUpdateDetailPathTemplate = '/live-updates/:slug';
   static const String homeLiveFeedPath = '/home/live-feed';
   static const String newsAllPath = '/home/all-news';
   static const String explorePath = '/explore';
@@ -77,6 +83,8 @@ class AppRouter {
   static const String adminArticleCreatePath = '/admin/articles/new';
   static const String adminModerationPath = '/admin/moderation';
   static const String adminOperationsPath = '/admin/operations';
+  static const String adminLiveUpdatesPath = '/admin/live-updates';
+  static const String adminPollsPath = '/admin/polls';
   static const String adminAnalyticsPath = '/admin/analytics';
   static const String adminVerificationPath = '/admin/verification';
   static const String adminHomepagePath = '/admin/homepage';
@@ -111,6 +119,8 @@ class AppRouter {
   }
 
   static String liveSessionPath(String sessionId) => '/live/session/$sessionId';
+  static String liveUpdateDetailPath(String slug) =>
+      '/live-updates/${Uri.encodeComponent(slug)}';
   static String liveFeedPath({required String tagId, String? label}) {
     final tagParam = Uri.encodeQueryComponent(tagId);
     if (label == null || label.trim().isEmpty) {
@@ -143,6 +153,17 @@ class AppRouter {
     GoRoute(
       path: loadingPath,
       builder: (context, state) => const LoadingPage(),
+    ),
+    GoRoute(
+      path: liveUpdatesPath,
+      builder: (context, state) =>
+          const _StandaloneFeedScope(child: LiveUpdatesHubPage()),
+    ),
+    GoRoute(
+      path: liveUpdateDetailPathTemplate,
+      builder: (context, state) => _StandaloneFeedScope(
+        child: LiveUpdateDetailPage(slug: state.pathParameters['slug'] ?? ''),
+      ),
     ),
     GoRoute(
       path: searchPath,
@@ -348,6 +369,14 @@ class AppRouter {
         GoRoute(
           path: adminOperationsPath,
           builder: (context, state) => const AdminOperationsPage(),
+        ),
+        GoRoute(
+          path: adminLiveUpdatesPath,
+          builder: (context, state) => const AdminLiveUpdatesPage(),
+        ),
+        GoRoute(
+          path: adminPollsPath,
+          builder: (context, state) => const AdminPollsPage(),
         ),
         GoRoute(
           path: adminAnalyticsPath,

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>naijaDNA Scaling Budget Report - Corrected</title>
+  <style>
+    :root {
+      --ink: #17232d;
+      --muted: #60707d;
+      --line: #d7dfe5;
+      --panel: #f6f8fa;
+      --accent: #0d6b5f;
+      --accent-soft: #e2f3ef;
+      --warn: #9b4b1d;
+      --warn-soft: #fff1e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #fff;
+      line-height: 1.45;
+    }
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 42px 52px;
+    }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 28px 30px;
+      background:
+        radial-gradient(circle at top right, rgba(13,107,95,.11), transparent 34%),
+        linear-gradient(135deg, #fbfdfd, #f3f7f8);
+    }
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+      line-height: 1.1;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 760px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 22px;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+    p, li { font-size: 14px; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 22px 0 26px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: #fff;
+    }
+    .card h3 {
+      margin: 0 0 7px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+    }
+    .metric {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .small {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .note {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 14px 0 18px;
+      font-size: 14px;
+    }
+    .warn {
+      border-left-color: var(--warn);
+      background: var(--warn-soft);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--panel);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .footer {
+      margin-top: 28px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Corrected Planning Report</div>
+      <h1>naijaDNA Scaling Budget and User Capacity</h1>
+      <p class="subtitle">
+        This revision corrects the earlier ambiguity around caching and cost. Caching is usually not cheaper as a raw monthly bill.
+        It is cheaper per unit of traffic served because it delays larger compute and database upgrades.
+      </p>
+      <div class="meta">
+        <span><strong>Date:</strong> 2026-04-07</span>
+        <span><strong>Traffic focus:</strong> homepage reads, article reads, polls, live updates</span>
+        <span><strong>Audience:</strong> anonymous readers and signed-in readers</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Current App Compute</h3>
+        <p class="metric">0.5 CPU / 512 MB</p>
+        <div class="small">Single instance, no autoscaling</div>
+      </div>
+      <div class="card">
+        <h3>Current Database</h3>
+        <p class="metric">Render Postgres Free</p>
+        <div class="small">Not suitable for sustained public production</div>
+      </div>
+      <div class="card">
+        <h3>Main Correction</h3>
+        <p class="metric">Caching saves upgrades</p>
+        <div class="small">It improves cost efficiency more than it lowers your immediate bill</div>
+      </div>
+    </section>
+
+    <div class="note warn">
+      All user-capacity figures below are directional estimates for this codebase, not vendor guarantees.
+      They assume Redis caching for read-heavy endpoints and static assets served through Cloudflare.
+    </div>
+
+    <h2>Corrected Cost Logic</h2>
+    <p>
+      The earlier version made it look like a lean deployment with stronger caching could be cheaper than the plain lean deployment.
+      The cleaner interpretation is:
+    </p>
+    <ul>
+      <li>A cached setup is usually the same price or slightly more expensive as a monthly bill.</li>
+      <li>A cached setup usually serves more users before the next upgrade.</li>
+      <li>That means it is cheaper per 1,000 daily active users, even if the bill itself is not lower.</li>
+    </ul>
+
+    <h2>Deployment Shapes</h2>
+    <h3>1. Render Shape: Near-Term Production</h3>
+    <p>
+      <span class="pill">Cloudflare Pages</span>
+      <span class="pill">Render Web</span>
+      <span class="pill">Render Postgres</span>
+      <span class="pill">Upstash Redis</span>
+      <span class="pill">Optional worker later</span>
+    </p>
+
+    <h3>2. AWS Lightsail Shape: Medium-Term Growth</h3>
+    <p>
+      <span class="pill">Cloudflare Pages</span>
+      <span class="pill">2-3 app instances</span>
+      <span class="pill">Load balancer</span>
+      <span class="pill">Managed PostgreSQL</span>
+      <span class="pill">Upstash Redis</span>
+      <span class="pill">Cloudflare R2</span>
+    </p>
+
+    <h3>3. AWS ECS / RDS Shape: Long-Term Scale</h3>
+    <p>
+      <span class="pill">Cloudflare Pages</span>
+      <span class="pill">ECS / Fargate API</span>
+      <span class="pill">Worker service</span>
+      <span class="pill">RDS PostgreSQL</span>
+      <span class="pill">Redis</span>
+      <span class="pill">Application Load Balancer</span>
+    </p>
+
+    <h2>Budget Ladder With Recommended User Counts</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>Deployment shape</th>
+          <th>Monthly bill</th>
+          <th>Recommended daily active users</th>
+          <th>Recommended concurrent readers</th>
+          <th>Approximate cost per 1,000 daily active users</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Stage 1</td>
+          <td>Render lean, minimal cache</td>
+          <td>about $14-$20</td>
+          <td>up to 2,000</td>
+          <td>30-50</td>
+          <td>about $7-$10</td>
+          <td>Cheapest meaningful production entry point, but you will hit limits sooner.</td>
+        </tr>
+        <tr>
+          <td>Stage 2</td>
+          <td>Render lean, with caching discipline</td>
+          <td>about $14-$24</td>
+          <td>up to 3,000</td>
+          <td>50-75</td>
+          <td>about $4.67-$8</td>
+          <td>Slightly higher bill is possible, but you serve more readers before the next upgrade.</td>
+        </tr>
+        <tr>
+          <td>Stage 3</td>
+          <td>Render safer</td>
+          <td>about $54-$100</td>
+          <td>up to 8,000</td>
+          <td>75-200</td>
+          <td>about $6.75-$12.50</td>
+          <td>Better production posture before moving to a multi-instance architecture.</td>
+        </tr>
+        <tr>
+          <td>Stage 4</td>
+          <td>AWS Lightsail base</td>
+          <td>about $67-$72</td>
+          <td>up to 15,000</td>
+          <td>200-350</td>
+          <td>about $4.47-$4.80</td>
+          <td>Very strong value point once you need more than one app instance.</td>
+        </tr>
+        <tr>
+          <td>Stage 5</td>
+          <td>AWS Lightsail growth</td>
+          <td>about $116-$121</td>
+          <td>up to 40,000</td>
+          <td>350-800</td>
+          <td>about $2.90-$3.03</td>
+          <td>Best balance between cost and headroom for a growing news product.</td>
+        </tr>
+        <tr>
+          <td>Stage 6</td>
+          <td>AWS Lightsail stronger spike tier</td>
+          <td>about $170-$188</td>
+          <td>up to 80,000</td>
+          <td>800-1,500</td>
+          <td>about $2.13-$2.35</td>
+          <td>Good bridge tier before you take on the complexity of ECS and RDS.</td>
+        </tr>
+        <tr>
+          <td>Stage 7+</td>
+          <td>AWS ECS / RDS serious production</td>
+          <td>about $150-$340 for lean serious production; $350-$800+ for mature production</td>
+          <td>100,000+</td>
+          <td>1,500-5,000+</td>
+          <td>about $1.50-$3.40 at 100,000 daily active users, lower beyond that</td>
+          <td>Use only when reliability, service separation, and burst handling clearly justify the added complexity.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended User Targets Per Shape</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Shape</th>
+          <th>Recommended user target</th>
+          <th>Why this is the planning target</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Render lean</td>
+          <td>up to 2,000 daily active users</td>
+          <td>Cheapest entry point, but single-instance limits and smaller database headroom remain tight.</td>
+        </tr>
+        <tr>
+          <td>Render lean with caching discipline</td>
+          <td>up to 3,000 daily active users</td>
+          <td>Same general class of stack, but better cache hit rate postpones the compute and database upgrade.</td>
+        </tr>
+        <tr>
+          <td>Render safer</td>
+          <td>up to 8,000 daily active users</td>
+          <td>Good near-term production posture before you need multiple app instances.</td>
+        </tr>
+        <tr>
+          <td>AWS Lightsail base</td>
+          <td>up to 15,000 daily active users</td>
+          <td>First strong multi-instance architecture for this codebase.</td>
+        </tr>
+        <tr>
+          <td>AWS Lightsail growth</td>
+          <td>up to 40,000 daily active users</td>
+          <td>Best cost-to-capacity point for a growing news product.</td>
+        </tr>
+        <tr>
+          <td>AWS Lightsail stronger spike tier</td>
+          <td>up to 80,000 daily active users</td>
+          <td>Better suited to live news spikes and denser poll traffic.</td>
+        </tr>
+        <tr>
+          <td>AWS ECS / RDS</td>
+          <td>100,000+ daily active users</td>
+          <td>Best when scale and reliability needs outweigh simplicity.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Architecture Notes For This Codebase</h2>
+    <ul>
+      <li>Keep frontend delivery on Cloudflare Pages.</li>
+      <li>Move scheduled ingestion and the scheduler out of the API process before adding multiple API instances.</li>
+      <li>Keep Redis as a shared response cache for homepage reads, poll reads, category reads, and live-update reads.</li>
+      <li>Upgrade off free Postgres immediately if the app is meant to serve real users.</li>
+      <li>Move media to Cloudflare R2 so article and live-update images do not rely on app-disk storage.</li>
+    </ul>
+
+    <h2>Pricing Sources</h2>
+    <ul>
+      <li>Render pricing: https://render.com/pricing/</li>
+      <li>Render Key Value documentation: https://render.com/docs/key-value</li>
+      <li>Upstash Redis pricing: https://upstash.com/pricing</li>
+      <li>Upstash Redis limits and pricing detail: https://upstash.com/docs/redis/overall/pricing</li>
+      <li>Cloudflare Workers pricing: https://developers.cloudflare.com/workers/platform/pricing/</li>
+      <li>Cloudflare Pages Functions pricing: https://developers.cloudflare.com/pages/functions/pricing/</li>
+      <li>Amazon Lightsail pricing: https://aws.amazon.com/lightsail/pricing/</li>
+      <li>AWS Fargate pricing: https://aws.amazon.com/fargate/pricing/</li>
+      <li>AWS RDS PostgreSQL pricing: https://aws.amazon.com/rds/postgresql/pricing/</li>
+    </ul>
+
+    <div class="footer">
+      Prepared for planning use. User-capacity numbers are engineering estimates based on the current application architecture and the stated traffic mix.
+    </div>
+  </main>
+</body>
+</html>

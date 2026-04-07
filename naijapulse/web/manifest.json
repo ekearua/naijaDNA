@@ -1,11 +1,11 @@
 {
-    "name": "naijapulse",
-    "short_name": "naijapulse",
+    "name": "naijaDNA",
+    "short_name": "naijaDNA",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "naijaDNA news app.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

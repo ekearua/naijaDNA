@@ -13,6 +13,8 @@ class PollOption(BaseModel):
 class Poll(BaseModel):
     id: str
     question: str
+    category_id: Optional[str] = None
+    category_name: Optional[str] = None
     options: List[PollOption]
     ends_at: datetime
     has_voted: bool = False

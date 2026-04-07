@@ -16,6 +16,7 @@ from app.services.admin_platform_service import AdminPlatformService
 from app.services.article_readability_service import ArticleReadabilityService
 from app.services.email_service import EmailService
 from app.services.ingestion_pipeline_service import IngestionPipelineService
+from app.services.live_updates_service import LiveUpdatesService
 from app.services.livekit_service import LiveKitService
 from app.services.news_service import NewsService
 from app.services.notifications_service import NotificationsService
@@ -62,6 +63,7 @@ async def lifespan(app: FastAPI):
     app.state.news_service = NewsService(
         session_factory=session_factory,
         notifications_service=app.state.notifications_service,
+        settings=settings,
     )
     app.state.article_readability_service = ArticleReadabilityService()
     app.state.article_comments_service = ArticleCommentsService(
@@ -83,6 +85,10 @@ async def lifespan(app: FastAPI):
         email_admin_web_base_url=settings.email_admin_web_base_url,
     )
     app.state.polls_service = PollsService(session_factory=session_factory)
+    app.state.live_updates_service = LiveUpdatesService(
+        session_factory=session_factory,
+        news_service=app.state.news_service,
+    )
     app.state.personalization_service = PersonalizationService(
         session_factory=session_factory
     )

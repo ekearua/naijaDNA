@@ -10,11 +10,13 @@ from uuid import uuid4
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.config import Settings, get_settings
 from app.core.text import plain_text_excerpt
 from app.db.models import (
     ArticleTagRecord,
     ArticleWorkflowEventRecord,
     HomepageCategoryRecord,
+    HomepageSettingsRecord,
     HomepageSecondaryChipRecord,
     HomepageStoryPlacementRecord,
     NewsArticleRecord,
@@ -65,10 +67,24 @@ class NewsService:
         session_factory: async_sessionmaker[AsyncSession],
         *,
         notifications_service: NotificationsService,
+        settings: Settings | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._notifications_service = notifications_service
         self._lock = asyncio.Lock()
+        resolved_settings = settings or get_settings()
+        self._homepage_latest_autofill_enabled = (
+            resolved_settings.homepage_latest_autofill_enabled
+        )
+        self._homepage_latest_item_limit = max(
+            1, resolved_settings.homepage_latest_item_limit
+        )
+        self._homepage_latest_window = timedelta(
+            hours=max(1, resolved_settings.homepage_latest_window_hours)
+        )
+        self._homepage_latest_fallback_window = timedelta(
+            hours=max(1, resolved_settings.homepage_latest_fallback_window_hours)
+        )
 
     async def initialize_defaults(self) -> None:
         """No-op. News should only come from ingestion sources."""
@@ -128,6 +144,37 @@ class NewsService:
             )
             placements = placement_result.scalars().all()
 
+            homepage_settings = await session.get(HomepageSettingsRecord, 1)
+            latest_autofill_enabled = (
+                homepage_settings.latest_autofill_enabled
+                if homepage_settings is not None
+                else self._homepage_latest_autofill_enabled
+            )
+            latest_item_limit = max(
+                1,
+                homepage_settings.latest_item_limit
+                if homepage_settings is not None
+                else self._homepage_latest_item_limit,
+            )
+            latest_window = timedelta(
+                hours=max(
+                    1,
+                    homepage_settings.latest_window_hours
+                    if homepage_settings is not None
+                    else int(self._homepage_latest_window.total_seconds() // 3600),
+                )
+            )
+            latest_fallback_window = timedelta(
+                hours=max(
+                    1,
+                    homepage_settings.latest_fallback_window_hours
+                    if homepage_settings is not None
+                    else int(
+                        self._homepage_latest_fallback_window.total_seconds() // 3600
+                    ),
+                )
+            )
+
             article_ids = list({item.article_id for item in placements})
             article_by_id: dict[str, NewsArticleRecord] = {}
             if article_ids:
@@ -173,9 +220,18 @@ class NewsService:
         ]
 
         top_stories = grouped.get(("top", None), [])
-        latest_stories = self._exclude_story_ids(
+        top_story_ids = {story.id for story in top_stories}
+        latest_placement_stories = self._exclude_story_ids(
             grouped.get(("latest", None), []),
-            excluded_ids={story.id for story in top_stories},
+            excluded_ids=top_story_ids,
+        )
+        latest_stories = await self._build_homepage_latest_stories(
+            pinned_latest=latest_placement_stories,
+            excluded_ids=top_story_ids,
+            limit=latest_item_limit,
+            autofill_enabled=latest_autofill_enabled,
+            recent_window=latest_window,
+            fallback_window=latest_fallback_window,
         )
 
         return HomepageContentResponse(
@@ -753,6 +809,84 @@ class NewsService:
             result = await session.execute(statement)
             rows = result.scalars().all()
             return [self._to_schema(row) for row in rows]
+
+    async def _build_homepage_latest_stories(
+        self,
+        *,
+        pinned_latest: list[NewsArticle],
+        excluded_ids: set[str],
+        limit: int,
+        autofill_enabled: bool,
+        recent_window: timedelta,
+        fallback_window: timedelta,
+    ) -> list[NewsArticle]:
+        if limit <= 0:
+            return []
+
+        selected = pinned_latest[:limit]
+        selected_ids = {story.id for story in selected}
+        effective_excluded = excluded_ids | selected_ids
+        remaining = limit - len(selected)
+        if remaining <= 0 or not autofill_enabled:
+            return selected
+
+        auto_latest_primary = await self._query_recent_published_stories(
+            limit=remaining,
+            recent_window=recent_window,
+            excluded_ids=effective_excluded,
+        )
+        selected.extend(auto_latest_primary)
+        effective_excluded = effective_excluded | {
+            story.id for story in auto_latest_primary
+        }
+        remaining = limit - len(selected)
+        if (
+            remaining <= 0
+            or fallback_window <= recent_window
+        ):
+            return selected
+
+        auto_latest_fallback = await self._query_recent_published_stories(
+            limit=remaining,
+            recent_window=fallback_window,
+            excluded_ids=effective_excluded,
+        )
+        return [*selected, *auto_latest_fallback]
+
+    async def _query_recent_published_stories(
+        self,
+        *,
+        limit: int,
+        recent_window: timedelta,
+        excluded_ids: set[str],
+    ) -> list[NewsArticle]:
+        if limit <= 0:
+            return []
+
+        now = datetime.utcnow()
+        published_after = now - recent_window
+
+        async with self._session_factory() as session:
+            statement = (
+                select(NewsArticleRecord)
+                .where(
+                    NewsArticleRecord.status == "published",
+                    NewsArticleRecord.published_at.is_not(None),
+                    NewsArticleRecord.published_at >= published_after,
+                )
+                .order_by(NewsArticleRecord.published_at.desc())
+                .limit(max(limit * 4, 40))
+            )
+            if excluded_ids:
+                statement = statement.where(NewsArticleRecord.id.not_in(excluded_ids))
+
+            result = await session.execute(statement)
+            rows = result.scalars().all()
+
+        fresh_rows = [
+            row for row in rows if row.id not in excluded_ids and not self._is_row_stale(row, now=now)
+        ]
+        return [self._to_schema(row) for row in fresh_rows[:limit]]
 
     async def _query_latest_stories_diversified(
         self,

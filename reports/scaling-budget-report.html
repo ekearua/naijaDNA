@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>naijaDNA Scaling Budget Report</title>
+  <style>
+    :root {
+      --ink: #16202a;
+      --muted: #5f6b76;
+      --line: #d7dee4;
+      --panel: #f7f9fb;
+      --accent: #0d6b5f;
+      --accent-soft: #dff2ee;
+      --warm: #a34b17;
+      --warm-soft: #fff0e6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: white;
+      line-height: 1.45;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 44px 54px;
+    }
+
+    .hero {
+      padding: 28px 30px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(13, 107, 95, 0.10), transparent 32%),
+        linear-gradient(135deg, #fcfdfd, #f3f7f8);
+      border-radius: 20px;
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 760px;
+    }
+
+    .meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 22px 0 28px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: white;
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .metric {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 22px;
+    }
+
+    h3.section {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+
+    p, li {
+      font-size: 14px;
+    }
+
+    ul {
+      margin: 8px 0 0 20px;
+      padding: 0;
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin: 14px 0 20px;
+      font-size: 14px;
+    }
+
+    .warn {
+      border-left-color: var(--warm);
+      background: var(--warm-soft);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--panel);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media print {
+      .page {
+        padding: 22px 26px 30px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Planning Report</div>
+      <h1>naijaDNA Scaling Budget and Deployment Shapes</h1>
+      <p class="subtitle">
+        A practical budget ladder and scaling architecture for the current codebase, using the recommended deployment shapes:
+        Render for near-term production, AWS Lightsail for medium-term growth, and AWS ECS/RDS for long-term scale.
+      </p>
+      <div class="meta">
+        <span><strong>Date:</strong> 2026-04-06</span>
+        <span><strong>Audience:</strong> anonymous readers and signed-in readers</span>
+        <span><strong>Priority workloads:</strong> homepage reads, article reads, polls, live updates</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Current Hosting</h3>
+        <p class="metric">0.5 CPU / 512 MB</p>
+        <p class="small">Single Render instance, no autoscaling</p>
+      </div>
+      <div class="card">
+        <h3>Current Database</h3>
+        <p class="metric">Render Postgres Free</p>
+        <p class="small">Not suitable for sustained production use</p>
+      </div>
+      <div class="card">
+        <h3>Current Risk</h3>
+        <p class="metric">Low ceiling</p>
+        <p class="small">Likely first bottlenecks are database, memory, and cache misses</p>
+      </div>
+    </section>
+
+    <div class="note warn">
+      These user-capacity numbers are planning estimates, not vendor guarantees. They assume a read-heavy product with Redis caching
+      enabled for homepage, article-list, poll, and live-update reads.
+    </div>
+
+    <h2>Deployment Shapes</h2>
+
+    <h3 class="section">1. Render Shape: Near-Term Production</h3>
+    <p>
+      Best for early public launch, low operational overhead, and a small team. This is the easiest next step from the current setup.
+    </p>
+    <p>
+      <span class="pill">Cloudflare Pages</span>
+      <span class="pill">Render Web</span>
+      <span class="pill">Render Postgres</span>
+      <span class="pill">Upstash Redis</span>
+      <span class="pill">Optional Render worker</span>
+    </p>
+
+    <h3 class="section">2. AWS Lightsail Shape: Medium-Term Growth</h3>
+    <p>
+      Best for a growing audience, better horizontal capacity, and more predictable scaling costs without the complexity of a full AWS microservice setup.
+    </p>
+    <p>
+      <span class="pill">Cloudflare Pages</span>
+      <span class="pill">2-3 Lightsail app instances</span>
+      <span class="pill">Lightsail load balancer</span>
+      <span class="pill">Managed PostgreSQL</span>
+      <span class="pill">Upstash Redis</span>
+      <span class="pill">Cloudflare R2</span>
+    </p>
+
+    <h3 class="section">3. AWS ECS / RDS Shape: Long-Term Scale</h3>
+    <p>
+      Best for higher reliability, multiple services, larger spikes, and more formal backend operations once the product outgrows simpler platforms.
+    </p>
+    <p>
+      <span class="pill">Cloudflare Pages</span>
+      <span class="pill">ECS / Fargate API service</span>
+      <span class="pill">ECS worker service</span>
+      <span class="pill">RDS PostgreSQL</span>
+      <span class="pill">Redis</span>
+      <span class="pill">ALB</span>
+      <span class="pill">Cloudflare R2</span>
+    </p>
+
+    <h2>Budget Ladder and Recommended User Capacity</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>Deployment shape</th>
+          <th>Monthly budget</th>
+          <th>Recommended daily active users</th>
+          <th>Recommended concurrent readers</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Month 1</td>
+          <td>Render lean</td>
+          <td>about $14-$24</td>
+          <td>up to 2,000</td>
+          <td>30-50</td>
+          <td>Upgrade off free Postgres immediately and add Redis. Good for early public rollout only.</td>
+        </tr>
+        <tr>
+          <td>Month 2</td>
+          <td>Render lean with caching discipline</td>
+          <td>about $14-$19</td>
+          <td>up to 3,000</td>
+          <td>50-75</td>
+          <td>Assumes homepage, polls, categories, and live updates are cached aggressively.</td>
+        </tr>
+        <tr>
+          <td>Month 3</td>
+          <td>Render safer</td>
+          <td>about $54-$100</td>
+          <td>up to 8,000</td>
+          <td>75-200</td>
+          <td>Move API to Standard class, use stronger paid Postgres, keep Redis.</td>
+        </tr>
+        <tr>
+          <td>Month 4</td>
+          <td>AWS Lightsail base</td>
+          <td>about $67-$72</td>
+          <td>up to 15,000</td>
+          <td>200-350</td>
+          <td>Two app instances, load balancer, managed database, small Redis.</td>
+        </tr>
+        <tr>
+          <td>Month 5</td>
+          <td>AWS Lightsail growth</td>
+          <td>about $116-$121</td>
+          <td>up to 40,000</td>
+          <td>350-800</td>
+          <td>Two stronger app instances, larger database, larger Redis, media on R2.</td>
+        </tr>
+        <tr>
+          <td>Month 6</td>
+          <td>AWS Lightsail stronger spike tier</td>
+          <td>about $170-$188</td>
+          <td>up to 80,000</td>
+          <td>800-1,500</td>
+          <td>Three app instances plus a worker, stronger managed database, stronger cache.</td>
+        </tr>
+        <tr>
+          <td>Month 7+</td>
+          <td>AWS ECS / RDS serious production</td>
+          <td>about $150-$340 for lean serious production; $350-$800+ for mature production</td>
+          <td>100,000+</td>
+          <td>1,500-5,000+</td>
+          <td>Use when the product clearly needs service separation, stronger fault tolerance, and burst capacity.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended Architecture for the Current Codebase</h2>
+    <div class="note">
+      This codebase already has separate concerns for notifications, polls, live updates, response caching, email, push delivery,
+      and scheduled ingestion. The most important scaling step is to stop letting the web API process own everything.
+    </div>
+
+    <h3 class="section">Edge and Frontend</h3>
+    <ul>
+      <li>Keep Cloudflare Pages for admin web and any future client web.</li>
+      <li>Serve static assets and frontend bundles through Cloudflare.</li>
+      <li>Store editorial and live-update media in Cloudflare R2 instead of pushing image load through the API.</li>
+    </ul>
+
+    <h3 class="section">API Layer</h3>
+    <ul>
+      <li>Run FastAPI as a stateless API service.</li>
+      <li>Once traffic grows, run 2 or more API instances behind a load balancer.</li>
+      <li>Do not let multiple API instances all own the scheduler or ingestion loop.</li>
+    </ul>
+
+    <h3 class="section">Worker Layer</h3>
+    <ul>
+      <li>Create a dedicated worker service for scheduled ingestion and future background jobs.</li>
+      <li>Move scheduler ownership out of the main API process before horizontal scaling.</li>
+      <li>Later extend the worker to handle email outbox and push-notification outbox delivery.</li>
+    </ul>
+
+    <h3 class="section">Database</h3>
+    <ul>
+      <li>Upgrade off free Postgres immediately.</li>
+      <li>Set explicit database connection pool sizing in production.</li>
+      <li>Later add PgBouncer or a database proxy once concurrency grows further.</li>
+    </ul>
+
+    <h3 class="section">Cache Layer</h3>
+    <ul>
+      <li>Use Redis for response caching.</li>
+      <li>Cache homepage and article-list reads for 15-60 seconds.</li>
+      <li>Cache active polls and live-update page reads for 5-30 seconds.</li>
+      <li>Invalidate cache when articles publish, polls receive votes, or live-update entries change.</li>
+    </ul>
+
+    <h2>When to Move Between Shapes</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Current shape</th>
+          <th>Move when this happens</th>
+          <th>Next shape</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Render lean</td>
+          <td>Homepage slows under normal traffic, polls spike latency, or database free tier becomes unstable</td>
+          <td>Render safer</td>
+        </tr>
+        <tr>
+          <td>Render safer</td>
+          <td>You regularly need more than one API instance or sustained peak traffic exceeds 150-200 concurrent readers</td>
+          <td>AWS Lightsail base</td>
+        </tr>
+        <tr>
+          <td>AWS Lightsail growth</td>
+          <td>You want cleaner service separation, stronger fault tolerance, or frequent breaking-news spikes above 800 concurrent readers</td>
+          <td>AWS ECS / RDS</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Practical Recommendation</h2>
+    <p>
+      For this codebase, the best path is:
+    </p>
+    <ol>
+      <li>Move immediately to a paid Render database and Redis-backed caching.</li>
+      <li>Use Render Standard for the API once public traffic becomes real.</li>
+      <li>Split scheduler and ingestion into a worker before adding multiple API instances.</li>
+      <li>Move to AWS Lightsail only when the product clearly outgrows a single-instance Render shape.</li>
+      <li>Move to ECS / RDS only when operational complexity is justified by clear usage and reliability needs.</li>
+    </ol>
+
+    <h2>Pricing Sources</h2>
+    <ul>
+      <li>Render pricing: https://render.com/pricing/</li>
+      <li>Render free-service and free-database documentation: https://render.com/docs/free</li>
+      <li>Upstash Redis pricing: https://upstash.com/pricing</li>
+      <li>Cloudflare Pages pricing: https://developers.cloudflare.com/pages/functions/pricing/</li>
+      <li>Cloudflare R2 pricing: https://developers.cloudflare.com/r2/pricing/</li>
+      <li>AWS Lightsail pricing: https://aws.amazon.com/lightsail/pricing/</li>
+      <li>AWS Fargate pricing: https://aws.amazon.com/fargate/pricing/</li>
+      <li>AWS RDS PostgreSQL pricing: https://aws.amazon.com/rds/postgresql/pricing/</li>
+    </ul>
+
+    <div class="footer">
+      Prepared for planning purposes. User-capacity numbers are directional estimates for the current application architecture and traffic pattern.
+    </div>
+  </main>
+</body>
+</html>
