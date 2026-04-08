@@ -1026,6 +1026,9 @@ class AdminPlatformService:
                 latest_item_limit=settings_record.latest_item_limit,
                 latest_window_hours=settings_record.latest_window_hours,
                 latest_fallback_window_hours=settings_record.latest_fallback_window_hours,
+                direct_gnews_top_publish_enabled=settings_record.direct_gnews_top_publish_enabled,
+                category_autofill_enabled=settings_record.category_autofill_enabled,
+                category_window_hours=settings_record.category_window_hours,
             ),
             categories=[
                 HomepageCategoryConfigItem(
@@ -1095,6 +1098,11 @@ class AdminPlatformService:
             settings_record.latest_fallback_window_hours = (
                 payload.latest_fallback_window_hours
             )
+            settings_record.direct_gnews_top_publish_enabled = (
+                payload.direct_gnews_top_publish_enabled
+            )
+            settings_record.category_autofill_enabled = payload.category_autofill_enabled
+            settings_record.category_window_hours = payload.category_window_hours
             settings_record.updated_at = datetime.utcnow()
             await session.commit()
 
@@ -1241,6 +1249,13 @@ class AdminPlatformService:
                 1,
                 self._settings.homepage_latest_fallback_window_hours,
             ),
+            direct_gnews_top_publish_enabled=(
+                self._settings.homepage_direct_gnews_top_publish_enabled
+            ),
+            category_autofill_enabled=(
+                self._settings.homepage_category_autofill_enabled
+            ),
+            category_window_hours=max(1, self._settings.homepage_category_window_hours),
             created_at=now,
             updated_at=now,
         )

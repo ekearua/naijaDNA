@@ -17,6 +17,7 @@ class _AdminSourcesPageState extends State<AdminSourcesPage> {
       InjectionContainer.sl<AdminRemoteDataSource>();
 
   List<AdminSourceModel> _sources = const <AdminSourceModel>[];
+  AdminIngestionStatusModel? _ingestionStatus;
   bool _loading = true;
   String? _errorMessage;
 
@@ -32,11 +33,19 @@ class _AdminSourcesPageState extends State<AdminSourcesPage> {
       _errorMessage = null;
     });
     try {
-      final sources = await _remote.fetchSources();
+      final results = await Future.wait<dynamic>([
+        _remote.fetchSources(),
+        _remote.fetchIngestionStatus(),
+      ]);
+      final sources = results[0] as List<AdminSourceModel>;
+      final ingestionStatus = results[1] as AdminIngestionStatusModel;
       if (!mounted) {
         return;
       }
-      setState(() => _sources = sources);
+      setState(() {
+        _sources = sources;
+        _ingestionStatus = ingestionStatus;
+      });
     } catch (error) {
       if (!mounted) {
         return;
@@ -180,8 +189,69 @@ class _AdminSourcesPageState extends State<AdminSourcesPage> {
     }
   }
 
+  Map<String, _SourceHealthSnapshot> _buildHealthSnapshots() {
+    final status = _ingestionStatus;
+    if (status == null) {
+      return const <String, _SourceHealthSnapshot>{};
+    }
+
+    final runs = <AdminIngestionRunModel>[
+      if (status.lastRun != null) status.lastRun!,
+      ...status.recentRuns.where((run) => run.runId != status.lastRun?.runId),
+    ];
+
+    final snapshots = <String, _SourceHealthSnapshot>{};
+    for (final run in runs) {
+      for (final source in run.sources) {
+        snapshots.putIfAbsent(
+          source.sourceId,
+          () => _SourceHealthSnapshot.fromRunSource(run: run, source: source),
+        );
+      }
+    }
+    return snapshots;
+  }
+
+  List<AdminSourceModel> _rankSources(
+    List<AdminSourceModel> sources,
+    Map<String, _SourceHealthSnapshot> sourceHealth,
+  ) {
+    final ranked = List<AdminSourceModel>.from(sources);
+    ranked.sort((left, right) {
+      final leftHealth = sourceHealth[left.id];
+      final rightHealth = sourceHealth[right.id];
+      final scoreDiff = (rightHealth?.usefulnessScore ?? -1).compareTo(
+        leftHealth?.usefulnessScore ?? -1,
+      );
+      if (scoreDiff != 0) {
+        return scoreDiff;
+      }
+      final leftRun = leftHealth?.lastRunAt ?? left.lastRunAt;
+      final rightRun = rightHealth?.lastRunAt ?? right.lastRunAt;
+      if (leftRun != null && rightRun != null) {
+        final runDiff = rightRun.compareTo(leftRun);
+        if (runDiff != 0) {
+          return runDiff;
+        }
+      } else if (rightRun != null) {
+        return 1;
+      } else if (leftRun != null) {
+        return -1;
+      }
+      return left.name.toLowerCase().compareTo(right.name.toLowerCase());
+    });
+    return ranked;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sourceHealth = _buildHealthSnapshots();
+    final ingestion = _ingestionStatus;
+    final rankedSources = _rankSources(_sources, sourceHealth);
+    final topContributors = rankedSources
+        .where((source) => sourceHealth[source.id] != null)
+        .take(3)
+        .toList(growable: false);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -216,6 +286,21 @@ class _AdminSourcesPageState extends State<AdminSourcesPage> {
             ],
           ),
           const SizedBox(height: 18),
+          if (!_loading && _errorMessage == null && ingestion != null) ...[
+            _SourceHealthSummary(
+              sourceCount: _sources.length,
+              activeSourceCount: ingestion.activeSources,
+              latestRun: ingestion.lastRun,
+            ),
+            const SizedBox(height: 16),
+            if (topContributors.isNotEmpty) ...[
+              _TopContributorStrip(
+                sources: topContributors,
+                sourceHealth: sourceHealth,
+              ),
+              const SizedBox(height: 16),
+            ],
+          ],
           if (_loading)
             const Padding(
               padding: EdgeInsets.only(top: 80),
@@ -237,11 +322,12 @@ class _AdminSourcesPageState extends State<AdminSourcesPage> {
               onPressed: _openCreateSourceDialog,
             )
           else
-            ..._sources.map(
+            ...rankedSources.map(
               (source) => Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: _SourceCard(
                   source: source,
+                  health: sourceHealth[source.id],
                   onEdit: () => _openEditSourceDialog(source),
                   onTest: () => _runSourceAction(source, testOnly: true),
                   onRun: () => _runSourceAction(source, testOnly: false),
@@ -255,9 +341,128 @@ class _AdminSourcesPageState extends State<AdminSourcesPage> {
   }
 }
 
+class _TopContributorStrip extends StatelessWidget {
+  const _TopContributorStrip({
+    required this.sources,
+    required this.sourceHealth,
+  });
+
+  final List<AdminSourceModel> sources;
+  final Map<String, _SourceHealthSnapshot> sourceHealth;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F4ED),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFD8CCB8)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Top Contributors',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Ordered by recent inserted yield, successful runs, and freshness of the latest ingestion signal.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF4F4A43)),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                for (var i = 0; i < sources.length; i++) ...[
+                  Expanded(
+                    child: _ContributorCard(
+                      rank: i + 1,
+                      source: sources[i],
+                      health: sourceHealth[sources[i].id]!,
+                    ),
+                  ),
+                  if (i != sources.length - 1) const SizedBox(width: 12),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContributorCard extends StatelessWidget {
+  const _ContributorCard({
+    required this.rank,
+    required this.source,
+    required this.health,
+  });
+
+  final int rank;
+  final AdminSourceModel source;
+  final _SourceHealthSnapshot health;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE0D5C4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '#$rank',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: const Color(0xFF0F766E),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              source.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '${health.inserted} inserted from ${health.fetched} fetched',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4F4A43)),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Yield ${health.insertRateLabel}% • Score ${health.usefulnessScore}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6A6257)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SourceCard extends StatelessWidget {
   const _SourceCard({
     required this.source,
+    required this.health,
     required this.onEdit,
     required this.onTest,
     required this.onRun,
@@ -265,6 +470,7 @@ class _SourceCard extends StatelessWidget {
   });
 
   final AdminSourceModel source;
+  final _SourceHealthSnapshot? health;
   final VoidCallback onEdit;
   final VoidCallback onTest;
   final VoidCallback onRun;
@@ -319,6 +525,11 @@ class _SourceCard extends StatelessWidget {
                             label: source.type,
                             color: const Color(0xFF7C3AED),
                           ),
+                          if (health != null)
+                            _Badge(
+                              label: _statusLabel(health!.status),
+                              color: _statusColor(health!.status),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -394,11 +605,158 @@ class _SourceCard extends StatelessWidget {
                 ),
               ),
             ],
+            if (health != null) ...[
+              const SizedBox(height: 14),
+              _HealthStrip(health: health!),
+            ],
             const SizedBox(height: 12),
             Text(
-              source.lastRunAt == null
+              health?.lastRunAt != null
+                  ? 'Latest ingestion signal ${adminDateTimeLabel(health!.lastRunAt!)}'
+                  : source.lastRunAt == null
                   ? 'No run recorded yet'
                   : 'Last run ${adminDateTimeLabel(source.lastRunAt!)}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF4F4A43)),
+            ),
+            if (health?.lastError?.trim().isNotEmpty ?? false) ...[
+              const SizedBox(height: 8),
+              Text(
+                health!.lastError!.trim(),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: const Color(0xFF9B1C1C)),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _statusLabel(String value) {
+    switch (value.trim().toLowerCase()) {
+      case 'success':
+        return 'Healthy';
+      case 'failed':
+        return 'Needs attention';
+      case 'skipped':
+        return 'Skipped';
+      default:
+        return 'Idle';
+    }
+  }
+
+  Color _statusColor(String value) {
+    switch (value.trim().toLowerCase()) {
+      case 'success':
+        return const Color(0xFF0F766E);
+      case 'failed':
+        return const Color(0xFFB91C1C);
+      case 'skipped':
+        return const Color(0xFFB7791F);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+}
+
+class _SourceHealthSummary extends StatelessWidget {
+  const _SourceHealthSummary({
+    required this.sourceCount,
+    required this.activeSourceCount,
+    required this.latestRun,
+  });
+
+  final int sourceCount;
+  final int activeSourceCount;
+  final AdminIngestionRunModel? latestRun;
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = <({String label, String value, String hint})>[
+      (
+        label: 'Sources',
+        value: '$sourceCount',
+        hint: '$activeSourceCount active in ingestion',
+      ),
+      (
+        label: 'Latest Run',
+        value: latestRun == null ? 'No data' : latestRun!.status,
+        hint: latestRun == null
+            ? 'Trigger a run to see source health'
+            : 'Fetched ${latestRun!.fetchedCount} - Inserted ${latestRun!.insertedCount} - Deduped ${latestRun!.dedupedCount}',
+      ),
+      (
+        label: 'Last Updated',
+        value: latestRun?.finishedAt != null
+            ? adminDateTimeLabel(latestRun!.finishedAt!)
+            : latestRun?.startedAt != null
+            ? adminDateTimeLabel(latestRun!.startedAt)
+            : 'No run yet',
+        hint: 'Use this view to compare source yield against duplicate load',
+      ),
+    ];
+
+    return Row(
+      children: [
+        for (var i = 0; i < cards.length; i++) ...[
+          Expanded(
+            child: _SummaryCard(
+              label: cards[i].label,
+              value: cards[i].value,
+              hint: cards[i].hint,
+            ),
+          ),
+          if (i != cards.length - 1) const SizedBox(width: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.label,
+    required this.value,
+    required this.hint,
+  });
+
+  final String label;
+  final String value;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F4ED),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFD8CCB8)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: const Color(0xFF6A6257),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              hint,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: const Color(0xFF4F4A43)),
@@ -406,6 +764,122 @@ class _SourceCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HealthStrip extends StatelessWidget {
+  const _HealthStrip({required this.health});
+
+  final _SourceHealthSnapshot health;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F4ED),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFD8CCB8)),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 10,
+        children: [
+          _HealthMetric(label: 'Fetched', value: '${health.fetched}'),
+          _HealthMetric(label: 'Inserted', value: '${health.inserted}'),
+          _HealthMetric(label: 'Deduped', value: '${health.deduped}'),
+          _HealthMetric(label: 'Yield', value: '${health.insertRateLabel}%'),
+        ],
+      ),
+    );
+  }
+}
+
+class _HealthMetric extends StatelessWidget {
+  const _HealthMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: const Color(0xFF6A6257),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SourceHealthSnapshot {
+  const _SourceHealthSnapshot({
+    required this.status,
+    required this.fetched,
+    required this.inserted,
+    required this.deduped,
+    required this.lastRunAt,
+    this.lastError,
+  });
+
+  final String status;
+  final int fetched;
+  final int inserted;
+  final int deduped;
+  final DateTime? lastRunAt;
+  final String? lastError;
+
+  int get usefulnessScore {
+    var score = inserted * 5;
+    score += fetched > 0 ? ((inserted / fetched) * 100).round() : 0;
+    score -= deduped;
+    if (status.trim().toLowerCase() == 'success') {
+      score += 25;
+    } else if (status.trim().toLowerCase() == 'failed') {
+      score -= 25;
+    } else if (status.trim().toLowerCase() == 'skipped') {
+      score -= 10;
+    }
+    return score;
+  }
+
+  String get insertRateLabel {
+    if (fetched <= 0) {
+      return '0';
+    }
+    final rate = (inserted / fetched) * 100;
+    return rate.toStringAsFixed(rate >= 10 ? 0 : 1);
+  }
+
+  factory _SourceHealthSnapshot.fromRunSource({
+    required AdminIngestionRunModel run,
+    required AdminIngestionRunSourceModel source,
+  }) {
+    return _SourceHealthSnapshot(
+      status: source.status,
+      fetched: source.fetched,
+      inserted: source.inserted,
+      deduped: source.deduped,
+      lastRunAt: run.finishedAt ?? run.startedAt,
+      lastError: source.errors.isEmpty ? null : source.errors.join(' | '),
     );
   }
 }

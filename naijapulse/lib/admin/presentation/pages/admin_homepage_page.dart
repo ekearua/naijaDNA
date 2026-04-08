@@ -19,10 +19,14 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
   final AdminRemoteDataSource _remote =
       InjectionContainer.sl<AdminRemoteDataSource>();
   bool _latestAutofillEnabled = true;
+  bool _directGnewsTopPublishEnabled = false;
+  bool _categoryAutofillEnabled = false;
   final TextEditingController _latestItemLimitController =
       TextEditingController();
   final TextEditingController _latestWindowController = TextEditingController();
   final TextEditingController _latestFallbackWindowController =
+      TextEditingController();
+  final TextEditingController _categoryWindowController =
       TextEditingController();
 
   AdminHomepageConfigModel? _config;
@@ -42,6 +46,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     _latestItemLimitController.dispose();
     _latestWindowController.dispose();
     _latestFallbackWindowController.dispose();
+    _categoryWindowController.dispose();
     super.dispose();
   }
 
@@ -58,6 +63,9 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       setState(() {
         _config = config;
         _latestAutofillEnabled = config.settings.latestAutofillEnabled;
+        _directGnewsTopPublishEnabled =
+            config.settings.directGnewsTopPublishEnabled;
+        _categoryAutofillEnabled = config.settings.categoryAutofillEnabled;
         _latestItemLimitController.text = config.settings.latestItemLimit
             .toString();
         _latestWindowController.text = config.settings.latestWindowHours
@@ -65,6 +73,8 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
         _latestFallbackWindowController.text = config
             .settings
             .latestFallbackWindowHours
+            .toString();
+        _categoryWindowController.text = config.settings.categoryWindowHours
             .toString();
       });
     } catch (error) {
@@ -110,6 +120,9 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       setState(() {
         _config = updated;
         _latestAutofillEnabled = updated.settings.latestAutofillEnabled;
+        _directGnewsTopPublishEnabled =
+            updated.settings.directGnewsTopPublishEnabled;
+        _categoryAutofillEnabled = updated.settings.categoryAutofillEnabled;
         _latestItemLimitController.text = updated.settings.latestItemLimit
             .toString();
         _latestWindowController.text = updated.settings.latestWindowHours
@@ -117,6 +130,8 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
         _latestFallbackWindowController.text = updated
             .settings
             .latestFallbackWindowHours
+            .toString();
+        _categoryWindowController.text = updated.settings.categoryWindowHours
             .toString();
       });
       ScaffoldMessenger.of(
@@ -353,6 +368,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     final fallbackWindow = int.tryParse(
       _latestFallbackWindowController.text.trim(),
     );
+    final categoryWindow = int.tryParse(_categoryWindowController.text.trim());
 
     if (itemLimit == null || itemLimit < 1 || itemLimit > 50) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -394,12 +410,26 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       return;
     }
 
+    if (categoryWindow == null || categoryWindow < 1 || categoryWindow > 168) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Enter a category auto-fill window between 1 and 168 hours.',
+          ),
+        ),
+      );
+      return;
+    }
+
     await _commitMutation(
       () => _remote.updateHomepageSettings(
         latestAutofillEnabled: _latestAutofillEnabled,
         latestItemLimit: itemLimit,
         latestWindowHours: latestWindow,
         latestFallbackWindowHours: fallbackWindow,
+        directGnewsTopPublishEnabled: _directGnewsTopPublishEnabled,
+        categoryAutofillEnabled: _categoryAutofillEnabled,
+        categoryWindowHours: categoryWindow,
       ),
       'Homepage settings updated.',
     );
@@ -791,10 +821,26 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
           _BucketCard(
             title: 'Homepage Settings',
             subtitle:
-                'Control whether Latest Stories auto-fill is enabled, how many items are shown, and how far back the homepage looks for published stories.',
+                'Control test-mode source publishing, Latest Stories auto-fill, and homepage category backfill behavior.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SwitchListTile.adaptive(
+                  value: _directGnewsTopPublishEnabled,
+                  onChanged: _saving
+                      ? null
+                      : (value) {
+                          setState(
+                            () => _directGnewsTopPublishEnabled = value,
+                          );
+                        },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Publish GNews top stories to homepage'),
+                  subtitle: const Text(
+                    'For testing, recent published GNews stories can backfill the homepage Top Stories rail.',
+                  ),
+                ),
+                const SizedBox(height: 8),
                 SwitchListTile.adaptive(
                   value: _latestAutofillEnabled,
                   onChanged: _saving
@@ -806,6 +852,20 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                   title: const Text('Enable Latest Stories auto-fill'),
                   subtitle: const Text(
                     'When off, Latest Stories only shows manual homepage placements.',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile.adaptive(
+                  value: _categoryAutofillEnabled,
+                  onChanged: _saving
+                      ? null
+                      : (value) {
+                          setState(() => _categoryAutofillEnabled = value);
+                        },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Enable category auto-fill from other feeds'),
+                  subtitle: const Text(
+                    'Backfill homepage category sections with recent published non-GNews stories after manual placements.',
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -852,6 +912,17 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _categoryWindowController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Category auto-fill window (hours)',
+                    hintText: '12',
+                    helperText: 'Allowed range: 1 to 168 hours.',
+                  ),
+                  enabled: !_saving,
                 ),
                 const SizedBox(height: 12),
                 Align(

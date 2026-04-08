@@ -1,4 +1,6 @@
+import asyncio
 import hashlib
+import math
 from datetime import datetime, timezone
 from typing import Any, List
 
@@ -16,8 +18,16 @@ class GNewsNewsSourceAdapter:
     id = "gnews"
     name = "GNews Adapter"
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        *,
+        max_results_per_request: int = 10,
+        request_spacing_seconds: float = 1.1,
+    ) -> None:
         self._api_key = api_key.strip()
+        self._max_results_per_request = max(1, min(max_results_per_request, 10))
+        self._request_spacing_seconds = max(0.0, request_spacing_seconds)
 
     async def fetch_latest(
         self,
@@ -30,39 +40,34 @@ class GNewsNewsSourceAdapter:
         base_url = (source.api_base_url or "https://gnews.io/api/v4").rstrip("/")
         articles: List[NewsArticle] = []
         seen_fingerprints: set[str] = set()
-        page_size = max(1, min(limit, 100))
+        categories = self._top_headline_categories()
+        page_size = max(
+            1,
+            min(
+                self._max_results_per_request,
+                math.ceil(max(limit, 1) / max(len(categories), 1)),
+            ),
+        )
         async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            payload = await self._fetch_top_headlines(
-                client=client,
-                base_url=base_url,
-                page_size=page_size,
-            )
-            self._append_articles(
-                target=articles,
-                source=source,
-                raw_items=payload.get("articles", []),
-                seen_fingerprints=seen_fingerprints,
-                limit=limit,
-            )
-
-            # Broaden inventory by pulling topic-specific search queries.
-            if len(articles) < limit:
-                for query in self._fallback_queries():
-                    payload = await self._fetch_search(
-                        client=client,
-                        base_url=base_url,
-                        query=query,
-                        page_size=page_size,
-                    )
-                    self._append_articles(
-                        target=articles,
-                        source=source,
-                        raw_items=payload.get("articles", []),
-                        seen_fingerprints=seen_fingerprints,
-                        limit=limit,
-                    )
-                    if len(articles) >= limit:
-                        break
+            for index, category in enumerate(categories):
+                if index > 0:
+                    await self._maybe_wait_between_requests()
+                payload = await self._fetch_top_headlines(
+                    client=client,
+                    base_url=base_url,
+                    category=category,
+                    page_size=page_size,
+                )
+                self._append_articles(
+                    target=articles,
+                    source=source,
+                    raw_items=payload.get("articles", []),
+                    seen_fingerprints=seen_fingerprints,
+                    limit=limit,
+                    category=category,
+                )
+                if len(articles) >= limit:
+                    break
 
             indexed_urls = [
                 (index, str(article.url))
@@ -80,40 +85,27 @@ class GNewsNewsSourceAdapter:
 
         return articles[:limit]
 
+    async def _maybe_wait_between_requests(self) -> None:
+        if self._request_spacing_seconds <= 0:
+            return
+        await asyncio.sleep(self._request_spacing_seconds)
+
     async def _fetch_top_headlines(
         self,
         *,
         client: httpx.AsyncClient,
         base_url: str,
+        category: str,
         page_size: int,
     ) -> dict:
         params = {
             "token": self._api_key,
             "country": "ng",
             "lang": "en",
+            "category": category,
             "max": page_size,
         }
         response = await client.get(f"{base_url}/top-headlines", params=params)
-        response.raise_for_status()
-        return response.json()
-
-    async def _fetch_search(
-        self,
-        *,
-        client: httpx.AsyncClient,
-        base_url: str,
-        query: str,
-        page_size: int,
-    ) -> dict:
-        params = {
-            "token": self._api_key,
-            "q": query,
-            "country": "ng",
-            "lang": "en",
-            "sortby": "publishedAt",
-            "max": page_size,
-        }
-        response = await client.get(f"{base_url}/search", params=params)
         response.raise_for_status()
         return response.json()
 
@@ -125,11 +117,16 @@ class GNewsNewsSourceAdapter:
         raw_items: list[Any],
         seen_fingerprints: set[str],
         limit: int,
+        category: str,
     ) -> None:
         for item in raw_items:
             if len(target) >= limit:
                 break
-            article = self._map_item_to_article(source=source, item=item)
+            article = self._map_item_to_article(
+                source=source,
+                item=item,
+                category=category,
+            )
             if article is None:
                 continue
             fingerprint = self._dedupe_fingerprint(article)
@@ -138,14 +135,30 @@ class GNewsNewsSourceAdapter:
             seen_fingerprints.add(fingerprint)
             target.append(article)
 
-    def _fallback_queries(self) -> list[str]:
+    def _top_headline_categories(self) -> list[str]:
         return [
-            "Nigeria politics",
-            "Nigeria business",
-            "Nigeria sports",
-            "Nigeria technology",
-            "Nigeria entertainment",
+            "general",
+            "world",
+            "business",
+            "technology",
+            "entertainment",
+            "sports",
+            "science",
+            "health",
         ]
+
+    def _category_fallback_label(self, category: str) -> str:
+        normalized = category.strip().lower()
+        return {
+            "general": "General",
+            "world": "World News",
+            "business": "Business",
+            "technology": "Technology",
+            "entertainment": "Entertainment",
+            "sports": "Sports",
+            "science": "Science",
+            "health": "Health",
+        }.get(normalized, "General")
 
     def _dedupe_fingerprint(self, article: NewsArticle) -> str:
         return "|".join(
@@ -161,6 +174,7 @@ class GNewsNewsSourceAdapter:
         *,
         source: NewsSourceInfo,
         item: Any,
+        category: str,
     ) -> NewsArticle | None:
         if not isinstance(item, dict):
             return None
@@ -174,11 +188,11 @@ class GNewsNewsSourceAdapter:
         source_name = self._safe_str(source_info.get("name")) or source.name
         published_at = self._parse_published_at(self._safe_str(item.get("publishedAt")))
         summary = self._safe_str(item.get("description")) or self._safe_str(item.get("content"))
-        category = infer_news_category(
+        inferred_category = infer_news_category(
             title=title,
             summary=summary,
             source=source_name,
-            fallback=None,
+            fallback=self._category_fallback_label(category),
         )
         image_url = self._safe_url(item.get("image"))
         article_id = self._build_article_id(
@@ -193,8 +207,8 @@ class GNewsNewsSourceAdapter:
                 id=article_id,
                 title=title,
                 source=source_name,
-                category=category,
-                tags=[category],
+                category=inferred_category,
+                tags=[inferred_category],
                 summary=summary or None,
                 url=article_url or None,
                 image_url=image_url or None,

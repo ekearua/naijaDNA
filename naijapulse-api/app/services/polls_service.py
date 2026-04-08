@@ -53,12 +53,14 @@ class PollsService:
     """Polls domain service backed by Postgres."""
 
     _DEFAULT_CATEGORIES = (
-        ("politics", "Politics", "#C62828"),
+        ("world-news", "World News", "#C62828"),
         ("business", "Business", "#1E3A8A"),
         ("technology", "Technology", "#0F766E"),
-        ("sports", "Sports", "#F97316"),
         ("entertainment", "Entertainment", "#7C3AED"),
-        ("breaking-news", "Breaking News", "#D32F2F"),
+        ("science", "Science", "#2563EB"),
+        ("sports", "Sports", "#F97316"),
+        ("health", "Health", "#0F9D58"),
+        ("general", "General", "#475569"),
     )
     _DEFAULT_FEED_TAGS = (
         ("fact-checked", "Fact-Checked", "#1B8B63", 10),

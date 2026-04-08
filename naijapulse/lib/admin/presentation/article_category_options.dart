@@ -1,16 +1,11 @@
 const List<String> kEditorialArticleCategories = <String>[
-  'Breaking',
-  'Politics',
+  'World News',
   'Business',
   'Technology',
-  'Sports',
   'Entertainment',
+  'Science',
+  'Sports',
   'Health',
-  'Education',
-  'Security',
-  'Lifestyle',
-  'World',
-  'Opinion',
   'General',
 ];
 

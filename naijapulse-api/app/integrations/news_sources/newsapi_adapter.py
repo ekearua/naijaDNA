@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 from datetime import datetime, timezone
 from typing import Any, List
@@ -16,8 +17,20 @@ class NewsApiNewsSourceAdapter:
     id = "newsapi"
     name = "NewsAPI Adapter"
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        *,
+        max_results_per_request: int = 10,
+        max_category_requests_per_run: int = 0,
+        max_everything_queries_per_run: int = 0,
+        request_spacing_seconds: float = 0.25,
+    ) -> None:
         self._api_key = api_key.strip()
+        self._max_results_per_request = max(1, min(max_results_per_request, 100))
+        self._max_category_requests_per_run = max(0, max_category_requests_per_run)
+        self._max_everything_queries_per_run = max(0, max_everything_queries_per_run)
+        self._request_spacing_seconds = max(0.0, request_spacing_seconds)
 
     async def fetch_latest(
         self,
@@ -28,7 +41,7 @@ class NewsApiNewsSourceAdapter:
             return []
 
         base_url = (source.api_base_url or "https://newsapi.org/v2").rstrip("/")
-        page_size = max(1, min(limit, 100))
+        page_size = max(1, min(limit, self._max_results_per_request))
 
         articles: List[NewsArticle] = []
         seen_fingerprints: set[str] = set()
@@ -48,7 +61,10 @@ class NewsApiNewsSourceAdapter:
 
             # Category pulls improve non-breaking inventory.
             if len(articles) < limit:
-                for category in self._fallback_categories():
+                for category in self._fallback_categories()[
+                    : self._max_category_requests_per_run
+                ]:
+                    await self._maybe_wait_between_requests()
                     payload = await self._fetch_top_headlines(
                         client=client,
                         base_url=base_url,
@@ -67,7 +83,10 @@ class NewsApiNewsSourceAdapter:
 
             # Everything fallback keeps NewsAPI useful when NG top-headlines are sparse.
             if len(articles) < limit:
-                for query in self._fallback_queries():
+                for query in self._fallback_queries()[
+                    : self._max_everything_queries_per_run
+                ]:
+                    await self._maybe_wait_between_requests()
                     payload = await self._fetch_everything(
                         client=client,
                         base_url=base_url,
@@ -98,6 +117,11 @@ class NewsApiNewsSourceAdapter:
             for index, image_url in resolved_images.items():
                 articles[index] = articles[index].model_copy(update={"image_url": image_url})
         return articles[:limit]
+
+    async def _maybe_wait_between_requests(self) -> None:
+        if self._request_spacing_seconds <= 0:
+            return
+        await asyncio.sleep(self._request_spacing_seconds)
 
     async def _fetch_top_headlines(
         self,

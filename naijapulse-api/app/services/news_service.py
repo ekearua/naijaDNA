@@ -4,7 +4,7 @@ import re
 from datetime import datetime, timedelta
 from html import unescape
 from typing import List, Optional, Tuple
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from uuid import uuid4
 
 from sqlalchemy import and_, func, or_, select
@@ -62,6 +62,17 @@ class NewsArticleNotFoundError(Exception):
 class NewsService:
     """Stores and serves normalized articles with DB-backed deduplication."""
 
+    _DEFAULT_HOMEPAGE_CATEGORIES = (
+        ("world-news", "World News", "#C62828"),
+        ("business", "Business", "#1E3A8A"),
+        ("technology", "Technology", "#0F766E"),
+        ("entertainment", "Entertainment", "#7C3AED"),
+        ("science", "Science", "#2563EB"),
+        ("sports", "Sports", "#F97316"),
+        ("health", "Health", "#0F9D58"),
+        ("general", "General", "#475569"),
+    )
+
     def __init__(
         self,
         session_factory: async_sessionmaker[AsyncSession],
@@ -85,10 +96,57 @@ class NewsService:
         self._homepage_latest_fallback_window = timedelta(
             hours=max(1, resolved_settings.homepage_latest_fallback_window_hours)
         )
+        self._homepage_direct_gnews_top_publish_enabled = (
+            resolved_settings.homepage_direct_gnews_top_publish_enabled
+        )
+        self._homepage_category_autofill_enabled = (
+            resolved_settings.homepage_category_autofill_enabled
+        )
+        self._homepage_category_window = timedelta(
+            hours=max(1, resolved_settings.homepage_category_window_hours)
+        )
+        self._homepage_top_story_limit = 5
+        self._homepage_category_item_limit = 6
 
     async def initialize_defaults(self) -> None:
-        """No-op. News should only come from ingestion sources."""
-        return
+        """Seed homepage category defaults for a consistent client taxonomy."""
+        async with self._session_factory() as session:
+            result = await session.execute(select(HomepageCategoryRecord))
+            existing = {row.id: row for row in result.scalars().all()}
+            changed = False
+            now = datetime.utcnow()
+
+            for index, (category_id, label, color_hex) in enumerate(
+                self._DEFAULT_HOMEPAGE_CATEGORIES
+            ):
+                row = existing.get(category_id)
+                if row is None:
+                    session.add(
+                        HomepageCategoryRecord(
+                            id=category_id,
+                            label=label,
+                            color_hex=color_hex,
+                            position=index,
+                            enabled=True,
+                            created_at=now,
+                            updated_at=now,
+                        )
+                    )
+                    changed = True
+                    continue
+
+                if row.label != label:
+                    row.label = label
+                    changed = True
+                if row.color_hex != color_hex:
+                    row.color_hex = color_hex
+                    changed = True
+                if row.position != index:
+                    row.position = index
+                    changed = True
+
+            if changed:
+                await session.commit()
 
     async def get_top_stories(
         self,
@@ -144,36 +202,7 @@ class NewsService:
             )
             placements = placement_result.scalars().all()
 
-            homepage_settings = await session.get(HomepageSettingsRecord, 1)
-            latest_autofill_enabled = (
-                homepage_settings.latest_autofill_enabled
-                if homepage_settings is not None
-                else self._homepage_latest_autofill_enabled
-            )
-            latest_item_limit = max(
-                1,
-                homepage_settings.latest_item_limit
-                if homepage_settings is not None
-                else self._homepage_latest_item_limit,
-            )
-            latest_window = timedelta(
-                hours=max(
-                    1,
-                    homepage_settings.latest_window_hours
-                    if homepage_settings is not None
-                    else int(self._homepage_latest_window.total_seconds() // 3600),
-                )
-            )
-            latest_fallback_window = timedelta(
-                hours=max(
-                    1,
-                    homepage_settings.latest_fallback_window_hours
-                    if homepage_settings is not None
-                    else int(
-                        self._homepage_latest_fallback_window.total_seconds() // 3600
-                    ),
-                )
-            )
+            homepage_settings = await self._resolve_homepage_settings(session)
 
             article_ids = list({item.article_id for item in placements})
             article_by_id: dict[str, NewsArticleRecord] = {}
@@ -197,16 +226,7 @@ class NewsService:
             key = (placement.section, placement.target_key)
             grouped.setdefault(key, []).append(self._to_schema(article))
 
-        categories = [
-            HomepageCategoryFeed(
-                key=row.id,
-                label=row.label,
-                color_hex=row.color_hex,
-                position=row.position,
-                items=grouped.get(("category", row.id), []),
-            )
-            for row in category_rows
-        ]
+        categories = []
         secondary_chips = [
             HomepageSecondaryChipFeed(
                 key=row.id,
@@ -220,6 +240,13 @@ class NewsService:
         ]
 
         top_stories = grouped.get(("top", None), [])
+        top_stories = await self._build_homepage_top_stories(
+            pinned_top=top_stories,
+            limit=self._homepage_top_story_limit,
+            direct_gnews_publish_enabled=homepage_settings[
+                "direct_gnews_top_publish_enabled"
+            ],
+        )
         top_story_ids = {story.id for story in top_stories}
         latest_placement_stories = self._exclude_story_ids(
             grouped.get(("latest", None), []),
@@ -228,11 +255,35 @@ class NewsService:
         latest_stories = await self._build_homepage_latest_stories(
             pinned_latest=latest_placement_stories,
             excluded_ids=top_story_ids,
-            limit=latest_item_limit,
-            autofill_enabled=latest_autofill_enabled,
-            recent_window=latest_window,
-            fallback_window=latest_fallback_window,
+            limit=homepage_settings["latest_item_limit"],
+            autofill_enabled=homepage_settings["latest_autofill_enabled"],
+            recent_window=homepage_settings["latest_window"],
+            fallback_window=homepage_settings["latest_fallback_window"],
         )
+        occupied_ids = top_story_ids | {story.id for story in latest_stories}
+        for row in category_rows:
+            pinned_items = self._exclude_story_ids(
+                grouped.get(("category", row.id), []),
+                excluded_ids=occupied_ids,
+            )
+            items = await self._build_homepage_category_stories(
+                category_label=row.label,
+                pinned_items=pinned_items,
+                excluded_ids=occupied_ids,
+                limit=self._homepage_category_item_limit,
+                autofill_enabled=homepage_settings["category_autofill_enabled"],
+                recent_window=homepage_settings["category_window"],
+            )
+            occupied_ids = occupied_ids | {story.id for story in items}
+            categories.append(
+                HomepageCategoryFeed(
+                    key=row.id,
+                    label=row.label,
+                    color_hex=row.color_hex,
+                    position=row.position,
+                    items=items,
+                )
+            )
 
         return HomepageContentResponse(
             generated_at=datetime.utcnow(),
@@ -305,12 +356,24 @@ class NewsService:
 
         inserted = 0
         deduped = 0
-        fingerprints = [self._fingerprint(article) for article in articles]
+        fingerprint_groups = [self._fingerprint_candidates(article) for article in articles]
+        fingerprints = [group[0] for group in fingerprint_groups]
 
         async with self._lock:
             async with self._session_factory() as session:
+                homepage_settings = await self._resolve_homepage_settings(session)
                 existing_records_result = await session.execute(
-                    select(NewsArticleRecord).where(NewsArticleRecord.fingerprint.in_(fingerprints))
+                    select(NewsArticleRecord).where(
+                        NewsArticleRecord.fingerprint.in_(
+                            sorted(
+                                {
+                                    fingerprint
+                                    for group in fingerprint_groups
+                                    for fingerprint in group
+                                }
+                            )
+                        )
+                    )
                 )
                 existing_records = existing_records_result.scalars().all()
                 existing_by_fingerprint = {
@@ -324,22 +387,54 @@ class NewsService:
                 existing_ids = set(existing_ids_result.scalars().all())
                 generated_ids: set[str] = set()
 
-                for article, fingerprint in zip(articles, fingerprints):
+                for article, candidates, fingerprint in zip(
+                    articles,
+                    fingerprint_groups,
+                    fingerprints,
+                ):
                     incoming_provider = self._provider_from_article_id(article.id)
-                    existing_record = existing_by_fingerprint.get(fingerprint)
+                    existing_record = next(
+                        (
+                            existing_by_fingerprint[candidate]
+                            for candidate in candidates
+                            if candidate in existing_by_fingerprint
+                        ),
+                        None,
+                    )
                     if existing_record is not None:
-                        # Backfill nullable fields when the same article is seen again.
-                        if existing_record.image_url is None and article.image_url is not None:
-                            existing_record.image_url = str(article.image_url)
-                        if existing_record.summary is None and article.summary:
-                            existing_record.summary = article.summary
-                        if existing_record.source_domain is None and article.url is not None:
-                            existing_record.source_domain = self._extract_source_domain(str(article.url))
-                        self._merge_article_tags(existing_record, article.tags)
-                        existing_record.ingestion_provider = self._resolve_preferred_provider(
+                        publish_on_ingest = self._should_auto_publish_ingested_article(
+                            provider=incoming_provider,
+                            homepage_settings=homepage_settings,
+                        )
+                        resolved_provider = self._resolve_preferred_provider(
                             current=existing_record.ingestion_provider,
                             incoming=incoming_provider,
                         )
+                        self._merge_duplicate_article_metadata(
+                            record=existing_record,
+                            incoming_article=article,
+                            resolved_provider=resolved_provider,
+                            incoming_provider=incoming_provider,
+                        )
+                        existing_record.ingestion_provider = resolved_provider
+                        if publish_on_ingest and existing_record.status != "published":
+                            previous_status = existing_record.status
+                            existing_record.status = "published"
+                            existing_record.published_at = article.published_at
+                            session.add(
+                                ArticleWorkflowEventRecord(
+                                    article_id=existing_record.id,
+                                    actor_user_id=None,
+                                    event_type="publish",
+                                    from_status=previous_status,
+                                    to_status="published",
+                                    notes=(
+                                        "Auto-published from ingested source "
+                                        f"'{incoming_provider}' for homepage testing."
+                                    ),
+                                    created_at=datetime.utcnow(),
+                                )
+                            )
                         existing_record.updated_at = datetime.utcnow()
                         deduped += 1
                         continue
@@ -350,6 +445,11 @@ class NewsService:
                         taken_ids=existing_ids.union(generated_ids),
                     )
                     generated_ids.add(article_id)
+                    publish_on_ingest = self._should_auto_publish_ingested_article(
+                        provider=incoming_provider,
+                        homepage_settings=homepage_settings,
+                    )
+                    article_status = "published" if publish_on_ingest else "submitted"
                     record = NewsArticleRecord(
                         id=article_id,
                         fingerprint=fingerprint,
@@ -367,7 +467,7 @@ class NewsService:
                         submitted_by=article.submitted_by,
                         created_by_user_id=article.submitted_by,
                         is_user_generated=article.is_user_generated,
-                        status="submitted",
+                        status=article_status,
                         verification_status="fact_checked"
                         if article.fact_checked
                         else "unverified",
@@ -384,10 +484,17 @@ class NewsService:
                         ArticleWorkflowEventRecord(
                             article_id=record.id,
                             actor_user_id=None,
-                            event_type="submit",
+                            event_type="publish" if publish_on_ingest else "submit",
                             from_status=None,
-                            to_status="submitted",
-                            notes=f"Ingested from source '{record.source}'.",
+                            to_status=article_status,
+                            notes=(
+                                f"Ingested from source '{record.source}'."
+                                if not publish_on_ingest
+                                else (
+                                    "Ingested and auto-published from source "
+                                    f"'{record.source}' for homepage testing."
+                                )
+                            ),
                             created_at=datetime.utcnow(),
                         )
                     )
@@ -853,12 +960,63 @@ class NewsService:
         )
         return [*selected, *auto_latest_fallback]
 
+    async def _build_homepage_top_stories(
+        self,
+        *,
+        pinned_top: list[NewsArticle],
+        limit: int,
+        direct_gnews_publish_enabled: bool,
+    ) -> list[NewsArticle]:
+        if limit <= 0:
+            return []
+
+        selected = pinned_top[:limit]
+        if len(selected) >= limit or not direct_gnews_publish_enabled:
+            return selected
+
+        auto_top = await self._query_recent_published_stories(
+            limit=limit - len(selected),
+            recent_window=timedelta(hours=12),
+            excluded_ids={story.id for story in selected},
+            provider="gnews",
+        )
+        return [*selected, *auto_top]
+
+    async def _build_homepage_category_stories(
+        self,
+        *,
+        category_label: str,
+        pinned_items: list[NewsArticle],
+        excluded_ids: set[str],
+        limit: int,
+        autofill_enabled: bool,
+        recent_window: timedelta,
+    ) -> list[NewsArticle]:
+        if limit <= 0:
+            return []
+
+        selected = pinned_items[:limit]
+        if len(selected) >= limit or not autofill_enabled:
+            return selected
+
+        auto_items = await self._query_recent_published_stories(
+            limit=limit - len(selected),
+            recent_window=recent_window,
+            excluded_ids=excluded_ids | {story.id for story in selected},
+            category=category_label,
+            exclude_provider="gnews",
+        )
+        return [*selected, *auto_items]
+
     async def _query_recent_published_stories(
         self,
         *,
         limit: int,
         recent_window: timedelta,
         excluded_ids: set[str],
+        category: str | None = None,
+        provider: str | None = None,
+        exclude_provider: str | None = None,
     ) -> list[NewsArticle]:
         if limit <= 0:
             return []
@@ -879,6 +1037,20 @@ class NewsService:
             )
             if excluded_ids:
                 statement = statement.where(NewsArticleRecord.id.not_in(excluded_ids))
+            if category:
+                statement = statement.where(
+                    func.lower(NewsArticleRecord.category) == category.strip().lower()
+                )
+            if provider:
+                statement = statement.where(
+                    func.lower(func.coalesce(NewsArticleRecord.ingestion_provider, ""))
+                    == provider.strip().lower()
+                )
+            if exclude_provider:
+                statement = statement.where(
+                    func.lower(func.coalesce(NewsArticleRecord.ingestion_provider, ""))
+                    != exclude_provider.strip().lower()
+                )
 
             result = await session.execute(statement)
             rows = result.scalars().all()
@@ -887,6 +1059,67 @@ class NewsService:
             row for row in rows if row.id not in excluded_ids and not self._is_row_stale(row, now=now)
         ]
         return [self._to_schema(row) for row in fresh_rows[:limit]]
+
+    async def _resolve_homepage_settings(
+        self,
+        session: AsyncSession,
+    ) -> dict[str, bool | int | timedelta]:
+        homepage_settings = await session.get(HomepageSettingsRecord, 1)
+        latest_window_hours = max(
+            1,
+            homepage_settings.latest_window_hours
+            if homepage_settings is not None
+            else int(self._homepage_latest_window.total_seconds() // 3600),
+        )
+        latest_fallback_window_hours = max(
+            1,
+            homepage_settings.latest_fallback_window_hours
+            if homepage_settings is not None
+            else int(self._homepage_latest_fallback_window.total_seconds() // 3600),
+        )
+        category_window_hours = max(
+            1,
+            homepage_settings.category_window_hours
+            if homepage_settings is not None
+            else int(self._homepage_category_window.total_seconds() // 3600),
+        )
+        return {
+            "latest_autofill_enabled": (
+                homepage_settings.latest_autofill_enabled
+                if homepage_settings is not None
+                else self._homepage_latest_autofill_enabled
+            ),
+            "latest_item_limit": max(
+                1,
+                homepage_settings.latest_item_limit
+                if homepage_settings is not None
+                else self._homepage_latest_item_limit,
+            ),
+            "latest_window": timedelta(hours=latest_window_hours),
+            "latest_fallback_window": timedelta(hours=latest_fallback_window_hours),
+            "direct_gnews_top_publish_enabled": (
+                homepage_settings.direct_gnews_top_publish_enabled
+                if homepage_settings is not None
+                else self._homepage_direct_gnews_top_publish_enabled
+            ),
+            "category_autofill_enabled": (
+                homepage_settings.category_autofill_enabled
+                if homepage_settings is not None
+                else self._homepage_category_autofill_enabled
+            ),
+            "category_window": timedelta(hours=category_window_hours),
+        }
+
+    def _should_auto_publish_ingested_article(
+        self,
+        *,
+        provider: str,
+        homepage_settings: dict[str, bool | int | timedelta],
+    ) -> bool:
+        normalized_provider = (provider or "").strip().lower()
+        if normalized_provider == "gnews":
+            return bool(homepage_settings["direct_gnews_top_publish_enabled"])
+        return bool(homepage_settings["category_autofill_enabled"])
 
     async def _query_latest_stories_diversified(
         self,
@@ -993,17 +1226,103 @@ class NewsService:
         return [self._to_schema(row) for row in selected[:limit]]
 
     def _fingerprint(self, article: NewsArticle) -> str:
+        return self._fingerprint_candidates(article)[0]
+
+    def _fingerprint_candidates(self, article: NewsArticle) -> list[str]:
         # Keep this deterministic and stable across ingestion runs.
-        canonical_url = str(article.url).strip().lower() if article.url else ""
-        key = "|".join(
+        published_bucket = article.published_at.strftime("%Y-%m-%d")
+        normalized_title = self._normalize_title_for_fingerprint(article.title)
+        normalized_source_name = self._normalize_comparison_text(article.source)
+        canonical_url = self._canonicalize_article_url(
+            str(article.url) if article.url else None
+        )
+        source_domain = self._extract_source_domain(
+            canonical_url or (str(article.url) if article.url else None)
+        )
+
+        candidates: list[str] = []
+
+        if canonical_url:
+            candidates.append(self._hash_fingerprint_key(f"url|{canonical_url}"))
+
+        if normalized_title and source_domain:
+            candidates.append(
+                self._hash_fingerprint_key(
+                    f"domain-title|{source_domain}|{normalized_title}|{published_bucket}"
+                )
+            )
+
+        if normalized_title and normalized_source_name:
+            candidates.append(
+                self._hash_fingerprint_key(
+                    f"source-title|{normalized_source_name}|{normalized_title}|{published_bucket}"
+                )
+            )
+
+        if normalized_title:
+            candidates.append(
+                self._hash_fingerprint_key(f"title|{normalized_title}|{published_bucket}")
+            )
+
+        # Preserve order while removing duplicates.
+        return list(dict.fromkeys(candidates))
+
+    def _hash_fingerprint_key(self, value: str) -> str:
+        return hashlib.sha1(value.encode("utf-8")).hexdigest()
+
+    def _normalize_title_for_fingerprint(self, title: str | None) -> str:
+        normalized = self._normalize_comparison_text(title)
+        if not normalized:
+            return ""
+        normalized = re.sub(
+            r"\b(updated|live|developing|breaking|exclusive|watch)\b",
+            " ",
+            normalized,
+        )
+        normalized = re.sub(
+            r"\b(photos|photo|video|livestream|blog)\b",
+            " ",
+            normalized,
+        )
+        normalized = re.sub(r"\bminute by minute\b", " ", normalized)
+        normalized = re.sub(r"\s+", " ", normalized).strip()
+        return normalized
+
+    def _canonicalize_article_url(self, value: str | None) -> str:
+        normalized = (value or "").strip()
+        if not normalized:
+            return ""
+        parsed = urlparse(normalized)
+        host = parsed.netloc.strip().lower().removeprefix("www.")
+        path = re.sub(r"/+", "/", parsed.path or "/").rstrip("/") or "/"
+        filtered_query = urlencode(
             [
-                canonical_url,
-                article.title.strip().lower(),
-                article.source.strip().lower(),
-                article.published_at.strftime("%Y-%m-%d"),
+                (key, val)
+                for key, val in parse_qsl(parsed.query, keep_blank_values=False)
+                if key.lower()
+                not in {
+                    "utm_source",
+                    "utm_medium",
+                    "utm_campaign",
+                    "utm_term",
+                    "utm_content",
+                    "fbclid",
+                    "gclid",
+                    "igshid",
+                    "output",
+                }
             ]
         )
-        return hashlib.sha1(key.encode("utf-8")).hexdigest()
+        return urlunparse(
+            (
+                parsed.scheme.lower() or "https",
+                host,
+                path,
+                "",
+                filtered_query,
+                "",
+            )
+        )
 
     def _ensure_unique_id(
         self,
@@ -1239,20 +1558,75 @@ class NewsService:
             return normalized_incoming
 
         priority = {
-            "gnews": 4,
-            "newsapi": 4,
-            "premium_times_rss": 3,
-            "guardian_ng_rss": 3,
-            "google_news_business_rss": 2,
-            "google_news_sports_rss": 2,
-            "google_news_technology_rss": 2,
-            "google_news_rss": 2,
-            "user": 1,
+            "premium_times_rss": 6,
+            "guardian_ng_rss": 6,
+            "the_nation_rss": 6,
+            "daily_post_ng_rss": 6,
+            "tribune_online_rss": 6,
+            "legit_ng_rss": 6,
+            "saharareporters_rss": 6,
+            "nigerianeye_rss": 6,
+            "nigerian_bulletin_rss": 6,
+            "information_ng_rss": 6,
+            "newsapi": 5,
+            "gnews": 5,
+            "google_news_business_rss": 4,
+            "google_news_sports_rss": 4,
+            "google_news_technology_rss": 4,
+            "google_news_rss": 4,
+            "user": 2,
+            "admin": 2,
             "unknown": 0,
         }
         if priority.get(normalized_incoming, 1) >= priority.get(normalized_current, 1):
             return normalized_incoming
         return normalized_current
+
+    def _merge_duplicate_article_metadata(
+        self,
+        *,
+        record: NewsArticleRecord,
+        incoming_article: NewsArticle,
+        resolved_provider: str | None,
+        incoming_provider: str | None,
+    ) -> None:
+        incoming_url = (
+            self._canonicalize_article_url(str(incoming_article.url))
+            if incoming_article.url is not None
+            else ""
+        )
+        current_provider = self._provider_for_row(record)
+        incoming_wins = (resolved_provider or "").strip().lower() == (
+            incoming_provider or ""
+        ).strip().lower()
+
+        if record.image_url is None and incoming_article.image_url is not None:
+            record.image_url = str(incoming_article.image_url)
+        if (
+            (record.summary is None or len(record.summary.strip()) < 80)
+            and incoming_article.summary
+        ):
+            record.summary = incoming_article.summary
+        if not record.source_domain and incoming_url:
+            record.source_domain = self._extract_source_domain(incoming_url)
+        if not record.url and incoming_url:
+            record.url = incoming_url
+
+        if incoming_wins:
+            if incoming_article.source.strip():
+                record.source = incoming_article.source.strip()[:255]
+            if incoming_url:
+                record.url = incoming_url
+                record.source_domain = self._extract_source_domain(incoming_url)
+            if incoming_article.title.strip() and len(incoming_article.title.strip()) > len(
+                record.title.strip()
+            ):
+                record.title = incoming_article.title.strip()[:500]
+            record.source_type = self._source_type_for_provider(resolved_provider)
+        elif current_provider != (resolved_provider or current_provider):
+            record.source_type = self._source_type_for_provider(resolved_provider)
+
+        self._merge_article_tags(record, incoming_article.tags)
 
     def _normalize_user_id(self, user_id: str | None) -> str:
         return (user_id or "").strip()[:128]

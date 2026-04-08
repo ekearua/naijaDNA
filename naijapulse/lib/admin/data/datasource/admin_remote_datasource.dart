@@ -184,6 +184,9 @@ abstract class AdminRemoteDataSource {
     required int latestItemLimit,
     required int latestWindowHours,
     required int latestFallbackWindowHours,
+    required bool directGnewsTopPublishEnabled,
+    required bool categoryAutofillEnabled,
+    required int categoryWindowHours,
   });
 }
 
@@ -801,6 +804,9 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     required int latestItemLimit,
     required int latestWindowHours,
     required int latestFallbackWindowHours,
+    required bool directGnewsTopPublishEnabled,
+    required bool categoryAutofillEnabled,
+    required int categoryWindowHours,
   }) async {
     final response = await _patchAuthed(
       '/admin/homepage/settings',
@@ -809,6 +815,9 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         'latest_item_limit': latestItemLimit,
         'latest_window_hours': latestWindowHours,
         'latest_fallback_window_hours': latestFallbackWindowHours,
+        'direct_gnews_top_publish_enabled': directGnewsTopPublishEnabled,
+        'category_autofill_enabled': categoryAutofillEnabled,
+        'category_window_hours': categoryWindowHours,
       },
     );
     return AdminHomepageConfigModel.fromJson(response);

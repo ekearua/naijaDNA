@@ -12,35 +12,41 @@ def default_source_catalog(settings: Settings | None = None) -> List[NewsSourceI
 
     sources: list[NewsSourceInfo] = []
 
-    if resolved_settings.enable_newsapi_source:
-        sources.append(
-            NewsSourceInfo(
-                id="newsapi",
-                name="NewsAPI",
-                type="aggregator_api",
-                country="global",
-                enabled=has_newsapi_key,
-                requires_api_key=True,
-                configured=has_newsapi_key,
-                api_base_url="https://newsapi.org/v2",
-                notes="Optional paid/enriched source. Disabled by default for the RSS-first rollout.",
-            )
+    sources.append(
+        NewsSourceInfo(
+            id="newsapi",
+            name="NewsAPI",
+            type="aggregator_api",
+            country="global",
+            enabled=resolved_settings.enable_newsapi_source and has_newsapi_key,
+            requires_api_key=True,
+            configured=has_newsapi_key,
+            api_base_url="https://newsapi.org/v2",
+            notes=_api_source_note(
+                provider_name="NewsAPI",
+                enabled_by_setting=resolved_settings.enable_newsapi_source,
+                has_api_key=has_newsapi_key,
+            ),
         )
+    )
 
-    if resolved_settings.enable_gnews_source:
-        sources.append(
-            NewsSourceInfo(
-                id="gnews",
-                name="GNews API",
-                type="aggregator_api",
-                country="global",
-                enabled=has_gnews_key,
-                requires_api_key=True,
-                configured=has_gnews_key,
-                api_base_url="https://gnews.io/api/v4",
-                notes="Optional paid/enriched source. Disabled by default for the RSS-first rollout.",
-            )
+    sources.append(
+        NewsSourceInfo(
+            id="gnews",
+            name="GNews API",
+            type="aggregator_api",
+            country="global",
+            enabled=resolved_settings.enable_gnews_source and has_gnews_key,
+            requires_api_key=True,
+            configured=has_gnews_key,
+            api_base_url="https://gnews.io/api/v4",
+            notes=_api_source_note(
+                provider_name="GNews API",
+                enabled_by_setting=resolved_settings.enable_gnews_source,
+                has_api_key=has_gnews_key,
+            ),
         )
+    )
 
     if not resolved_settings.enable_rss_sources:
         return sources
@@ -217,3 +223,25 @@ def default_source_catalog(settings: Settings | None = None) -> List[NewsSourceI
     ])
 
     return sources
+
+
+def _api_source_note(
+    *,
+    provider_name: str,
+    enabled_by_setting: bool,
+    has_api_key: bool,
+) -> str:
+    if not enabled_by_setting:
+        return (
+            f"{provider_name} is registered but disabled by configuration. "
+            "Set the corresponding ENABLE_* flag to true to activate it."
+        )
+    if not has_api_key:
+        return (
+            f"{provider_name} is registered but not configured yet. "
+            "Add the API key in environment settings to activate ingestion."
+        )
+    return (
+        f"{provider_name} is registered and ready for aggregator ingestion. "
+        "Monitor overlap with RSS and other aggregators to keep duplicate volume under control."
+    )

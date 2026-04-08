@@ -31,8 +31,14 @@ class Settings(BaseSettings):
     newsapi_api_key: str = ""
     gnews_api_key: str = ""
     enable_rss_sources: bool = True
-    enable_newsapi_source: bool = False
-    enable_gnews_source: bool = False
+    enable_newsapi_source: bool = True
+    enable_gnews_source: bool = True
+    newsapi_max_results_per_request: int = 10
+    newsapi_max_category_requests_per_run: int = 0
+    newsapi_max_everything_queries_per_run: int = 0
+    newsapi_request_spacing_seconds: float = 0.25
+    gnews_max_results_per_request: int = 10
+    gnews_request_spacing_seconds: float = 1.1
     auth_token_secret: str = "change-me-in-env"
     auth_access_token_ttl_seconds: int = 60 * 60 * 24 * 7
     firebase_service_account_json: str = ""
@@ -65,6 +71,9 @@ class Settings(BaseSettings):
     homepage_latest_item_limit: int = 20
     homepage_latest_window_hours: int = 6
     homepage_latest_fallback_window_hours: int = 24
+    homepage_direct_gnews_top_publish_enabled: bool = False
+    homepage_category_autofill_enabled: bool = False
+    homepage_category_window_hours: int = 12
     cors_origins: List[str] = Field(
         default_factory=lambda: [
             "http://localhost:3000",

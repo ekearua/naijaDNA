@@ -422,12 +422,18 @@ class AppTheme {
 
 Color categoryColor(String category) {
   switch (category.toLowerCase()) {
+    case 'world':
+    case 'world news':
     case 'breaking':
     case 'breaking news':
     case 'politics':
       return AppTheme.breaking;
     case 'business':
       return AppTheme.business;
+    case 'health':
+      return const Color(0xFF0F9D58);
+    case 'science':
+      return const Color(0xFF2563EB);
     case 'sports':
       return AppTheme.sports;
     case 'technology':

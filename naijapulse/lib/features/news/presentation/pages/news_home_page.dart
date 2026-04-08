@@ -33,6 +33,17 @@ class NewsHomePage extends StatefulWidget {
 }
 
 class _NewsHomePageState extends State<NewsHomePage> {
+  static const List<String> _builtInCategoryChipLabels = <String>[
+    'World News',
+    'Business',
+    'Technology',
+    'Entertainment',
+    'Science',
+    'Sports',
+    'Health',
+    'General',
+  ];
+
   final NewsRemoteDataSource _remote =
       InjectionContainer.sl<NewsRemoteDataSource>();
   late final AuthSessionController _authSessionController;
@@ -271,17 +282,16 @@ class _NewsHomePageState extends State<NewsHomePage> {
     required HomepageContentModel? homepage,
     required List<NewsArticle> latestStories,
   }) {
-    final labels = <String>[];
+    final labels = <String>[..._builtInCategoryChipLabels];
     final seen = <String>{};
-    final storyGroups = <Iterable<NewsArticle>>[
-      homepage?.topStories ?? const <NewsArticle>[],
-      latestStories,
-      if (homepage != null)
-        ...homepage.categories.map((section) => section.items),
-    ];
-    for (final group in storyGroups) {
-      for (final story in group) {
-        final label = story.category.trim();
+
+    for (final label in labels) {
+      seen.add(label.toLowerCase());
+    }
+
+    if (homepage != null) {
+      for (final section in homepage.categories) {
+        final label = section.label.trim();
         if (label.isEmpty) {
           continue;
         }
@@ -291,7 +301,6 @@ class _NewsHomePageState extends State<NewsHomePage> {
         }
       }
     }
-    labels.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     return labels;
   }
 
@@ -886,12 +895,12 @@ class _FeaturedStoryCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         height: 520,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(20),
           gradient: hasImage
               ? null
               : const LinearGradient(
@@ -1090,11 +1099,11 @@ class _EditorialStoryCard extends StatelessWidget {
         : const Color(0xFF3E3E3E);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: borderColor),
         ),
         child: Column(
@@ -1103,15 +1112,79 @@ class _EditorialStoryCard extends StatelessWidget {
             if (hasImage)
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                  top: Radius.circular(18),
                 ),
                 child: SizedBox(
                   height: 236,
                   width: double.infinity,
-                  child: NewsThumbnail(
-                    imageUrl: story.imageUrl,
-                    fallbackLabel: story.category,
-                    alignment: Alignment.topCenter,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      NewsThumbnail(
+                        imageUrl: story.imageUrl,
+                        fallbackLabel: story.category,
+                        alignment: Alignment.topCenter,
+                      ),
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: AppActionChip(
+                          label: story.category,
+                          compact: true,
+                          selected: true,
+                          selectedColor: Colors.white.withValues(
+                            alpha: isDark ? 0.14 : 0.9,
+                          ),
+                          selectedForegroundColor: isDark
+                              ? Colors.white
+                              : AppTheme.textPrimary,
+                          onTap: onTap,
+                        ),
+                      ),
+                      if (hasFeedbackActions)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: PopupMenuButton<String>(
+                            tooltip: 'Personalize feed',
+                            icon: AppIcon(
+                              Icons.more_horiz_rounded,
+                              size: AppIconSize.small,
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'more_like_this':
+                                  onMoreLikeThis?.call();
+                                  break;
+                                case 'hide_story':
+                                  onHideStory?.call();
+                                  break;
+                                case 'hide_source':
+                                  onHideSource?.call();
+                                  break;
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              if (onMoreLikeThis != null)
+                                const PopupMenuItem<String>(
+                                  value: 'more_like_this',
+                                  child: Text('Show more like this'),
+                                ),
+                              if (onHideStory != null)
+                                const PopupMenuItem<String>(
+                                  value: 'hide_story',
+                                  child: Text('Not interested'),
+                                ),
+                              if (onHideSource != null)
+                                PopupMenuItem<String>(
+                                  value: 'hide_source',
+                                  child: Text('Hide ${story.source}'),
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -1120,62 +1193,67 @@ class _EditorialStoryCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppActionChip(
-                        label: story.category,
-                        compact: true,
-                        selected: true,
-                        selectedColor: isDark
-                            ? Colors.white.withValues(alpha: 0.06)
-                            : const Color(0xFFF7F7F5),
-                        selectedForegroundColor: chipTextColor,
-                        onTap: onTap,
-                      ),
-                      const Spacer(),
-                      if (hasFeedbackActions)
-                        PopupMenuButton<String>(
-                          tooltip: 'Personalize feed',
-                          icon: AppIcon(
-                            Icons.more_horiz_rounded,
-                            size: AppIconSize.small,
-                            color: secondaryTextColor,
+                  if (!hasImage &&
+                      (hasFeedbackActions || story.category.isNotEmpty))
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (story.category.trim().isNotEmpty)
+                          AppActionChip(
+                            label: story.category,
+                            compact: true,
+                            selected: true,
+                            selectedColor: isDark
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : const Color(0xFFF7F7F5),
+                            selectedForegroundColor: chipTextColor,
+                            onTap: onTap,
                           ),
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'more_like_this':
-                                onMoreLikeThis?.call();
-                                break;
-                              case 'hide_story':
-                                onHideStory?.call();
-                                break;
-                              case 'hide_source':
-                                onHideSource?.call();
-                                break;
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            if (onMoreLikeThis != null)
-                              const PopupMenuItem<String>(
-                                value: 'more_like_this',
-                                child: Text('Show more like this'),
-                              ),
-                            if (onHideStory != null)
-                              const PopupMenuItem<String>(
-                                value: 'hide_story',
-                                child: Text('Not interested'),
-                              ),
-                            if (onHideSource != null)
-                              PopupMenuItem<String>(
-                                value: 'hide_source',
-                                child: Text('Hide ${story.source}'),
-                              ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+                        const Spacer(),
+                        if (hasFeedbackActions)
+                          PopupMenuButton<String>(
+                            tooltip: 'Personalize feed',
+                            icon: AppIcon(
+                              Icons.more_horiz_rounded,
+                              size: AppIconSize.small,
+                              color: secondaryTextColor,
+                            ),
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'more_like_this':
+                                  onMoreLikeThis?.call();
+                                  break;
+                                case 'hide_story':
+                                  onHideStory?.call();
+                                  break;
+                                case 'hide_source':
+                                  onHideSource?.call();
+                                  break;
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              if (onMoreLikeThis != null)
+                                const PopupMenuItem<String>(
+                                  value: 'more_like_this',
+                                  child: Text('Show more like this'),
+                                ),
+                              if (onHideStory != null)
+                                const PopupMenuItem<String>(
+                                  value: 'hide_story',
+                                  child: Text('Not interested'),
+                                ),
+                              if (onHideSource != null)
+                                PopupMenuItem<String>(
+                                  value: 'hide_source',
+                                  child: Text('Hide ${story.source}'),
+                                ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  if (!hasImage &&
+                      (hasFeedbackActions || story.category.isNotEmpty))
+                    const SizedBox(height: 10),
                   Text(
                     story.title,
                     maxLines: 3,

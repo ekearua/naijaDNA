@@ -993,12 +993,18 @@ class AdminHomepageSettingsModel {
     required this.latestItemLimit,
     required this.latestWindowHours,
     required this.latestFallbackWindowHours,
+    required this.directGnewsTopPublishEnabled,
+    required this.categoryAutofillEnabled,
+    required this.categoryWindowHours,
   });
 
   final bool latestAutofillEnabled;
   final int latestItemLimit;
   final int latestWindowHours;
   final int latestFallbackWindowHours;
+  final bool directGnewsTopPublishEnabled;
+  final bool categoryAutofillEnabled;
+  final int categoryWindowHours;
 
   factory AdminHomepageSettingsModel.fromJson(Map<String, dynamic> json) =>
       AdminHomepageSettingsModel(
@@ -1007,6 +1013,11 @@ class AdminHomepageSettingsModel {
         latestWindowHours: ((json['latest_window_hours'] as num?) ?? 6).toInt(),
         latestFallbackWindowHours:
             ((json['latest_fallback_window_hours'] as num?) ?? 24).toInt(),
+        directGnewsTopPublishEnabled:
+            json['direct_gnews_top_publish_enabled'] == true,
+        categoryAutofillEnabled: json['category_autofill_enabled'] == true,
+        categoryWindowHours:
+            ((json['category_window_hours'] as num?) ?? 12).toInt(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -1014,6 +1025,9 @@ class AdminHomepageSettingsModel {
     'latest_item_limit': latestItemLimit,
     'latest_window_hours': latestWindowHours,
     'latest_fallback_window_hours': latestFallbackWindowHours,
+    'direct_gnews_top_publish_enabled': directGnewsTopPublishEnabled,
+    'category_autofill_enabled': categoryAutofillEnabled,
+    'category_window_hours': categoryWindowHours,
   };
 }
 

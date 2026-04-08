@@ -256,6 +256,12 @@ class HomepageSettingsRecord(Base):
     latest_item_limit: Mapped[int] = mapped_column(Integer(), default=20)
     latest_window_hours: Mapped[int] = mapped_column(Integer(), default=6)
     latest_fallback_window_hours: Mapped[int] = mapped_column(Integer(), default=24)
+    direct_gnews_top_publish_enabled: Mapped[bool] = mapped_column(
+        Boolean(),
+        default=False,
+    )
+    category_autofill_enabled: Mapped[bool] = mapped_column(Boolean(), default=False)
+    category_window_hours: Mapped[int] = mapped_column(Integer(), default=12)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=False), default=datetime.utcnow
     )

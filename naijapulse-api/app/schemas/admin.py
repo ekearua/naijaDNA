@@ -306,6 +306,9 @@ class HomepageSettingsConfigItem(BaseModel):
     latest_item_limit: int = Field(default=20, ge=1, le=50)
     latest_window_hours: int = Field(default=6, ge=1, le=168)
     latest_fallback_window_hours: int = Field(default=24, ge=1, le=336)
+    direct_gnews_top_publish_enabled: bool = False
+    category_autofill_enabled: bool = False
+    category_window_hours: int = Field(default=12, ge=1, le=168)
 
 
 class HomepageSettingsPatchRequest(BaseModel):
@@ -313,6 +316,9 @@ class HomepageSettingsPatchRequest(BaseModel):
     latest_item_limit: int = Field(..., ge=1, le=50)
     latest_window_hours: int = Field(..., ge=1, le=168)
     latest_fallback_window_hours: int = Field(..., ge=1, le=336)
+    direct_gnews_top_publish_enabled: bool = False
+    category_autofill_enabled: bool = False
+    category_window_hours: int = Field(..., ge=1, le=168)
 
 
 class AdminHomepageConfigResponse(BaseModel):

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Deque, Dict, List, Literal, Optional
 from uuid import uuid4
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.integrations.news_sources.base import NewsSourceAdapter
 from app.integrations.news_sources.gnews_adapter import GNewsNewsSourceAdapter
 from app.integrations.news_sources.newsapi_adapter import NewsApiNewsSourceAdapter
@@ -44,7 +44,7 @@ class IngestionPipelineService:
         self._is_running = False
         self._latest_run: Optional[IngestionRunRecord] = None
         self._runs: Deque[IngestionRunRecord] = deque(maxlen=max_recent_runs)
-        settings = get_settings()
+        self._settings: Settings = get_settings()
 
         # Type-level adapters handle generic source categories like RSS.
         self._adapters_by_type: Dict[str, NewsSourceAdapter] = {
@@ -53,8 +53,18 @@ class IngestionPipelineService:
         }
         # Source-level adapters let different providers share a common type.
         self._adapters_by_id: Dict[str, NewsSourceAdapter] = {
-            "newsapi": NewsApiNewsSourceAdapter(api_key=settings.newsapi_api_key),
-            "gnews": GNewsNewsSourceAdapter(api_key=settings.gnews_api_key),
+            "newsapi": NewsApiNewsSourceAdapter(
+                api_key=self._settings.newsapi_api_key,
+                max_results_per_request=self._settings.newsapi_max_results_per_request,
+                max_category_requests_per_run=self._settings.newsapi_max_category_requests_per_run,
+                max_everything_queries_per_run=self._settings.newsapi_max_everything_queries_per_run,
+                request_spacing_seconds=self._settings.newsapi_request_spacing_seconds,
+            ),
+            "gnews": GNewsNewsSourceAdapter(
+                api_key=self._settings.gnews_api_key,
+                max_results_per_request=self._settings.gnews_max_results_per_request,
+                request_spacing_seconds=self._settings.gnews_request_spacing_seconds,
+            ),
         }
 
     async def run_manual(

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>naijaDNA Streaming Budget Addendum</title>
+  <style>
+    :root {
+      --ink: #17232d;
+      --muted: #60707d;
+      --line: #d7dfe5;
+      --panel: #f6f8fa;
+      --accent: #0d6b5f;
+      --accent-soft: #e2f3ef;
+      --warn: #9b4b1d;
+      --warn-soft: #fff1e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #fff;
+      line-height: 1.45;
+    }
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 42px 52px;
+    }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 28px 30px;
+      background:
+        radial-gradient(circle at top right, rgba(13,107,95,.11), transparent 34%),
+        linear-gradient(135deg, #fbfdfd, #f3f7f8);
+    }
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.1; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 15px; max-width: 760px; }
+    .meta { display:flex; flex-wrap:wrap; gap:18px; margin-top:14px; font-size:13px; color:var(--muted); }
+    h2 { margin: 28px 0 12px; font-size: 22px; }
+    h3 { margin: 22px 0 8px; font-size: 17px; }
+    p, li { font-size: 14px; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    .note {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 14px 0 18px;
+      font-size: 14px;
+    }
+    .warn { border-left-color: var(--warn); background: var(--warn-soft); }
+    .pill {
+      display:inline-block;
+      padding:4px 8px;
+      margin-right:6px;
+      margin-bottom:6px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--muted);
+      font-size:12px;
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+      font-size:13px;
+    }
+    th, td {
+      border:1px solid var(--line);
+      padding:10px 11px;
+      vertical-align:top;
+      text-align:left;
+    }
+    th {
+      background:var(--panel);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+    .footer {
+      margin-top:28px;
+      padding-top:14px;
+      border-top:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Streaming Addendum</div>
+      <h1>naijaDNA Streaming Budget and Platform Recommendation</h1>
+      <p class="subtitle">
+        This addendum supplements the corrected scaling report with streaming-specific budget guidance and a platform recommendation
+        matched to the current codebase.
+      </p>
+      <div class="meta">
+        <span><strong>Date:</strong> 2026-04-07</span>
+        <span><strong>Current stack:</strong> LiveKit already integrated in backend and Flutter</span>
+        <span><strong>Primary question:</strong> what platform should power streams as usage grows?</span>
+      </div>
+    </section>
+
+    <div class="note">
+      The current codebase already uses LiveKit for stream room tokens and media sessions. That means keeping LiveKit is the lowest-change path.
+      Switching to a broadcast-first platform like Mux becomes attractive only when your audience pattern shifts toward large passive viewing.
+    </div>
+
+    <h2>Current Technical Fit</h2>
+    <p>
+      The backend already mints LiveKit participant tokens and the Flutter stream experience already connects to LiveKit rooms.
+    </p>
+    <p>
+      <span class="pill">LiveKit backend tokens</span>
+      <span class="pill">LiveKit Flutter client</span>
+      <span class="pill">Interactive host and viewer flow</span>
+      <span class="pill">Lowest migration effort</span>
+    </p>
+
+    <h2>Streaming Budget by Platform</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Best fit</th>
+          <th>Entry budget</th>
+          <th>Growth budget</th>
+          <th>What drives cost</th>
+          <th>Recommendation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LiveKit Cloud</td>
+          <td>Interactive live sessions, host plus guests, viewer participation, low rewrite risk</td>
+          <td>about $0 for testing or $50 per month to start shipping</td>
+          <td>about $500 per month for the Scale plan, plus usage above included quotas</td>
+          <td>WebRTC connection minutes, bandwidth, and transcoding minutes</td>
+          <td>Best immediate choice for this codebase</td>
+        </tr>
+        <tr>
+          <td>Mux</td>
+          <td>Large one-to-many broadcasts with mostly passive viewers</td>
+          <td>about $0 to start, with 100,000 monthly delivery minutes free</td>
+          <td>roughly usage-based; for example, 200,000 delivered minutes at 720p is about $80 in delivery after the free tier, plus live input at $0.025 per minute</td>
+          <td>Live input minutes, delivery minutes, and storage</td>
+          <td>Best if you pivot to broadcast-first viewing at larger scale</td>
+        </tr>
+        <tr>
+          <td>Daily</td>
+          <td>Interactive video and audio calls with simple participant-minute pricing</td>
+          <td>about $0 for the first 10,000 minutes each month</td>
+          <td>about $0.004 per participant-minute at lower tiers before larger discounts, plus optional streaming or recording charges</td>
+          <td>Participant minutes, RTMP or HLS streaming minutes, recording</td>
+          <td>Good product, but not the best fit when LiveKit is already integrated</td>
+        </tr>
+        <tr>
+          <td>Agora</td>
+          <td>Interactive streaming with large enterprise networking needs</td>
+          <td>free for the first 10,000 minutes in some usage bands</td>
+          <td>pricing becomes more complex fast; proxy-heavy interactive streaming can hit a $500 monthly minimum base fee</td>
+          <td>Participant minutes, cloud proxy mode, recording</td>
+          <td>Not my first recommendation for this codebase</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Simple Streaming Budget Scenarios</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>Rough monthly usage</th>
+          <th>Most suitable platform</th>
+          <th>Budget guidance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Small editorial live sessions</td>
+          <td>1-4 live sessions per month, tens of viewers, interactive host presence</td>
+          <td>LiveKit</td>
+          <td>Keep the existing LiveKit integration. Expect the Build or Ship tier to be the right place to start.</td>
+        </tr>
+        <tr>
+          <td>Regular community streams</td>
+          <td>Weekly interactive shows with 50-200 concurrent viewers</td>
+          <td>LiveKit</td>
+          <td>Budget around LiveKit Ship or Scale depending on viewer concurrency and bandwidth profile.</td>
+        </tr>
+        <tr>
+          <td>Large passive breaking-news broadcasts</td>
+          <td>Hundreds or thousands of mostly passive viewers</td>
+          <td>Mux or a LiveKit plus Mux hybrid</td>
+          <td>Viewer delivery becomes the main cost, and a broadcast-first platform usually wins on cost efficiency.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Platform Recommendation</h2>
+    <h3>Recommended now: Keep LiveKit</h3>
+    <p>
+      For the current codebase, LiveKit is the right platform to keep using for streaming because:
+    </p>
+    <ul>
+      <li>it is already integrated in both backend and Flutter</li>
+      <li>the current stream feature is interactive, not just passive broadcast</li>
+      <li>changing providers now would create avoidable backend and client rewrite work</li>
+      <li>LiveKit already fits the current room-token architecture and viewer join flow</li>
+    </ul>
+
+    <h3>Recommended later: add Mux if streams become broadcast-heavy</h3>
+    <p>
+      If your product evolves into large one-to-many broadcast events, the best medium-term architecture is likely:
+    </p>
+    <ul>
+      <li>LiveKit for host, backstage, or guest coordination</li>
+      <li>Mux for large-scale viewer delivery</li>
+      <li>Keep the rest of the application flow unchanged</li>
+    </ul>
+
+    <div class="note warn">
+      Recommendation in one line: keep LiveKit now, because it matches the existing implementation; only move to Mux or a LiveKit plus Mux hybrid when the audience becomes mostly passive and stream viewer counts materially outgrow the economics of interactive WebRTC delivery.
+    </div>
+
+    <h2>Streaming Rollout Path</h2>
+    <ol>
+      <li>Continue with LiveKit for the current interactive streaming feature.</li>
+      <li>Measure actual monthly stream minutes, concurrency, and average viewer counts.</li>
+      <li>If streams stay interactive, scale within LiveKit.</li>
+      <li>If broadcasts become large and mostly passive, introduce Mux for viewer delivery while keeping LiveKit for host-side interactivity.</li>
+    </ol>
+
+    <h2>Sources</h2>
+    <ul>
+      <li>LiveKit pricing calculator and plans: https://livekit.io/pricing/calculator</li>
+      <li>LiveKit pricing guide for video conference and livestream: https://livekit.io/field-guides/guide/estimating-pricing-video-conference-livestream</li>
+      <li>LiveKit scale and WebRTC connection limits: https://livekit.io/field-guides/guide/plan-livekit-scale</li>
+      <li>Mux pricing: https://www.mux.com/pricing</li>
+      <li>Mux live input and delivery pricing details: https://www.mux.com/live and https://www.mux.com/docs/pricing/video</li>
+      <li>Daily pricing: https://www.daily.co/pricing/video-sdk/</li>
+      <li>Agora interactive live streaming pricing: https://www.agora.io/en/pricing/interactive-live-streaming/</li>
+    </ul>
+
+    <div class="footer">
+      Streaming budget addendum for the naijaDNA scaling report. Platform budgets are based on current public pricing pages and should be rechecked before committing to a provider switch.
+    </div>
+  </main>
+</body>
+</html>

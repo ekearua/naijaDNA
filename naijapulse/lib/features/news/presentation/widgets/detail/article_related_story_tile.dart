@@ -58,7 +58,7 @@ class ArticleRelatedStoryTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${story.category} - ${story.source} - ${relativeTimeLabel(story.publishedAt)}',
+                    '${story.source} - ${relativeTimeLabel(story.publishedAt)}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],

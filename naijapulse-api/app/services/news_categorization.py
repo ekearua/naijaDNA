@@ -1,5 +1,37 @@
 from __future__ import annotations
 
+_BUILT_IN_CATEGORY_LABELS = (
+    "World News",
+    "Business",
+    "Technology",
+    "Entertainment",
+    "Science",
+    "Sports",
+    "Health",
+    "General",
+)
+
+_CATEGORY_FALLBACK_MAP = {
+    "world": "World News",
+    "world news": "World News",
+    "politics": "World News",
+    "breaking": "World News",
+    "breaking news": "World News",
+    "international": "World News",
+    "business": "Business",
+    "technology": "Technology",
+    "tech": "Technology",
+    "entertainment": "Entertainment",
+    "science": "Science",
+    "sports": "Sports",
+    "sport": "Sports",
+    "health": "Health",
+    "general": "General",
+    "news": "General",
+    "top stories": "General",
+    "headline stories": "General",
+}
+
 
 def infer_news_category(
     *,
@@ -10,6 +42,42 @@ def infer_news_category(
 ) -> str:
     """Infer a normalized display category for incoming provider items."""
     base = f"{title} {summary or ''} {source or ''}".lower()
+
+    if _contains_any(
+        base,
+        (
+            "health",
+            "medical",
+            "medicine",
+            "hospital",
+            "doctor",
+            "disease",
+            "virus",
+            "vaccine",
+            "public health",
+            "who ",
+            "nutrition",
+        ),
+    ):
+        return "Health"
+
+    if _contains_any(
+        base,
+        (
+            "science",
+            "research",
+            "scientist",
+            "space",
+            "nasa",
+            "laboratory",
+            "physics",
+            "biology",
+            "chemistry",
+            "astronomy",
+            "climate study",
+        ),
+    ):
+        return "Science"
 
     if _contains_any(
         base,
@@ -69,6 +137,8 @@ def infer_news_category(
     if _contains_any(
         base,
         (
+            "world",
+            "international",
             "politics",
             "election",
             "senate",
@@ -137,10 +207,15 @@ def _normalize_fallback_label(value: str | None) -> str | None:
     normalized = value.strip().lower()
     if not normalized:
         return None
-    if normalized in {"general", "news", "top stories", "headline stories"}:
-        return None
+    normalized = normalized.replace("-", " ")
+    mapped = _CATEGORY_FALLBACK_MAP.get(normalized)
+    if mapped is not None:
+        return mapped
 
-    words = [word for word in normalized.replace("-", " ").split(" ") if word]
+    words = [word for word in normalized.split(" ") if word]
     if not words:
         return None
-    return " ".join(word[:1].upper() + word[1:] for word in words)
+    candidate = " ".join(word[:1].upper() + word[1:] for word in words)
+    if candidate in _BUILT_IN_CATEGORY_LABELS:
+        return candidate
+    return "General"

@@ -891,10 +891,6 @@ class _MetadataRow extends StatelessWidget {
               ),
           ],
         ),
-        if (story.tags.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _StoryTagWrap(tags: story.tags),
-        ],
       ],
     );
   }
@@ -975,7 +971,7 @@ class _ActionPills extends StatelessWidget {
         ),
         AppActionChip(
           icon: Icons.forum_outlined,
-          label: 'Discuss',
+          label: 'Discuss ${story.commentCount ?? 0}',
           selected: true,
           selectedColor: mutedBackground,
           selectedForegroundColor: mutedForeground,
@@ -1204,15 +1200,11 @@ class _RelatedStoryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${story.category} - ${relativeTimeLabel(story.publishedAt)}',
+                    '${story.source} - ${relativeTimeLabel(story.publishedAt)}',
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: AppTheme.textMeta),
                   ),
-                  if (story.tags.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    _StoryTagWrap(tags: story.tags.take(3).toList()),
-                  ],
                 ],
               ),
             ),
