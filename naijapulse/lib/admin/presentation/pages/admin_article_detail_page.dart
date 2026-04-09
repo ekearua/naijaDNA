@@ -95,11 +95,20 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
       return;
     }
 
+    String? targetStatus;
+    if (action == 'restore') {
+      targetStatus = await _pickRestoreTarget();
+      if (targetStatus == null) {
+        return;
+      }
+    }
+
     setState(() => _runningAction = true);
     try {
       await _remote.transitionAdminArticle(
         articleId: detail.article.id,
         action: action,
+        targetStatus: targetStatus,
       );
       if (!mounted) {
         return;
@@ -120,6 +129,40 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
         setState(() => _runningAction = false);
       }
     }
+  }
+
+  Future<String?> _pickRestoreTarget() async {
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Restore archived article'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _RestoreTargetTile(
+              title: 'Restore to draft',
+              subtitle:
+                  'Send it back to the working queue for editing before review.',
+              onTap: () => Navigator.of(context).pop('draft'),
+            ),
+            const SizedBox(height: 8),
+            _RestoreTargetTile(
+              title: 'Restore to approved',
+              subtitle:
+                  'Return it to the approved queue, ready for publication.',
+              onTap: () => Navigator.of(context).pop('approved'),
+            ),
+            const SizedBox(height: 8),
+            _RestoreTargetTile(
+              title: 'Restore to published',
+              subtitle:
+                  'Make it live again immediately and move it back into the live queue.',
+              onTap: () => Navigator.of(context).pop('published'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _openSource(NewsArticleModel article) async {
@@ -524,6 +567,8 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
         return 'Article rejected.';
       case 'archive':
         return 'Article archived.';
+      case 'restore':
+        return 'Article restored to draft.';
       default:
         return 'Article updated.';
     }
@@ -541,6 +586,8 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
         return 'Reject';
       case 'archive':
         return 'Archive';
+      case 'restore':
+        return 'Restore to draft';
       default:
         return action;
     }
@@ -558,6 +605,8 @@ class _AdminArticleDetailPageState extends State<AdminArticleDetailPage> {
         return const ['archive'];
       case 'rejected':
         return const ['submit', 'publish', 'archive'];
+      case 'archived':
+        return const ['restore'];
       default:
         return const ['archive'];
     }
@@ -674,6 +723,64 @@ class _CountTile extends StatelessWidget {
               Text(label, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RestoreTargetTile extends StatelessWidget {
+  const _RestoreTargetTile({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Ink(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2DBCF)),
+          color: const Color(0xFFFFFBF5),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 2),
+              child: Icon(Icons.restore_rounded, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF5D564C),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

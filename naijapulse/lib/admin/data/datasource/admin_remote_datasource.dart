@@ -25,14 +25,27 @@ abstract class AdminRemoteDataSource {
 
   Future<AdminArticleListPageModel> fetchAdminArticlesPage({
     String? status,
+    List<String>? statuses,
     String? query,
     String? source,
     String? tag,
     DateTime? publishedFrom,
     DateTime? publishedTo,
+    String? sort,
     int offset,
     int limit,
   });
+
+  Future<AdminArticleQueueSettingsResponseModel> fetchArticleQueueSettings();
+
+  Future<AdminArticleQueueSettingsResponseModel> updateArticleQueueSettings({
+    required bool autoArchiveEnabled,
+    required int archiveDraftAfterDays,
+    required int archiveReviewAfterDays,
+    required int archiveRejectedAfterDays,
+  });
+
+  Future<AdminArticleQueueArchiveRunResponseModel> runArticleQueueAutoArchive();
 
   Future<AdminArticleDetailModel> fetchAdminArticleDetail(String articleId);
 
@@ -68,6 +81,7 @@ abstract class AdminRemoteDataSource {
     required String articleId,
     required String action,
     String? notes,
+    String? targetStatus,
   });
 
   Future<List<ReportedCommentModel>> fetchReportedComments({int limit});
@@ -187,6 +201,16 @@ abstract class AdminRemoteDataSource {
     required bool directGnewsTopPublishEnabled,
     required bool categoryAutofillEnabled,
     required int categoryWindowHours,
+    required int staleGeneralHours,
+    required int staleWorldHours,
+    required int staleBusinessHours,
+    required int staleTechnologyHours,
+    required int staleEntertainmentHours,
+    required int staleScienceHours,
+    required int staleSportsHours,
+    required int staleHealthHours,
+    required int staleBreakingHours,
+    required int staleOpinionHours,
   });
 }
 
@@ -245,11 +269,13 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   @override
   Future<AdminArticleListPageModel> fetchAdminArticlesPage({
     String? status,
+    List<String>? statuses,
     String? query,
     String? source,
     String? tag,
     DateTime? publishedFrom,
     DateTime? publishedTo,
+    String? sort,
     int offset = 0,
     int limit = 20,
   }) async {
@@ -259,6 +285,11 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         'offset': offset,
         'limit': limit,
         if (status != null && status.trim().isNotEmpty) 'status': status.trim(),
+        if (statuses != null && statuses.isNotEmpty)
+          'statuses': statuses
+              .map((item) => item.trim())
+              .where((item) => item.isNotEmpty)
+              .join(','),
         if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
         if (source != null && source.trim().isNotEmpty) 'source': source.trim(),
         if (tag != null && tag.trim().isNotEmpty) 'tag': tag.trim(),
@@ -266,9 +297,43 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
           'published_from': publishedFrom.toUtc().toIso8601String(),
         if (publishedTo != null)
           'published_to': publishedTo.toUtc().toIso8601String(),
+        if (sort != null && sort.trim().isNotEmpty) 'sort': sort.trim(),
       },
     );
     return AdminArticleListPageModel.fromJson(response);
+  }
+
+  @override
+  Future<AdminArticleQueueSettingsResponseModel>
+  fetchArticleQueueSettings() async {
+    final response = await _getAuthed('/admin/article-queue/settings');
+    return AdminArticleQueueSettingsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<AdminArticleQueueSettingsResponseModel> updateArticleQueueSettings({
+    required bool autoArchiveEnabled,
+    required int archiveDraftAfterDays,
+    required int archiveReviewAfterDays,
+    required int archiveRejectedAfterDays,
+  }) async {
+    final response = await _patchAuthed(
+      '/admin/article-queue/settings',
+      data: {
+        'auto_archive_enabled': autoArchiveEnabled,
+        'archive_draft_after_days': archiveDraftAfterDays,
+        'archive_review_after_days': archiveReviewAfterDays,
+        'archive_rejected_after_days': archiveRejectedAfterDays,
+      },
+    );
+    return AdminArticleQueueSettingsResponseModel.fromJson(response);
+  }
+
+  @override
+  Future<AdminArticleQueueArchiveRunResponseModel>
+  runArticleQueueAutoArchive() async {
+    final response = await _postAuthed('/admin/article-queue/run-auto-archive');
+    return AdminArticleQueueArchiveRunResponseModel.fromJson(response);
   }
 
   @override
@@ -381,6 +446,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     required String articleId,
     required String action,
     String? notes,
+    String? targetStatus,
   }) async {
     final normalizedArticleId = articleId.trim();
     final normalizedAction = action.trim().toLowerCase();
@@ -391,6 +457,8 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       '/admin/articles/$normalizedArticleId/$normalizedAction',
       data: {
         if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+        if (targetStatus != null && targetStatus.trim().isNotEmpty)
+          'target_status': targetStatus.trim(),
       },
     );
     return NewsArticleModel.fromJson(response);
@@ -807,6 +875,16 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     required bool directGnewsTopPublishEnabled,
     required bool categoryAutofillEnabled,
     required int categoryWindowHours,
+    required int staleGeneralHours,
+    required int staleWorldHours,
+    required int staleBusinessHours,
+    required int staleTechnologyHours,
+    required int staleEntertainmentHours,
+    required int staleScienceHours,
+    required int staleSportsHours,
+    required int staleHealthHours,
+    required int staleBreakingHours,
+    required int staleOpinionHours,
   }) async {
     final response = await _patchAuthed(
       '/admin/homepage/settings',
@@ -818,6 +896,16 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         'direct_gnews_top_publish_enabled': directGnewsTopPublishEnabled,
         'category_autofill_enabled': categoryAutofillEnabled,
         'category_window_hours': categoryWindowHours,
+        'stale_general_hours': staleGeneralHours,
+        'stale_world_hours': staleWorldHours,
+        'stale_business_hours': staleBusinessHours,
+        'stale_technology_hours': staleTechnologyHours,
+        'stale_entertainment_hours': staleEntertainmentHours,
+        'stale_science_hours': staleScienceHours,
+        'stale_sports_hours': staleSportsHours,
+        'stale_health_hours': staleHealthHours,
+        'stale_breaking_hours': staleBreakingHours,
+        'stale_opinion_hours': staleOpinionHours,
       },
     );
     return AdminHomepageConfigModel.fromJson(response);

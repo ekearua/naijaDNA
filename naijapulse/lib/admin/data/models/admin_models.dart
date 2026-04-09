@@ -76,6 +76,115 @@ class AdminArticleListPageModel {
       );
 }
 
+class AdminArticleQueueSettingsModel {
+  const AdminArticleQueueSettingsModel({
+    required this.autoArchiveEnabled,
+    required this.archiveDraftAfterDays,
+    required this.archiveReviewAfterDays,
+    required this.archiveRejectedAfterDays,
+  });
+
+  final bool autoArchiveEnabled;
+  final int archiveDraftAfterDays;
+  final int archiveReviewAfterDays;
+  final int archiveRejectedAfterDays;
+
+  factory AdminArticleQueueSettingsModel.fromJson(Map<String, dynamic> json) =>
+      AdminArticleQueueSettingsModel(
+        autoArchiveEnabled: json['auto_archive_enabled'] != false,
+        archiveDraftAfterDays:
+            ((json['archive_draft_after_days'] as num?) ?? 30).toInt(),
+        archiveReviewAfterDays:
+            ((json['archive_review_after_days'] as num?) ?? 14).toInt(),
+        archiveRejectedAfterDays:
+            ((json['archive_rejected_after_days'] as num?) ?? 14).toInt(),
+      );
+
+  Map<String, dynamic> toJson() => {
+    'auto_archive_enabled': autoArchiveEnabled,
+    'archive_draft_after_days': archiveDraftAfterDays,
+    'archive_review_after_days': archiveReviewAfterDays,
+    'archive_rejected_after_days': archiveRejectedAfterDays,
+  };
+}
+
+class AdminArticleQueueCountsModel {
+  const AdminArticleQueueCountsModel({
+    required this.draft,
+    required this.submitted,
+    required this.inReview,
+    required this.approved,
+    required this.published,
+    required this.rejected,
+    required this.archived,
+  });
+
+  final int draft;
+  final int submitted;
+  final int inReview;
+  final int approved;
+  final int published;
+  final int rejected;
+  final int archived;
+
+  factory AdminArticleQueueCountsModel.fromJson(Map<String, dynamic> json) =>
+      AdminArticleQueueCountsModel(
+        draft: ((json['draft'] as num?) ?? 0).toInt(),
+        submitted: ((json['submitted'] as num?) ?? 0).toInt(),
+        inReview: ((json['in_review'] as num?) ?? 0).toInt(),
+        approved: ((json['approved'] as num?) ?? 0).toInt(),
+        published: ((json['published'] as num?) ?? 0).toInt(),
+        rejected: ((json['rejected'] as num?) ?? 0).toInt(),
+        archived: ((json['archived'] as num?) ?? 0).toInt(),
+      );
+}
+
+class AdminArticleQueueSettingsResponseModel {
+  const AdminArticleQueueSettingsResponseModel({
+    required this.generatedAt,
+    required this.settings,
+    required this.counts,
+  });
+
+  final DateTime generatedAt;
+  final AdminArticleQueueSettingsModel settings;
+  final AdminArticleQueueCountsModel counts;
+
+  factory AdminArticleQueueSettingsResponseModel.fromJson(
+    Map<String, dynamic> json,
+  ) => AdminArticleQueueSettingsResponseModel(
+    generatedAt: parseBackendDateTime(json['generated_at']),
+    settings: AdminArticleQueueSettingsModel.fromJson(
+      (json['settings'] as Map<String, dynamic>?) ?? const <String, dynamic>{},
+    ),
+    counts: AdminArticleQueueCountsModel.fromJson(
+      (json['counts'] as Map<String, dynamic>?) ?? const <String, dynamic>{},
+    ),
+  );
+}
+
+class AdminArticleQueueArchiveRunResponseModel {
+  const AdminArticleQueueArchiveRunResponseModel({
+    required this.generatedAt,
+    required this.archivedCount,
+    required this.counts,
+  });
+
+  final DateTime generatedAt;
+  final int archivedCount;
+  final AdminArticleQueueCountsModel counts;
+
+  factory AdminArticleQueueArchiveRunResponseModel.fromJson(
+    Map<String, dynamic> json,
+  ) => AdminArticleQueueArchiveRunResponseModel(
+    generatedAt: parseBackendDateTime(json['generated_at']),
+    archivedCount: ((json['archived_count'] as num?) ?? 0).toInt(),
+    counts: AdminArticleQueueCountsModel.fromJson(
+      (json['counts'] as Map<String, dynamic>?) ?? const <String, dynamic>{},
+    ),
+  );
+}
+
 class AdminUserModel {
   const AdminUserModel({
     required this.id,
@@ -996,6 +1105,16 @@ class AdminHomepageSettingsModel {
     required this.directGnewsTopPublishEnabled,
     required this.categoryAutofillEnabled,
     required this.categoryWindowHours,
+    required this.staleGeneralHours,
+    required this.staleWorldHours,
+    required this.staleBusinessHours,
+    required this.staleTechnologyHours,
+    required this.staleEntertainmentHours,
+    required this.staleScienceHours,
+    required this.staleSportsHours,
+    required this.staleHealthHours,
+    required this.staleBreakingHours,
+    required this.staleOpinionHours,
   });
 
   final bool latestAutofillEnabled;
@@ -1005,20 +1124,43 @@ class AdminHomepageSettingsModel {
   final bool directGnewsTopPublishEnabled;
   final bool categoryAutofillEnabled;
   final int categoryWindowHours;
+  final int staleGeneralHours;
+  final int staleWorldHours;
+  final int staleBusinessHours;
+  final int staleTechnologyHours;
+  final int staleEntertainmentHours;
+  final int staleScienceHours;
+  final int staleSportsHours;
+  final int staleHealthHours;
+  final int staleBreakingHours;
+  final int staleOpinionHours;
 
-  factory AdminHomepageSettingsModel.fromJson(Map<String, dynamic> json) =>
-      AdminHomepageSettingsModel(
-        latestAutofillEnabled: json['latest_autofill_enabled'] != false,
-        latestItemLimit: ((json['latest_item_limit'] as num?) ?? 20).toInt(),
-        latestWindowHours: ((json['latest_window_hours'] as num?) ?? 6).toInt(),
-        latestFallbackWindowHours:
-            ((json['latest_fallback_window_hours'] as num?) ?? 24).toInt(),
-        directGnewsTopPublishEnabled:
-            json['direct_gnews_top_publish_enabled'] == true,
-        categoryAutofillEnabled: json['category_autofill_enabled'] == true,
-        categoryWindowHours:
-            ((json['category_window_hours'] as num?) ?? 12).toInt(),
-      );
+  factory AdminHomepageSettingsModel.fromJson(
+    Map<String, dynamic> json,
+  ) => AdminHomepageSettingsModel(
+    latestAutofillEnabled: json['latest_autofill_enabled'] != false,
+    latestItemLimit: ((json['latest_item_limit'] as num?) ?? 20).toInt(),
+    latestWindowHours: ((json['latest_window_hours'] as num?) ?? 6).toInt(),
+    latestFallbackWindowHours:
+        ((json['latest_fallback_window_hours'] as num?) ?? 24).toInt(),
+    directGnewsTopPublishEnabled:
+        json['direct_gnews_top_publish_enabled'] == true,
+    categoryAutofillEnabled: json['category_autofill_enabled'] == true,
+    categoryWindowHours: ((json['category_window_hours'] as num?) ?? 12)
+        .toInt(),
+    staleGeneralHours: ((json['stale_general_hours'] as num?) ?? 36).toInt(),
+    staleWorldHours: ((json['stale_world_hours'] as num?) ?? 48).toInt(),
+    staleBusinessHours: ((json['stale_business_hours'] as num?) ?? 48).toInt(),
+    staleTechnologyHours: ((json['stale_technology_hours'] as num?) ?? 72)
+        .toInt(),
+    staleEntertainmentHours: ((json['stale_entertainment_hours'] as num?) ?? 72)
+        .toInt(),
+    staleScienceHours: ((json['stale_science_hours'] as num?) ?? 72).toInt(),
+    staleSportsHours: ((json['stale_sports_hours'] as num?) ?? 30).toInt(),
+    staleHealthHours: ((json['stale_health_hours'] as num?) ?? 72).toInt(),
+    staleBreakingHours: ((json['stale_breaking_hours'] as num?) ?? 18).toInt(),
+    staleOpinionHours: ((json['stale_opinion_hours'] as num?) ?? 168).toInt(),
+  );
 
   Map<String, dynamic> toJson() => {
     'latest_autofill_enabled': latestAutofillEnabled,
@@ -1028,6 +1170,16 @@ class AdminHomepageSettingsModel {
     'direct_gnews_top_publish_enabled': directGnewsTopPublishEnabled,
     'category_autofill_enabled': categoryAutofillEnabled,
     'category_window_hours': categoryWindowHours,
+    'stale_general_hours': staleGeneralHours,
+    'stale_world_hours': staleWorldHours,
+    'stale_business_hours': staleBusinessHours,
+    'stale_technology_hours': staleTechnologyHours,
+    'stale_entertainment_hours': staleEntertainmentHours,
+    'stale_science_hours': staleScienceHours,
+    'stale_sports_hours': staleSportsHours,
+    'stale_health_hours': staleHealthHours,
+    'stale_breaking_hours': staleBreakingHours,
+    'stale_opinion_hours': staleOpinionHours,
   };
 }
 

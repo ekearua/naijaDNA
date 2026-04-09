@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:naijapulse/admin/data/models/admin_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:naijapulse/admin/data/datasource/admin_remote_datasource.dart';
 import 'package:naijapulse/admin/presentation/widgets/homepage_quick_actions.dart';
@@ -20,30 +21,82 @@ class AdminArticlesManagementPage extends StatefulWidget {
 class _AdminArticlesManagementPageState
     extends State<AdminArticlesManagementPage> {
   static const int _pageSize = 20;
-  static const List<String> _statusFilters = <String>[
-    'all',
-    'draft',
-    'submitted',
-    'approved',
-    'published',
-    'rejected',
-    'archived',
-  ];
+  static const List<_ArticleQueueTabConfig> _queueTabs =
+      <_ArticleQueueTabConfig>[
+        _ArticleQueueTabConfig(
+          key: 'needs_review',
+          label: 'Needs Review',
+          statuses: <String>['submitted', 'in_review', 'approved'],
+          sort: 'updated_desc',
+        ),
+        _ArticleQueueTabConfig(
+          key: 'drafts',
+          label: 'Drafts',
+          statuses: <String>['draft'],
+          sort: 'updated_desc',
+        ),
+        _ArticleQueueTabConfig(
+          key: 'live',
+          label: 'Live',
+          statuses: <String>['published'],
+          sort: 'published_desc',
+        ),
+        _ArticleQueueTabConfig(
+          key: 'rejected',
+          label: 'Rejected',
+          statuses: <String>['rejected'],
+          sort: 'updated_desc',
+        ),
+        _ArticleQueueTabConfig(
+          key: 'archived',
+          label: 'Archived',
+          statuses: <String>['archived'],
+          sort: 'updated_desc',
+        ),
+        _ArticleQueueTabConfig(
+          key: 'all',
+          label: 'All',
+          statuses: <String>[],
+          sort: 'updated_desc',
+        ),
+      ];
 
   final AdminRemoteDataSource _remote =
       InjectionContainer.sl<AdminRemoteDataSource>();
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
+  final TextEditingController _draftArchiveController = TextEditingController(
+    text: '30',
+  );
+  final TextEditingController _reviewArchiveController = TextEditingController(
+    text: '14',
+  );
+  final TextEditingController _rejectedArchiveController =
+      TextEditingController(text: '14');
 
   List<NewsArticle> _articles = const <NewsArticle>[];
   List<String> _availableSources = const <String>[];
-  String _selectedStatus = 'all';
+  String _selectedTabKey = 'needs_review';
   String? _selectedSource;
   DateTime? _publishedFrom;
   DateTime? _publishedTo;
+  AdminArticleQueueCountsModel _queueCounts =
+      const AdminArticleQueueCountsModel(
+        draft: 0,
+        submitted: 0,
+        inReview: 0,
+        approved: 0,
+        published: 0,
+        rejected: 0,
+        archived: 0,
+      );
   int _offset = 0;
   int _total = 0;
   bool _loading = true;
+  bool _settingsLoading = true;
+  bool _settingsSaving = false;
+  bool _runningArchiveNow = false;
+  bool _autoArchiveEnabled = true;
   String? _errorMessage;
 
   @override
@@ -52,6 +105,7 @@ class _AdminArticlesManagementPageState
     _searchController.addListener(_handleSearchChanged);
     _tagController.addListener(_handleSearchChanged);
     _loadSources();
+    _loadQueueSettings();
     _loadArticles();
   }
 
@@ -61,6 +115,9 @@ class _AdminArticlesManagementPageState
     _tagController.removeListener(_handleSearchChanged);
     _searchController.dispose();
     _tagController.dispose();
+    _draftArchiveController.dispose();
+    _reviewArchiveController.dispose();
+    _rejectedArchiveController.dispose();
     super.dispose();
   }
 
@@ -90,19 +147,147 @@ class _AdminArticlesManagementPageState
     }
   }
 
+  _ArticleQueueTabConfig get _selectedTab => _queueTabs.firstWhere(
+    (item) => item.key == _selectedTabKey,
+    orElse: () => _queueTabs.first,
+  );
+
+  Future<void> _loadQueueSettings() async {
+    try {
+      final response = await _remote.fetchArticleQueueSettings();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _autoArchiveEnabled = response.settings.autoArchiveEnabled;
+        _queueCounts = response.counts;
+        _draftArchiveController.text = response.settings.archiveDraftAfterDays
+            .toString();
+        _reviewArchiveController.text = response.settings.archiveReviewAfterDays
+            .toString();
+        _rejectedArchiveController.text = response
+            .settings
+            .archiveRejectedAfterDays
+            .toString();
+      });
+    } catch (_) {
+      // Keep the queue usable even if settings fail to load.
+    } finally {
+      if (mounted) {
+        setState(() => _settingsLoading = false);
+      }
+    }
+  }
+
+  Future<void> _saveQueueSettings() async {
+    final draftDays = int.tryParse(_draftArchiveController.text.trim());
+    final reviewDays = int.tryParse(_reviewArchiveController.text.trim());
+    final rejectedDays = int.tryParse(_rejectedArchiveController.text.trim());
+    if (draftDays == null ||
+        reviewDays == null ||
+        rejectedDays == null ||
+        draftDays < 1 ||
+        reviewDays < 1 ||
+        rejectedDays < 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter valid archive thresholds in days.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _settingsSaving = true);
+    try {
+      final response = await _remote.updateArticleQueueSettings(
+        autoArchiveEnabled: _autoArchiveEnabled,
+        archiveDraftAfterDays: draftDays,
+        archiveReviewAfterDays: reviewDays,
+        archiveRejectedAfterDays: rejectedDays,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _autoArchiveEnabled = response.settings.autoArchiveEnabled;
+        _queueCounts = response.counts;
+        _draftArchiveController.text = response.settings.archiveDraftAfterDays
+            .toString();
+        _reviewArchiveController.text = response.settings.archiveReviewAfterDays
+            .toString();
+        _rejectedArchiveController.text = response
+            .settings
+            .archiveRejectedAfterDays
+            .toString();
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Archive policy updated.')));
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+    } finally {
+      if (mounted) {
+        setState(() => _settingsSaving = false);
+      }
+    }
+  }
+
+  Future<void> _runArchiveNow() async {
+    if (_runningArchiveNow) {
+      return;
+    }
+
+    setState(() => _runningArchiveNow = true);
+    try {
+      final response = await _remote.runArticleQueueAutoArchive();
+      if (!mounted) {
+        return;
+      }
+      setState(() => _queueCounts = response.counts);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response.archivedCount == 0
+                ? 'No stale articles needed archiving.'
+                : 'Archived ${response.archivedCount} stale articles.',
+          ),
+        ),
+      );
+      await _loadArticles();
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+    } finally {
+      if (mounted) {
+        setState(() => _runningArchiveNow = false);
+      }
+    }
+  }
+
   Future<void> _loadArticles() async {
     setState(() {
       _loading = true;
       _errorMessage = null;
     });
     try {
+      final selectedTab = _selectedTab;
       final page = await _remote.fetchAdminArticlesPage(
-        status: _selectedStatus == 'all' ? null : _selectedStatus,
+        statuses: selectedTab.statuses.isEmpty ? null : selectedTab.statuses,
         query: _searchController.text,
         source: _selectedSource,
         tag: _tagController.text,
         publishedFrom: _publishedFrom,
         publishedTo: _publishedTo,
+        sort: selectedTab.sort,
         offset: _offset,
         limit: _pageSize,
       );
@@ -179,10 +364,19 @@ class _AdminArticlesManagementPageState
   }
 
   Future<void> _runWorkflowAction(NewsArticle article, String action) async {
+    String? targetStatus;
+    if (action == 'restore') {
+      targetStatus = await _pickRestoreTarget();
+      if (targetStatus == null) {
+        return;
+      }
+    }
+
     try {
       final updated = await _remote.transitionAdminArticle(
         articleId: article.id,
         action: action,
+        targetStatus: targetStatus,
       );
       if (!mounted) {
         return;
@@ -193,7 +387,9 @@ class _AdminArticlesManagementPageState
           return;
         }
         final next = List<NewsArticle>.from(_articles);
-        if (_selectedStatus != 'all' && updated.status != _selectedStatus) {
+        final selectedStatuses = _selectedTab.statuses;
+        if (selectedStatuses.isNotEmpty &&
+            !selectedStatuses.contains(updated.status)) {
           next.removeAt(index);
         } else {
           next[index] = updated;
@@ -203,6 +399,7 @@ class _AdminArticlesManagementPageState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_actionLabel(action, completed: true))),
       );
+      _loadQueueSettings();
     } catch (error) {
       if (!mounted) {
         return;
@@ -210,6 +407,67 @@ class _AdminArticlesManagementPageState
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+    }
+  }
+
+  Future<String?> _pickRestoreTarget() async {
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Restore archived article'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _RestoreTargetTile(
+              title: 'Restore to draft',
+              subtitle:
+                  'Send it back to the working queue for editing before review.',
+              onTap: () => Navigator.of(context).pop('draft'),
+            ),
+            const SizedBox(height: 8),
+            _RestoreTargetTile(
+              title: 'Restore to approved',
+              subtitle:
+                  'Return it to the approved queue, ready for publication.',
+              onTap: () => Navigator.of(context).pop('approved'),
+            ),
+            const SizedBox(height: 8),
+            _RestoreTargetTile(
+              title: 'Restore to published',
+              subtitle:
+                  'Make it live again immediately and move it back into the live queue.',
+              onTap: () => Navigator.of(context).pop('published'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  int _countForTab(_ArticleQueueTabConfig tab) {
+    switch (tab.key) {
+      case 'needs_review':
+        return _queueCounts.submitted +
+            _queueCounts.inReview +
+            _queueCounts.approved;
+      case 'drafts':
+        return _queueCounts.draft;
+      case 'live':
+        return _queueCounts.published;
+      case 'rejected':
+        return _queueCounts.rejected;
+      case 'archived':
+        return _queueCounts.archived;
+      case 'all':
+        return _queueCounts.draft +
+            _queueCounts.submitted +
+            _queueCounts.inReview +
+            _queueCounts.approved +
+            _queueCounts.published +
+            _queueCounts.rejected +
+            _queueCounts.archived;
+      default:
+        return 0;
     }
   }
 
@@ -249,6 +507,47 @@ class _AdminArticlesManagementPageState
             ],
           ),
           const SizedBox(height: 18),
+          _QueueSettingsCard(
+            loading: _settingsLoading,
+            saving: _settingsSaving,
+            runningArchiveNow: _runningArchiveNow,
+            autoArchiveEnabled: _autoArchiveEnabled,
+            draftArchiveController: _draftArchiveController,
+            reviewArchiveController: _reviewArchiveController,
+            rejectedArchiveController: _rejectedArchiveController,
+            onAutoArchiveChanged: (value) =>
+                setState(() => _autoArchiveEnabled = value),
+            onSave: _saveQueueSettings,
+            onRunNow: _runArchiveNow,
+          ),
+          const SizedBox(height: 18),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _queueTabs
+                  .map(
+                    (tab) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text('${tab.label} (${_countForTab(tab)})'),
+                        selected: _selectedTabKey == tab.key,
+                        onSelected: (_) {
+                          if (_selectedTabKey == tab.key) {
+                            return;
+                          }
+                          setState(() {
+                            _selectedTabKey = tab.key;
+                            _offset = 0;
+                          });
+                          _loadArticles();
+                        },
+                      ),
+                    ),
+                  )
+                  .toList(growable: false),
+            ),
+          ),
+          const SizedBox(height: 18),
           TextField(
             controller: _searchController,
             textInputAction: TextInputAction.search,
@@ -282,33 +581,6 @@ class _AdminArticlesManagementPageState
               },
               icon: const Icon(Icons.search_rounded),
               label: const Text('Search'),
-            ),
-          ),
-          const SizedBox(height: 18),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _statusFilters
-                  .map(
-                    (status) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(_prettyLabel(status)),
-                        selected: _selectedStatus == status,
-                        onSelected: (_) {
-                          if (_selectedStatus == status) {
-                            return;
-                          }
-                          setState(() {
-                            _selectedStatus = status;
-                            _offset = 0;
-                          });
-                          _loadArticles();
-                        },
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
             ),
           ),
           const SizedBox(height: 18),
@@ -408,8 +680,9 @@ class _AdminArticlesManagementPageState
             )
           else if (_articles.isEmpty)
             _StateCard(
-              title: 'No stories in this queue',
-              message: 'Switch filters or create a new article to get started.',
+              title: 'No stories in ${_selectedTab.label.toLowerCase()}',
+              message:
+                  'Try another tab or adjust the filters to widen the queue.',
               actionLabel: 'Create article',
               onPressed: () => context.push(AppRouter.adminArticleCreatePath),
             )
@@ -454,13 +727,6 @@ class _AdminArticlesManagementPageState
     );
   }
 
-  String _prettyLabel(String value) => value == 'all'
-      ? 'All'
-      : value
-            .split('_')
-            .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-            .join(' ');
-
   String _actionLabel(String action, {bool completed = false}) {
     switch (action) {
       case 'submit':
@@ -475,10 +741,26 @@ class _AdminArticlesManagementPageState
         return completed ? 'Article rejected.' : 'Reject';
       case 'archive':
         return completed ? 'Article archived.' : 'Archive';
+      case 'restore':
+        return completed ? 'Article restored to draft.' : 'Restore';
       default:
         return action;
     }
   }
+}
+
+class _ArticleQueueTabConfig {
+  const _ArticleQueueTabConfig({
+    required this.key,
+    required this.label,
+    required this.statuses,
+    required this.sort,
+  });
+
+  final String key;
+  final String label;
+  final List<String> statuses;
+  final String sort;
 }
 
 String _formatAdminDateTime(DateTime value) {
@@ -487,6 +769,220 @@ String _formatAdminDateTime(DateTime value) {
   final twoDigitHour = value.hour.toString().padLeft(2, '0');
   final twoDigitMinute = value.minute.toString().padLeft(2, '0');
   return '${value.year}-$twoDigitMonth-$twoDigitDay $twoDigitHour:$twoDigitMinute';
+}
+
+class _QueueSettingsCard extends StatelessWidget {
+  const _QueueSettingsCard({
+    required this.loading,
+    required this.saving,
+    required this.runningArchiveNow,
+    required this.autoArchiveEnabled,
+    required this.draftArchiveController,
+    required this.reviewArchiveController,
+    required this.rejectedArchiveController,
+    required this.onAutoArchiveChanged,
+    required this.onSave,
+    required this.onRunNow,
+  });
+
+  final bool loading;
+  final bool saving;
+  final bool runningArchiveNow;
+  final bool autoArchiveEnabled;
+  final TextEditingController draftArchiveController;
+  final TextEditingController reviewArchiveController;
+  final TextEditingController rejectedArchiveController;
+  final ValueChanged<bool> onAutoArchiveChanged;
+  final VoidCallback onSave;
+  final VoidCallback onRunNow;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFD8CEBE)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: loading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Archive Policy',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Auto-archive stale queue items based on the last time an article was updated.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF5D564C),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    value: autoArchiveEnabled,
+                    title: const Text('Enable auto-archive'),
+                    subtitle: const Text(
+                      'Draft, review, and rejected queues will roll into Archived automatically.',
+                    ),
+                    onChanged: onAutoArchiveChanged,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      _NumericSettingField(
+                        controller: draftArchiveController,
+                        label: 'Drafts after',
+                        suffix: 'days',
+                      ),
+                      _NumericSettingField(
+                        controller: reviewArchiveController,
+                        label: 'Review queue after',
+                        suffix: 'days',
+                      ),
+                      _NumericSettingField(
+                        controller: rejectedArchiveController,
+                        label: 'Rejected after',
+                        suffix: 'days',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: runningArchiveNow ? null : onRunNow,
+                          icon: runningArchiveNow
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.archive_outlined),
+                          label: Text(
+                            runningArchiveNow
+                                ? 'Running...'
+                                : 'Run archive now',
+                          ),
+                        ),
+                        FilledButton.icon(
+                          onPressed: saving ? null : onSave,
+                          icon: saving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.save_outlined),
+                          label: Text(saving ? 'Saving...' : 'Save policy'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _NumericSettingField extends StatelessWidget {
+  const _NumericSettingField({
+    required this.controller,
+    required this.label,
+    required this.suffix,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String suffix;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 200,
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(labelText: label, suffixText: suffix),
+      ),
+    );
+  }
+}
+
+class _RestoreTargetTile extends StatelessWidget {
+  const _RestoreTargetTile({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Ink(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFD8CEBE)),
+          color: const Color(0xFFFFFBF5),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 2),
+              child: Icon(Icons.restore_rounded, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF5D564C),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _DateFilterChip extends StatelessWidget {
@@ -638,6 +1134,16 @@ class _ArticleCard extends StatelessWidget {
                       color: const Color(0xFF4F4A43),
                     ),
                   ),
+                  if (article.status == 'archived') ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Archived story • originally published ${adminDateTimeLabel(article.publishedAt)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF6B7280),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                   if (article.tags.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Wrap(
@@ -683,6 +1189,7 @@ class _ArticleCard extends StatelessWidget {
                             'publish' => 'Publish',
                             'reject' => 'Reject',
                             'archive' => 'Archive',
+                            'restore' => 'Restore to draft',
                             _ => action,
                           }),
                         ),
@@ -728,6 +1235,8 @@ class _ArticleCard extends StatelessWidget {
         return const ['archive'];
       case 'rejected':
         return const ['submit', 'publish', 'archive'];
+      case 'archived':
+        return const ['restore'];
       default:
         return const ['archive'];
     }

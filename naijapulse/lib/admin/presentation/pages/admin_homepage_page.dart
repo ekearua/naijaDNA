@@ -28,6 +28,26 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       TextEditingController();
   final TextEditingController _categoryWindowController =
       TextEditingController();
+  final TextEditingController _staleGeneralHoursController =
+      TextEditingController();
+  final TextEditingController _staleWorldHoursController =
+      TextEditingController();
+  final TextEditingController _staleBusinessHoursController =
+      TextEditingController();
+  final TextEditingController _staleTechnologyHoursController =
+      TextEditingController();
+  final TextEditingController _staleEntertainmentHoursController =
+      TextEditingController();
+  final TextEditingController _staleScienceHoursController =
+      TextEditingController();
+  final TextEditingController _staleSportsHoursController =
+      TextEditingController();
+  final TextEditingController _staleHealthHoursController =
+      TextEditingController();
+  final TextEditingController _staleBreakingHoursController =
+      TextEditingController();
+  final TextEditingController _staleOpinionHoursController =
+      TextEditingController();
 
   AdminHomepageConfigModel? _config;
   List<NewsArticleModel>? _publishedStories;
@@ -47,6 +67,16 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     _latestWindowController.dispose();
     _latestFallbackWindowController.dispose();
     _categoryWindowController.dispose();
+    _staleGeneralHoursController.dispose();
+    _staleWorldHoursController.dispose();
+    _staleBusinessHoursController.dispose();
+    _staleTechnologyHoursController.dispose();
+    _staleEntertainmentHoursController.dispose();
+    _staleScienceHoursController.dispose();
+    _staleSportsHoursController.dispose();
+    _staleHealthHoursController.dispose();
+    _staleBreakingHoursController.dispose();
+    _staleOpinionHoursController.dispose();
     super.dispose();
   }
 
@@ -76,6 +106,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
             .toString();
         _categoryWindowController.text = config.settings.categoryWindowHours
             .toString();
+        _setStaleThresholdControllers(config.settings);
       });
     } catch (error) {
       if (!mounted) {
@@ -133,6 +164,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
             .toString();
         _categoryWindowController.text = updated.settings.categoryWindowHours
             .toString();
+        _setStaleThresholdControllers(updated.settings);
       });
       ScaffoldMessenger.of(
         context,
@@ -421,6 +453,33 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       return;
     }
 
+    final staleThresholds = {
+      'General': _parseStaleThreshold(_staleGeneralHoursController),
+      'World News': _parseStaleThreshold(_staleWorldHoursController),
+      'Business': _parseStaleThreshold(_staleBusinessHoursController),
+      'Technology': _parseStaleThreshold(_staleTechnologyHoursController),
+      'Entertainment': _parseStaleThreshold(_staleEntertainmentHoursController),
+      'Science': _parseStaleThreshold(_staleScienceHoursController),
+      'Sports': _parseStaleThreshold(_staleSportsHoursController),
+      'Health': _parseStaleThreshold(_staleHealthHoursController),
+      'Breaking': _parseStaleThreshold(_staleBreakingHoursController),
+      'Opinion': _parseStaleThreshold(_staleOpinionHoursController),
+    };
+    final invalidThreshold = staleThresholds.entries.firstWhere(
+      (entry) => entry.value == null || entry.value! < 1 || entry.value! > 720,
+      orElse: () => const MapEntry('', 0),
+    );
+    if (invalidThreshold.key.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Enter a stale-news threshold between 1 and 720 hours for ${invalidThreshold.key}.',
+          ),
+        ),
+      );
+      return;
+    }
+
     await _commitMutation(
       () => _remote.updateHomepageSettings(
         latestAutofillEnabled: _latestAutofillEnabled,
@@ -430,8 +489,57 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
         directGnewsTopPublishEnabled: _directGnewsTopPublishEnabled,
         categoryAutofillEnabled: _categoryAutofillEnabled,
         categoryWindowHours: categoryWindow,
+        staleGeneralHours: staleThresholds['General']!,
+        staleWorldHours: staleThresholds['World News']!,
+        staleBusinessHours: staleThresholds['Business']!,
+        staleTechnologyHours: staleThresholds['Technology']!,
+        staleEntertainmentHours: staleThresholds['Entertainment']!,
+        staleScienceHours: staleThresholds['Science']!,
+        staleSportsHours: staleThresholds['Sports']!,
+        staleHealthHours: staleThresholds['Health']!,
+        staleBreakingHours: staleThresholds['Breaking']!,
+        staleOpinionHours: staleThresholds['Opinion']!,
       ),
       'Homepage settings updated.',
+    );
+  }
+
+  void _setStaleThresholdControllers(AdminHomepageSettingsModel settings) {
+    _staleGeneralHoursController.text = settings.staleGeneralHours.toString();
+    _staleWorldHoursController.text = settings.staleWorldHours.toString();
+    _staleBusinessHoursController.text = settings.staleBusinessHours.toString();
+    _staleTechnologyHoursController.text = settings.staleTechnologyHours
+        .toString();
+    _staleEntertainmentHoursController.text = settings.staleEntertainmentHours
+        .toString();
+    _staleScienceHoursController.text = settings.staleScienceHours.toString();
+    _staleSportsHoursController.text = settings.staleSportsHours.toString();
+    _staleHealthHoursController.text = settings.staleHealthHours.toString();
+    _staleBreakingHoursController.text = settings.staleBreakingHours.toString();
+    _staleOpinionHoursController.text = settings.staleOpinionHours.toString();
+  }
+
+  int? _parseStaleThreshold(TextEditingController controller) {
+    return int.tryParse(controller.text.trim());
+  }
+
+  Widget _staleThresholdField({
+    required TextEditingController controller,
+    required String label,
+    String? helperText,
+  }) {
+    return SizedBox(
+      width: 220,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: '$label stale after (hours)',
+          hintText: '48',
+          helperText: helperText ?? 'Allowed range: 1 to 720 hours.',
+        ),
+        enabled: !_saving,
+      ),
     );
   }
 
@@ -830,9 +938,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                   onChanged: _saving
                       ? null
                       : (value) {
-                          setState(
-                            () => _directGnewsTopPublishEnabled = value,
-                          );
+                          setState(() => _directGnewsTopPublishEnabled = value);
                         },
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Publish GNews top stories to homepage'),
@@ -863,7 +969,9 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                           setState(() => _categoryAutofillEnabled = value);
                         },
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Enable category auto-fill from other feeds'),
+                  title: const Text(
+                    'Enable category auto-fill from other feeds',
+                  ),
                   subtitle: const Text(
                     'Backfill homepage category sections with recent published non-GNews stories after manual placements.',
                   ),
@@ -923,6 +1031,69 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                     helperText: 'Allowed range: 1 to 168 hours.',
                   ),
                   enabled: !_saving,
+                ),
+                const SizedBox(height: 12),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Stale-news thresholds (hours)',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Public feeds stop surfacing stories once they exceed these ages.',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _staleThresholdField(
+                      controller: _staleGeneralHoursController,
+                      label: 'General',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleWorldHoursController,
+                      label: 'World News',
+                      helperText: 'Also used for politics and elections.',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleBusinessHoursController,
+                      label: 'Business',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleTechnologyHoursController,
+                      label: 'Technology',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleEntertainmentHoursController,
+                      label: 'Entertainment',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleScienceHoursController,
+                      label: 'Science',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleSportsHoursController,
+                      label: 'Sports',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleHealthHoursController,
+                      label: 'Health',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleBreakingHoursController,
+                      label: 'Breaking',
+                    ),
+                    _staleThresholdField(
+                      controller: _staleOpinionHoursController,
+                      label: 'Opinion',
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 Align(
