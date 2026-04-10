@@ -426,6 +426,7 @@ class AdminWorkflowActivityModel {
     required this.eventType,
     required this.createdAt,
     this.actorUserId,
+    this.actorRole,
     this.fromStatus,
     this.toStatus,
     this.notes,
@@ -438,6 +439,7 @@ class AdminWorkflowActivityModel {
   final String eventType;
   final DateTime createdAt;
   final String? actorUserId;
+  final String? actorRole;
   final String? fromStatus;
   final String? toStatus;
   final String? notes;
@@ -451,9 +453,38 @@ class AdminWorkflowActivityModel {
         eventType: (json['event_type'] as String?) ?? '',
         createdAt: parseBackendDateTime(json['created_at']),
         actorUserId: json['actor_user_id'] as String?,
+        actorRole: json['actor_role'] as String?,
         fromStatus: json['from_status'] as String?,
         toStatus: json['to_status'] as String?,
         notes: json['notes'] as String?,
+      );
+}
+
+class AdminWorkflowActivityPageModel {
+  const AdminWorkflowActivityPageModel({
+    required this.generatedAt,
+    required this.items,
+    required this.total,
+    required this.offset,
+    required this.limit,
+  });
+
+  final DateTime generatedAt;
+  final List<AdminWorkflowActivityModel> items;
+  final int total;
+  final int offset;
+  final int limit;
+
+  factory AdminWorkflowActivityPageModel.fromJson(Map<String, dynamic> json) =>
+      AdminWorkflowActivityPageModel(
+        generatedAt: parseBackendDateTime(json['generated_at']),
+        items: ((json['items'] as List<dynamic>?) ?? const <dynamic>[])
+            .whereType<Map<String, dynamic>>()
+            .map(AdminWorkflowActivityModel.fromJson)
+            .toList(),
+        total: ((json['total'] as num?) ?? 0).toInt(),
+        offset: ((json['offset'] as num?) ?? 0).toInt(),
+        limit: ((json['limit'] as num?) ?? 50).toInt(),
       );
 }
 

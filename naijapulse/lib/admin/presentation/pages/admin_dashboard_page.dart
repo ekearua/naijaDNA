@@ -382,6 +382,11 @@ class _WorkflowCard extends StatelessWidget {
       title: 'Recent Workflow Activity',
       subtitle:
           'Approval, rejection, and publication activity across the desk.',
+      trailing: OutlinedButton.icon(
+        onPressed: () => context.go(AppRouter.adminWorkflowActivityPath),
+        icon: const Icon(Icons.history_rounded),
+        label: const Text('View all'),
+      ),
       child: Column(
         children: items
             .map(

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
@@ -33,6 +32,17 @@ class NewsArticleDetailPage extends StatefulWidget {
   @override
   State<NewsArticleDetailPage> createState() => _NewsArticleDetailPageState();
 }
+
+String _compactCommentCount(int? count) {
+  final resolved = count ?? 0;
+  if (resolved < 1000) {
+    return '$resolved';
+  }
+  return '+${(resolved / 1000).floor()}k';
+}
+
+String _discussLabel(NewsArticle story) =>
+    'Discuss ${_compactCommentCount(story.commentCount)}';
 
 class _NewsArticleDetailPageState extends State<NewsArticleDetailPage> {
   final NewsRemoteDataSource _remote =
@@ -500,7 +510,8 @@ class _ArticleDetailScaffold extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Expanded(
+              Flexible(
+                flex: 5,
                 child: OutlinedButton(
                   onPressed: () => context.push(
                     AppRouter.articleDiscussionPath(story.id),
@@ -513,7 +524,7 @@ class _ArticleDetailScaffold extends StatelessWidget {
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
-                          'Discuss ${story.commentCount ?? 0}',
+                          _discussLabel(story),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           softWrap: false,
@@ -524,7 +535,8 @@ class _ArticleDetailScaffold extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Expanded(
+              Flexible(
+                flex: 3,
                 child: OutlinedButton.icon(
                   onPressed: () =>
                       NewsEngagementHelper.shareArticle(context, story),
@@ -533,13 +545,14 @@ class _ArticleDetailScaffold extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Expanded(
+              Flexible(
+                flex: 3,
                 child: ElevatedButton.icon(
                   onPressed: hasValidSource
                       ? () => _openSource(context, uri)
                       : null,
                   icon: const Icon(Icons.open_in_new_rounded),
-                  label: const Text('Read full'),
+                  label: const Text('Read'),
                 ),
               ),
             ],
@@ -659,19 +672,37 @@ class _ArticleDetailScaffold extends StatelessWidget {
     }
   }
 
+  Future<void> _openExternalSource(BuildContext context, Uri uri) async {
+    final opened = await openExternalLink(uri.toString());
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'We could not open the publisher page in your browser right now.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _openInAppSource(BuildContext context, Uri uri) async {
+    final opened = await openInAppBrowserLink(uri.toString());
+    if (opened || !context.mounted) {
+      return;
+    }
+    await _openExternalSource(context, uri);
+  }
+
   Future<void> _openSource(BuildContext context, Uri uri) async {
-    if (kIsWeb) {
-      await openExternalLink(uri.toString());
+    final platform = defaultTargetPlatform;
+    if (kIsWeb ||
+        platform == TargetPlatform.windows ||
+        platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.linux) {
+      await _openExternalSource(context, uri);
       return;
     }
-    if (!context.mounted) {
-      return;
-    }
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _ArticleSourceWebViewPage(story: story, uri: uri),
-      ),
-    );
+    await _openInAppSource(context, uri);
   }
 
   List<String> _atAGlanceBullets(NewsArticle story) {
@@ -984,7 +1015,7 @@ class _ActionPills extends StatelessWidget {
         ),
         AppActionChip(
           icon: Icons.forum_outlined,
-          label: 'Discuss ${story.commentCount ?? 0}',
+          label: _discussLabel(story),
           selected: true,
           selectedColor: mutedBackground,
           selectedForegroundColor: mutedForeground,
@@ -1230,198 +1261,6 @@ class _RelatedStoryCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ArticleSourceWebViewPage extends StatefulWidget {
-  const _ArticleSourceWebViewPage({required this.story, required this.uri});
-
-  final NewsArticle story;
-  final Uri uri;
-
-  @override
-  State<_ArticleSourceWebViewPage> createState() =>
-      _ArticleSourceWebViewPageState();
-}
-
-class _ArticleSourceWebViewPageState extends State<_ArticleSourceWebViewPage> {
-  late final WebViewController _controller;
-  int _progress = 0;
-  String? _errorMessage;
-  bool _didFinishMainPageLoad = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (progress) {
-            if (!mounted) {
-              return;
-            }
-            setState(() => _progress = progress);
-          },
-          onPageStarted: (_) {
-            if (!mounted) {
-              return;
-            }
-            setState(() {
-              _didFinishMainPageLoad = false;
-              _errorMessage = null;
-              _progress = 0;
-            });
-          },
-          onPageFinished: (_) {
-            if (!mounted) {
-              return;
-            }
-            setState(() {
-              _didFinishMainPageLoad = true;
-              _progress = 100;
-            });
-          },
-          onWebResourceError: (error) {
-            if (!mounted) {
-              return;
-            }
-            final dynamic details = error;
-            bool isMainFrame = false;
-            try {
-              isMainFrame = details.isForMainFrame == true;
-            } catch (_) {
-              isMainFrame = !_didFinishMainPageLoad;
-            }
-            if (!isMainFrame && _didFinishMainPageLoad) {
-              return;
-            }
-            setState(() {
-              _errorMessage =
-                  'We could not load this publisher page right now. Try again in a moment.';
-            });
-          },
-        ),
-      )
-      ..loadRequest(widget.uri);
-  }
-
-  String? _displaySummary(NewsArticle story) {
-    final summary = (story.summary ?? '').trim();
-    if (summary.isEmpty) {
-      return null;
-    }
-    final normalizedTitle = story.title
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-    final normalizedSummary = summary
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-    if (normalizedSummary.isEmpty || normalizedSummary == normalizedTitle) {
-      return null;
-    }
-    if (normalizedSummary.startsWith(normalizedTitle)) {
-      final remainder = normalizedSummary
-          .substring(normalizedTitle.length)
-          .trim();
-      if (remainder.isEmpty || remainder.length <= 16) {
-        return null;
-      }
-    }
-    return summary;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.story.source,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: _progress < 100
-              ? LinearProgressIndicator(value: _progress / 100)
-              : const SizedBox.shrink(),
-        ),
-        actions: [
-          AppIconButton(
-            icon: Icons.forum_outlined,
-            onPressed: () => context.push(
-              AppRouter.articleDiscussionPath(widget.story.id),
-              extra: widget.story,
-            ),
-            tooltip: 'Discussion',
-            semanticLabel: 'Open discussion',
-            style: AppIconButtonStyle.tonal,
-          ),
-          AppIconButton(
-            icon: Icons.refresh_rounded,
-            onPressed: () {
-              setState(() {
-                _errorMessage = null;
-                _progress = 0;
-              });
-              _controller.loadRequest(widget.uri);
-            },
-            tooltip: 'Reload',
-            semanticLabel: 'Reload article source',
-            style: AppIconButtonStyle.tonal,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.story.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                if (_displaySummary(widget.story)?.isNotEmpty ?? false) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    _displaySummary(widget.story)!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Expanded(
-            child: _errorMessage != null
-                ? _ArticleUnavailableView(
-                    message: _errorMessage!,
-                    actionLabel: 'Open in browser',
-                    onActionTap: () => openExternalLink(widget.uri.toString()),
-                  )
-                : WebViewWidget(controller: _controller),
-          ),
-        ],
       ),
     );
   }

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from uuid import uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import selectinload
 
@@ -54,6 +54,7 @@ from app.schemas.admin import (
     DashboardEditorialQueue,
     DashboardKpiItem,
     DashboardSummaryResponse,
+    WorkflowActivityListResponse,
     HomepageCategoryConfigItem,
     ArticleQueueSettingsConfigItem,
     ArticleQueueSettingsPatchRequest,
@@ -253,6 +254,90 @@ class AdminPlatformService:
                 ],
                 reported_comment_count=reported_comment_count or 0,
                 total_comment_count=total_comment_count or 0,
+            )
+
+    async def list_workflow_activity(
+        self,
+        *,
+        actor_user_id: str | None,
+        actor_query: str | None = None,
+        actor_role: str | None = None,
+        event_type: str | None = None,
+        date_from: datetime | None = None,
+        date_to: datetime | None = None,
+        offset: int = 0,
+        limit: int = 50,
+    ) -> WorkflowActivityListResponse:
+        normalized_actor_query = (actor_query or "").strip().lower()
+        normalized_role = self._normalize_role(actor_role)
+        normalized_event_type = self._normalize_workflow_event_type(event_type)
+
+        async with self._session_factory() as session:
+            await self._load_actor(session, actor_user_id, admin_only=False)
+
+            base_statement = select(ArticleWorkflowEventRecord).join(
+                UserRecord,
+                UserRecord.id == ArticleWorkflowEventRecord.actor_user_id,
+                isouter=True,
+            )
+
+            filters = []
+            if normalized_actor_query:
+                like_query = f"%{normalized_actor_query}%"
+                filters.append(
+                    or_(
+                        func.lower(
+                            func.coalesce(ArticleWorkflowEventRecord.actor_user_id, "")
+                        ).like(like_query),
+                        func.lower(func.coalesce(UserRecord.display_name, "")).like(
+                            like_query
+                        ),
+                        func.lower(func.coalesce(UserRecord.email, "")).like(like_query),
+                    )
+                )
+            if normalized_role is not None:
+                filters.append(
+                    func.lower(func.coalesce(UserRecord.role, "")) == normalized_role
+                )
+            if normalized_event_type is not None:
+                filters.append(
+                    func.lower(ArticleWorkflowEventRecord.event_type)
+                    == normalized_event_type
+                )
+            if date_from is not None:
+                filters.append(ArticleWorkflowEventRecord.created_at >= date_from)
+            if date_to is not None:
+                filters.append(ArticleWorkflowEventRecord.created_at <= date_to)
+
+            count_statement = select(func.count(ArticleWorkflowEventRecord.id)).select_from(
+                ArticleWorkflowEventRecord
+            ).join(
+                UserRecord,
+                UserRecord.id == ArticleWorkflowEventRecord.actor_user_id,
+                isouter=True,
+            )
+            if filters:
+                base_statement = base_statement.where(*filters)
+                count_statement = count_statement.where(*filters)
+
+            total = int(await session.scalar(count_statement) or 0)
+
+            result = await session.execute(
+                base_statement.options(
+                    selectinload(ArticleWorkflowEventRecord.article),
+                    selectinload(ArticleWorkflowEventRecord.actor),
+                )
+                .order_by(ArticleWorkflowEventRecord.created_at.desc())
+                .offset(max(offset, 0))
+                .limit(limit)
+            )
+
+            return WorkflowActivityListResponse(
+                generated_at=datetime.utcnow(),
+                items=[self._to_workflow_activity(row) for row in result.scalars().all()],
+                total=total,
+                offset=max(offset, 0),
+                limit=limit,
             )
 
     async def list_verification_articles(
@@ -1767,6 +1852,15 @@ class AdminPlatformService:
             raise AdminValidationError("Invalid user role.")
         return normalized
 
+    def _normalize_workflow_event_type(self, value: str | None) -> str | None:
+        if value is None or not value.strip():
+            return None
+        normalized = value.strip().lower()
+        allowed = {"submit", "approve", "publish", "reject", "archive", "restore"}
+        if normalized not in allowed:
+            raise AdminValidationError("Invalid workflow event type.")
+        return normalized
+
     def _describe_user_access_type(self, access_type: str) -> str:
         return {
             "stream_access": "stream access",
@@ -1796,6 +1890,7 @@ class AdminPlatformService:
             article_title=article_title,
             actor_user_id=row.actor_user_id,
             actor_name=actor_name,
+            actor_role=(row.actor.role if row.actor is not None else None),
             event_type=row.event_type,
             from_status=row.from_status,
             to_status=row.to_status,

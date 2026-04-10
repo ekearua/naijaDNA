@@ -37,7 +37,7 @@ class _AdminArticlesManagementPageState
         ),
         _ArticleQueueTabConfig(
           key: 'live',
-          label: 'Live',
+          label: 'Live / Published',
           statuses: <String>['published'],
           sort: 'published_desc',
         ),

@@ -5,3 +5,11 @@ Future<bool> openExternalLink(String url, {String target = '_blank'}) async {
   html.window.open(url, target);
   return true;
 }
+
+Future<bool> openInAppBrowserLink(
+  String url, {
+  String target = '_blank',
+}) async {
+  html.window.open(url, target);
+  return true;
+}

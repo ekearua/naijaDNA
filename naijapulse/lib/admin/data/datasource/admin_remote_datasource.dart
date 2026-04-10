@@ -11,6 +11,16 @@ import 'package:naijapulse/features/polls/data/models/poll_model.dart';
 abstract class AdminRemoteDataSource {
   Future<AdminDashboardSummaryModel> fetchDashboardSummary();
 
+  Future<AdminWorkflowActivityPageModel> fetchWorkflowActivityPage({
+    String? actor,
+    String? role,
+    String? eventType,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+    int offset,
+    int limit,
+  });
+
   Future<AdminVerificationDeskModel> fetchVerificationDesk({
     String? verificationStatus,
     String? articleStatus,
@@ -228,6 +238,32 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   Future<AdminDashboardSummaryModel> fetchDashboardSummary() async {
     final response = await _getAuthed('/admin/dashboard/summary');
     return AdminDashboardSummaryModel.fromJson(response);
+  }
+
+  @override
+  Future<AdminWorkflowActivityPageModel> fetchWorkflowActivityPage({
+    String? actor,
+    String? role,
+    String? eventType,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+    int offset = 0,
+    int limit = 50,
+  }) async {
+    final response = await _getAuthed(
+      '/admin/workflow-activity',
+      queryParameters: {
+        'offset': offset,
+        'limit': limit,
+        if (actor != null && actor.trim().isNotEmpty) 'actor': actor.trim(),
+        if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
+        if (eventType != null && eventType.trim().isNotEmpty)
+          'event_type': eventType.trim(),
+        if (dateFrom != null) 'date_from': dateFrom.toUtc().toIso8601String(),
+        if (dateTo != null) 'date_to': dateTo.toUtc().toIso8601String(),
+      },
+    );
+    return AdminWorkflowActivityPageModel.fromJson(response);
   }
 
   @override

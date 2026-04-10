@@ -28,11 +28,20 @@ class WorkflowActivityItem(BaseModel):
     article_title: str
     actor_user_id: Optional[str] = None
     actor_name: str
+    actor_role: Optional[str] = None
     event_type: str
     from_status: Optional[str] = None
     to_status: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
+
+
+class WorkflowActivityListResponse(BaseModel):
+    generated_at: datetime
+    items: List[WorkflowActivityItem] = Field(default_factory=list)
+    total: int = Field(default=0, ge=0)
+    offset: int = Field(default=0, ge=0)
+    limit: int = Field(default=50, ge=1)
 
 
 class SourceHealthItem(BaseModel):

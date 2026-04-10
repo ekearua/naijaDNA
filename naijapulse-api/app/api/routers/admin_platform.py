@@ -9,6 +9,7 @@ from app.schemas.admin import (
     AdminArticleQueueArchiveRunResponse,
     AdminArticleQueueSettingsResponse,
     AdminHomepageConfigResponse,
+    WorkflowActivityListResponse,
     AdminCreateSourceRequest,
     AdminNewsroomAccessRequestItem,
     AdminNewsroomAccessRequestsResponse,
@@ -236,6 +237,41 @@ async def get_dashboard_summary(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except AdminPermissionError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+
+
+@router.get("/workflow-activity", response_model=WorkflowActivityListResponse)
+async def list_workflow_activity(
+    x_user_id: str | None = Header(default=None),
+    actor: str | None = Query(default=None),
+    role: str | None = Query(default=None),
+    event_type: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+) -> WorkflowActivityListResponse:
+    try:
+        parsed_from = None if date_from is None else _parse_iso_datetime(date_from)
+        parsed_to = None if date_to is None else _parse_iso_datetime(date_to)
+        return await admin_platform_service.list_workflow_activity(
+            actor_user_id=x_user_id,
+            actor_query=actor,
+            actor_role=role,
+            event_type=event_type,
+            date_from=parsed_from,
+            date_to=parsed_to,
+            offset=offset,
+            limit=limit,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except AdminValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.get("/articles/{article_id}/detail", response_model=ArticleWorkflowHistoryResponse)

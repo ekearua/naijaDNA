@@ -5,3 +5,7 @@ import 'external_link_stub.dart'
 Future<bool> openExternalLink(String url, {String target = '_blank'}) {
   return external_link.openExternalLink(url, target: target);
 }
+
+Future<bool> openInAppBrowserLink(String url, {String target = '_blank'}) {
+  return external_link.openInAppBrowserLink(url, target: target);
+}

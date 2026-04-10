@@ -16,6 +16,7 @@ Thumbs.db
 *.env.local
 naijapulse-api/.env
 naijapulse-api/secrets/
+naijapulse-api/reports/
 
 # Python
 __pycache__/

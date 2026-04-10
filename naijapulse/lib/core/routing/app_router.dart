@@ -21,6 +21,7 @@ import 'package:naijapulse/admin/presentation/pages/admin_reset_password_page.da
 import 'package:naijapulse/admin/presentation/pages/admin_sources_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_users_page.dart';
 import 'package:naijapulse/admin/presentation/pages/admin_verification_page.dart';
+import 'package:naijapulse/admin/presentation/pages/admin_workflow_activity_page.dart';
 import 'package:naijapulse/core/connectivity/connectivity_cubit.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/exceptions.dart';
@@ -88,6 +89,7 @@ class AppRouter {
   static const String adminAnalyticsPath = '/admin/analytics';
   static const String adminVerificationPath = '/admin/verification';
   static const String adminHomepagePath = '/admin/homepage';
+  static const String adminWorkflowActivityPath = '/admin/workflow-activity';
   static const String adminSourcesPath = '/admin/sources';
   static const String adminUsersPath = '/admin/users';
   static const String adminArticleDetailPathTemplate =
@@ -389,6 +391,10 @@ class AppRouter {
         GoRoute(
           path: adminHomepagePath,
           builder: (context, state) => const AdminHomepagePage(),
+        ),
+        GoRoute(
+          path: adminWorkflowActivityPath,
+          builder: (context, state) => const AdminWorkflowActivityPage(),
         ),
         GoRoute(
           path: adminSourcesPath,

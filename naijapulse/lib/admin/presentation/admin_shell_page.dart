@@ -332,6 +332,11 @@ class _AdminShellPageState extends State<AdminShellPage> {
         path: AppRouter.adminHomepagePath,
       ),
       _AdminNavItem(
+        label: 'Workflow',
+        icon: Icons.history_rounded,
+        path: AppRouter.adminWorkflowActivityPath,
+      ),
+      _AdminNavItem(
         label: 'Live Updates',
         icon: Icons.timeline_rounded,
         path: AppRouter.adminLiveUpdatesPath,

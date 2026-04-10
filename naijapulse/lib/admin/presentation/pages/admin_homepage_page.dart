@@ -4,6 +4,7 @@ import 'package:naijapulse/admin/data/models/admin_models.dart';
 import 'package:naijapulse/admin/presentation/widgets/homepage_placement_dialog.dart';
 import 'package:naijapulse/core/di/injection_container.dart';
 import 'package:naijapulse/core/error/failures.dart';
+import 'package:naijapulse/features/news/data/datasource/remote/news_remote_datasource.dart';
 import 'package:naijapulse/features/news/data/models/homepage_content_model.dart';
 import 'package:naijapulse/features/news/data/models/news_article_model.dart';
 import 'package:naijapulse/features/news/domain/entities/news_article.dart';
@@ -18,6 +19,8 @@ class AdminHomepagePage extends StatefulWidget {
 class _AdminHomepagePageState extends State<AdminHomepagePage> {
   final AdminRemoteDataSource _remote =
       InjectionContainer.sl<AdminRemoteDataSource>();
+  final NewsRemoteDataSource _newsRemote =
+      InjectionContainer.sl<NewsRemoteDataSource>();
   bool _latestAutofillEnabled = true;
   bool _directGnewsTopPublishEnabled = false;
   bool _categoryAutofillEnabled = false;
@@ -50,6 +53,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       TextEditingController();
 
   AdminHomepageConfigModel? _config;
+  HomepageContentModel? _homepagePreview;
   List<NewsArticleModel>? _publishedStories;
   bool _loading = true;
   bool _saving = false;
@@ -86,12 +90,18 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
       _errorMessage = null;
     });
     try {
-      final config = await _remote.fetchHomepageConfig();
+      final results = await Future.wait<Object>([
+        _remote.fetchHomepageConfig(),
+        _newsRemote.fetchHomepageContent(),
+      ]);
+      final config = results[0] as AdminHomepageConfigModel;
+      final preview = results[1] as HomepageContentModel;
       if (!mounted) {
         return;
       }
       setState(() {
         _config = config;
+        _homepagePreview = preview;
         _latestAutofillEnabled = config.settings.latestAutofillEnabled;
         _directGnewsTopPublishEnabled =
             config.settings.directGnewsTopPublishEnabled;
@@ -145,11 +155,18 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     setState(() => _saving = true);
     try {
       final updated = await run();
+      HomepageContentModel? preview;
+      try {
+        preview = await _newsRemote.fetchHomepageContent();
+      } catch (_) {
+        preview = _homepagePreview;
+      }
       if (!mounted) {
         return;
       }
       setState(() {
         _config = updated;
+        _homepagePreview = preview;
         _latestAutofillEnabled = updated.settings.latestAutofillEnabled;
         _directGnewsTopPublishEnabled =
             updated.settings.directGnewsTopPublishEnabled;
@@ -268,30 +285,50 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
   bool _isStaleArticle(NewsArticle article, {DateTime? now}) {
     final current = now ?? DateTime.now();
     final age = current.difference(article.publishedAt);
-    final category = article.category.trim().toLowerCase();
-    Duration threshold;
-    if (category.contains('breaking')) {
-      threshold = const Duration(hours: 18);
-    } else if (category.contains('politic') || category.contains('election')) {
-      threshold = const Duration(hours: 48);
-    } else if (category.contains('business') ||
-        category.contains('econom') ||
-        category.contains('finance')) {
-      threshold = const Duration(hours: 48);
-    } else if (category.contains('sport')) {
-      threshold = const Duration(hours: 30);
-    } else if (category.contains('tech')) {
-      threshold = const Duration(hours: 72);
-    } else if (category.contains('entertain') ||
-        category.contains('music') ||
-        category.contains('lifestyle')) {
-      threshold = const Duration(hours: 72);
-    } else if (category.contains('opinion') || category.contains('analysis')) {
-      threshold = const Duration(days: 7);
-    } else {
-      threshold = const Duration(hours: 36);
-    }
+    final threshold = _staleWindowForCategory(article.category);
     return age > threshold;
+  }
+
+  Duration _staleWindowForCategory(String category) {
+    final settings = _config?.settings;
+    final normalized = category.trim().toLowerCase();
+    if (settings == null) {
+      return const Duration(hours: 36);
+    }
+    if (normalized.contains('breaking')) {
+      return Duration(hours: settings.staleBreakingHours);
+    }
+    if (normalized.contains('world') ||
+        normalized.contains('politic') ||
+        normalized.contains('election')) {
+      return Duration(hours: settings.staleWorldHours);
+    }
+    if (normalized.contains('business') ||
+        normalized.contains('econom') ||
+        normalized.contains('finance')) {
+      return Duration(hours: settings.staleBusinessHours);
+    }
+    if (normalized.contains('sport')) {
+      return Duration(hours: settings.staleSportsHours);
+    }
+    if (normalized.contains('tech')) {
+      return Duration(hours: settings.staleTechnologyHours);
+    }
+    if (normalized.contains('science')) {
+      return Duration(hours: settings.staleScienceHours);
+    }
+    if (normalized.contains('health')) {
+      return Duration(hours: settings.staleHealthHours);
+    }
+    if (normalized.contains('entertain') ||
+        normalized.contains('music') ||
+        normalized.contains('lifestyle')) {
+      return Duration(hours: settings.staleEntertainmentHours);
+    }
+    if (normalized.contains('opinion') || normalized.contains('analysis')) {
+      return Duration(hours: settings.staleOpinionHours);
+    }
+    return Duration(hours: settings.staleGeneralHours);
   }
 
   Future<void> _removeStalePlacements() async {
@@ -854,6 +891,27 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     );
   }
 
+  List<NewsArticleModel> _freshStories(Iterable<NewsArticleModel> stories) =>
+      stories.where((story) => !_isStaleArticle(story)).toList(growable: false);
+
+  List<AdminHomepagePlacementItemModel> _previewPlacementItems(
+    List<NewsArticleModel> stories, {
+    required String section,
+    String? targetKey,
+  }) => stories
+      .asMap()
+      .entries
+      .map(
+        (entry) => AdminHomepagePlacementItemModel(
+          articleId: entry.value.id,
+          section: section,
+          targetKey: targetKey,
+          position: entry.key,
+          enabled: true,
+        ),
+      )
+      .toList(growable: false);
+
   @override
   Widget build(BuildContext context) {
     if (_loading && _config == null) {
@@ -869,6 +927,7 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
     }
 
     final config = _config;
+    final preview = _homepagePreview;
     if (config == null) {
       return _StateCard(
         title: 'Homepage configuration unavailable',
@@ -1231,16 +1290,82 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                   ),
           ),
           const SizedBox(height: 18),
+          if (preview != null) ...[
+            _PlacementBucket(
+              title: 'Client Top Stories',
+              subtitle:
+                  'This is the live homepage top-stories output after publish, auto-fill, dedupe, and stale filtering.',
+              items: _previewPlacementItems(
+                _freshStories(preview.topStories),
+                section: 'top',
+              ),
+              articleLookup: {
+                for (final item in _freshStories(preview.topStories))
+                  item.id: item,
+              },
+              onMoveUp: null,
+              onMoveDown: null,
+              onRemove: null,
+              readOnly: true,
+              emptyMessage: 'No live top stories are currently surfacing.',
+            ),
+            const SizedBox(height: 18),
+            _PlacementBucket(
+              title: 'Client Latest Stories',
+              subtitle:
+                  'This is the live latest rail the Flutter client receives, ordered and filtered the same way as the public homepage.',
+              items: _previewPlacementItems(
+                _freshStories(preview.latestStories),
+                section: 'latest',
+              ),
+              articleLookup: {
+                for (final item in _freshStories(preview.latestStories))
+                  item.id: item,
+              },
+              onMoveUp: null,
+              onMoveDown: null,
+              onRemove: null,
+              readOnly: true,
+              emptyMessage: 'No live latest stories are currently surfacing.',
+            ),
+            const SizedBox(height: 18),
+            ...preview.categories.map((section) {
+              final items = _freshStories(section.items);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: _PlacementBucket(
+                  title: 'Client ${section.label}',
+                  subtitle:
+                      'Stories currently visible in the ${section.label} homepage section after stale filtering.',
+                  items: _previewPlacementItems(
+                    items,
+                    section: 'category',
+                    targetKey: section.key,
+                  ),
+                  articleLookup: {for (final item in items) item.id: item},
+                  onMoveUp: null,
+                  onMoveDown: null,
+                  onRemove: null,
+                  readOnly: true,
+                  emptyMessage:
+                      'No live stories are currently surfacing in ${section.label}.',
+                ),
+              );
+            }),
+          ],
           _PlacementBucket(
-            title: 'Top Stories',
-            subtitle: 'Manual-first lead stories.',
+            title: 'Manual Top Placements',
+            subtitle: 'Editor-curated placements that can feed the top rail.',
             onAdd: _saving ? null : () => _addPlacements(section: 'top'),
-            items: config.topStories
-                .map((item) => item.toPatchItem())
-                .toList(growable: false),
+            items: _previewPlacementItems(
+              _freshStories(config.topStories.map((item) => item.article)),
+              section: 'top',
+            ),
             articleLookup: {
-              for (final item in config.topStories)
-                item.article.id: item.article,
+              for (final item in _freshStories(
+                config.topStories.map((entry) => entry.article),
+              ))
+                item.id: item,
             },
             onMoveUp: _saving ? null : (item) => _movePlacement(item, -1),
             onMoveDown: _saving ? null : (item) => _movePlacement(item, 1),
@@ -1257,18 +1382,24 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                         .toList(growable: false),
                     message: 'Homepage placement removed.',
                   ),
+            emptyMessage:
+                'No fresh manual top placements are currently available.',
           ),
           const SizedBox(height: 18),
           _PlacementBucket(
-            title: 'Latest Stories',
-            subtitle: 'Manual-first latest rail.',
+            title: 'Manual Latest Placements',
+            subtitle:
+                'Editor-curated placements that can feed the latest rail.',
             onAdd: _saving ? null : () => _addPlacements(section: 'latest'),
-            items: config.latestStories
-                .map((item) => item.toPatchItem())
-                .toList(growable: false),
+            items: _previewPlacementItems(
+              _freshStories(config.latestStories.map((item) => item.article)),
+              section: 'latest',
+            ),
             articleLookup: {
-              for (final item in config.latestStories)
-                item.article.id: item.article,
+              for (final item in _freshStories(
+                config.latestStories.map((entry) => entry.article),
+              ))
+                item.id: item,
             },
             onMoveUp: _saving ? null : (item) => _movePlacement(item, -1),
             onMoveDown: _saving ? null : (item) => _movePlacement(item, 1),
@@ -1285,6 +1416,8 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
                         .toList(growable: false),
                     message: 'Homepage placement removed.',
                   ),
+            emptyMessage:
+                'No fresh manual latest placements are currently available.',
           ),
           const SizedBox(height: 18),
           ...config.categories.map((category) {
@@ -1292,30 +1425,23 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 18),
               child: _PlacementBucket(
-                title: section.label,
+                title: 'Manual ${section.label}',
                 subtitle:
-                    'Stories shown when this homepage category is selected.',
+                    'Editor-curated placements that can feed the ${section.label} homepage section.',
                 onAdd: _saving
                     ? null
                     : () => _addPlacements(
                         section: 'category',
                         targetKey: section.key,
                       ),
-                items: section.items
-                    .asMap()
-                    .entries
-                    .map(
-                      (entry) => AdminHomepagePlacementItemModel(
-                        articleId: entry.value.id,
-                        section: 'category',
-                        targetKey: section.key,
-                        position: entry.key,
-                        enabled: true,
-                      ),
-                    )
-                    .toList(growable: false),
+                items: _previewPlacementItems(
+                  _freshStories(section.items),
+                  section: 'category',
+                  targetKey: section.key,
+                ),
                 articleLookup: {
-                  for (final item in section.items) item.id: item,
+                  for (final item in _freshStories(section.items))
+                    item.id: item,
                 },
                 onMoveUp: _saving ? null : (item) => _movePlacement(item, -1),
                 onMoveDown: _saving ? null : (item) => _movePlacement(item, 1),
@@ -1340,29 +1466,23 @@ class _AdminHomepagePageState extends State<AdminHomepagePage> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 18),
               child: _PlacementBucket(
-                title: section.label,
-                subtitle: 'Stories shown when this homepage chip is selected.',
+                title: 'Manual ${section.label}',
+                subtitle:
+                    'Editor-curated placements that can feed the ${section.label} chip section.',
                 onAdd: _saving
                     ? null
                     : () => _addPlacements(
                         section: 'secondary_chip',
                         targetKey: section.key,
                       ),
-                items: section.items
-                    .asMap()
-                    .entries
-                    .map(
-                      (entry) => AdminHomepagePlacementItemModel(
-                        articleId: entry.value.id,
-                        section: 'secondary_chip',
-                        targetKey: section.key,
-                        position: entry.key,
-                        enabled: true,
-                      ),
-                    )
-                    .toList(growable: false),
+                items: _previewPlacementItems(
+                  _freshStories(section.items),
+                  section: 'secondary_chip',
+                  targetKey: section.key,
+                ),
                 articleLookup: {
-                  for (final item in section.items) item.id: item,
+                  for (final item in _freshStories(section.items))
+                    item.id: item,
                 },
                 onMoveUp: _saving ? null : (item) => _movePlacement(item, -1),
                 onMoveDown: _saving ? null : (item) => _movePlacement(item, 1),
@@ -1465,6 +1585,8 @@ class _PlacementBucket extends StatelessWidget {
     required this.onMoveDown,
     required this.onRemove,
     this.onAdd,
+    this.readOnly = false,
+    this.emptyMessage = 'Nothing is curated here yet.',
   });
 
   final String title;
@@ -1475,16 +1597,18 @@ class _PlacementBucket extends StatelessWidget {
   final ValueChanged<AdminHomepagePlacementItemModel>? onMoveDown;
   final ValueChanged<AdminHomepagePlacementItemModel>? onRemove;
   final VoidCallback? onAdd;
+  final bool readOnly;
+  final String emptyMessage;
 
   @override
   Widget build(BuildContext context) {
     return _BucketCard(
       title: title,
       subtitle: subtitle,
-      actionLabel: 'Add stories',
-      onActionPressed: onAdd,
+      actionLabel: readOnly ? null : 'Add stories',
+      onActionPressed: readOnly ? null : onAdd,
       child: items.isEmpty
-          ? const _EmptyBucket(message: 'Nothing is curated here yet.')
+          ? _EmptyBucket(message: emptyMessage)
           : Column(
               children: items
                   .asMap()
@@ -1539,26 +1663,30 @@ class _PlacementBucket extends StatelessWidget {
                               ],
                             ),
                           ),
-                          IconButton(
-                            onPressed: onMoveUp == null || entry.key == 0
-                                ? null
-                                : () => onMoveUp!(item),
-                            icon: const Icon(Icons.keyboard_arrow_up_rounded),
-                          ),
-                          IconButton(
-                            onPressed:
-                                onMoveDown == null ||
-                                    entry.key == items.length - 1
-                                ? null
-                                : () => onMoveDown!(item),
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          ),
-                          IconButton(
-                            onPressed: onRemove == null
-                                ? null
-                                : () => onRemove!(item),
-                            icon: const Icon(Icons.delete_outline_rounded),
-                          ),
+                          if (!readOnly) ...[
+                            IconButton(
+                              onPressed: onMoveUp == null || entry.key == 0
+                                  ? null
+                                  : () => onMoveUp!(item),
+                              icon: const Icon(Icons.keyboard_arrow_up_rounded),
+                            ),
+                            IconButton(
+                              onPressed:
+                                  onMoveDown == null ||
+                                      entry.key == items.length - 1
+                                  ? null
+                                  : () => onMoveDown!(item),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: onRemove == null
+                                  ? null
+                                  : () => onRemove!(item),
+                              icon: const Icon(Icons.delete_outline_rounded),
+                            ),
+                          ],
                         ],
                       ),
                     );
