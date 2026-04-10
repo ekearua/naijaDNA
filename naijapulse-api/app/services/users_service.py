@@ -680,9 +680,11 @@ class UsersService:
     def _normalize_reset_path(self, value: str | None) -> str:
         candidate = (value or "").strip()
         if not candidate:
-            return "/auth/reset-password"
+            return "/recovery/reset-password"
         if not candidate.startswith("/"):
             raise InvalidUserPayloadError("reset_path must start with '/'.")
+        if candidate == "/auth/reset-password":
+            return "/recovery/reset-password"
         return candidate
 
     def _build_password_reset_url(self, *, reset_path: str, token: str) -> str:

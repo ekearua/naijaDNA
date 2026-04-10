@@ -41,7 +41,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       final response = await _remote.requestPasswordReset(
         email: _emailController.text.trim(),
-        resetPath: AppRouter.resetPasswordPath,
+        resetPath: AppRouter.clientRecoveryResetPasswordPath,
       );
       if (!mounted) {
         return;

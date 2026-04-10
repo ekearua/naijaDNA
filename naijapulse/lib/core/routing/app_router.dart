@@ -78,6 +78,10 @@ class AppRouter {
   static const String adminLoginPath = '/admin/login';
   static const String adminForgotPasswordPath = '/admin/forgot-password';
   static const String adminResetPasswordPath = '/admin/reset-password';
+  static const String clientRecoveryForgotPasswordPath =
+      '/recovery/forgot-password';
+  static const String clientRecoveryResetPasswordPath =
+      '/recovery/reset-password';
   static const String adminRequestAccessPath = '/admin/request-access';
   static const String adminDashboardPath = '/admin/dashboard';
   static const String adminArticlesPath = '/admin/articles';
@@ -197,7 +201,16 @@ class AppRouter {
       builder: (context, state) => const ForgotPasswordPage(),
     ),
     GoRoute(
+      path: clientRecoveryForgotPasswordPath,
+      builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    GoRoute(
       path: resetPasswordPath,
+      builder: (context, state) =>
+          ResetPasswordPage(initialToken: state.uri.queryParameters['token']),
+    ),
+    GoRoute(
+      path: clientRecoveryResetPasswordPath,
       builder: (context, state) =>
           ResetPasswordPage(initialToken: state.uri.queryParameters['token']),
     ),
@@ -320,7 +333,20 @@ class AppRouter {
           const _StandaloneAuthScope(child: ForgotPasswordPage()),
     ),
     GoRoute(
+      path: clientRecoveryForgotPasswordPath,
+      builder: (context, state) =>
+          const _StandaloneAuthScope(child: ForgotPasswordPage()),
+    ),
+    GoRoute(
       path: resetPasswordPath,
+      builder: (context, state) => _StandaloneAuthScope(
+        child: ResetPasswordPage(
+          initialToken: state.uri.queryParameters['token'],
+        ),
+      ),
+    ),
+    GoRoute(
+      path: clientRecoveryResetPasswordPath,
       builder: (context, state) => _StandaloneAuthScope(
         child: ResetPasswordPage(
           initialToken: state.uri.queryParameters['token'],

@@ -254,7 +254,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
           const SizedBox(height: 16),
           TextButton.icon(
-            onPressed: () => context.go(AppRouter.forgotPasswordPath),
+            onPressed: () =>
+                context.go(AppRouter.clientRecoveryForgotPasswordPath),
             icon: const Icon(Icons.arrow_back_rounded),
             label: const Text('Back to recovery'),
           ),
