@@ -164,6 +164,18 @@ async def lifespan(app: FastAPI):
             coalesce=True,
             misfire_grace_time=60,
         )
+    if settings.article_queue_archive_job_interval_seconds > 0:
+        scheduler.add_job(
+            app.state.news_service.auto_archive_stale_queue_items,
+            trigger="interval",
+            seconds=settings.article_queue_archive_job_interval_seconds,
+            id="article_queue_auto_archive_job",
+            replace_existing=True,
+            max_instances=1,
+            coalesce=True,
+            misfire_grace_time=60,
+        )
+    if settings.enable_ingestion_scheduler or settings.article_queue_archive_job_interval_seconds > 0:
         scheduler.start()
 
     yield

@@ -309,6 +309,16 @@ class HomepageSettingsConfigItem(BaseModel):
     direct_gnews_top_publish_enabled: bool = False
     category_autofill_enabled: bool = False
     category_window_hours: int = Field(default=12, ge=1, le=168)
+    stale_general_hours: int = Field(default=36, ge=1, le=720)
+    stale_world_hours: int = Field(default=48, ge=1, le=720)
+    stale_business_hours: int = Field(default=48, ge=1, le=720)
+    stale_technology_hours: int = Field(default=72, ge=1, le=720)
+    stale_entertainment_hours: int = Field(default=72, ge=1, le=720)
+    stale_science_hours: int = Field(default=72, ge=1, le=720)
+    stale_sports_hours: int = Field(default=30, ge=1, le=720)
+    stale_health_hours: int = Field(default=72, ge=1, le=720)
+    stale_breaking_hours: int = Field(default=18, ge=1, le=720)
+    stale_opinion_hours: int = Field(default=168, ge=1, le=720)
 
 
 class HomepageSettingsPatchRequest(BaseModel):
@@ -319,6 +329,16 @@ class HomepageSettingsPatchRequest(BaseModel):
     direct_gnews_top_publish_enabled: bool = False
     category_autofill_enabled: bool = False
     category_window_hours: int = Field(..., ge=1, le=168)
+    stale_general_hours: int = Field(..., ge=1, le=720)
+    stale_world_hours: int = Field(..., ge=1, le=720)
+    stale_business_hours: int = Field(..., ge=1, le=720)
+    stale_technology_hours: int = Field(..., ge=1, le=720)
+    stale_entertainment_hours: int = Field(..., ge=1, le=720)
+    stale_science_hours: int = Field(..., ge=1, le=720)
+    stale_sports_hours: int = Field(..., ge=1, le=720)
+    stale_health_hours: int = Field(..., ge=1, le=720)
+    stale_breaking_hours: int = Field(..., ge=1, le=720)
+    stale_opinion_hours: int = Field(..., ge=1, le=720)
 
 
 class AdminHomepageConfigResponse(BaseModel):
@@ -330,3 +350,39 @@ class AdminHomepageConfigResponse(BaseModel):
     latest_stories: List[HomepageStoryPlacementDetail] = Field(default_factory=list)
     category_sections: List[HomepageCategoryFeed] = Field(default_factory=list)
     secondary_chip_sections: List[HomepageSecondaryChipFeed] = Field(default_factory=list)
+
+
+class ArticleQueueSettingsConfigItem(BaseModel):
+    auto_archive_enabled: bool = True
+    archive_draft_after_days: int = Field(default=30, ge=1, le=365)
+    archive_review_after_days: int = Field(default=14, ge=1, le=365)
+    archive_rejected_after_days: int = Field(default=14, ge=1, le=365)
+
+
+class ArticleQueueSettingsPatchRequest(BaseModel):
+    auto_archive_enabled: bool = True
+    archive_draft_after_days: int = Field(..., ge=1, le=365)
+    archive_review_after_days: int = Field(..., ge=1, le=365)
+    archive_rejected_after_days: int = Field(..., ge=1, le=365)
+
+
+class ArticleQueueStatusCounts(BaseModel):
+    draft: int = Field(default=0, ge=0)
+    submitted: int = Field(default=0, ge=0)
+    in_review: int = Field(default=0, ge=0)
+    approved: int = Field(default=0, ge=0)
+    published: int = Field(default=0, ge=0)
+    rejected: int = Field(default=0, ge=0)
+    archived: int = Field(default=0, ge=0)
+
+
+class AdminArticleQueueSettingsResponse(BaseModel):
+    generated_at: datetime
+    settings: ArticleQueueSettingsConfigItem
+    counts: ArticleQueueStatusCounts
+
+
+class AdminArticleQueueArchiveRunResponse(BaseModel):
+    generated_at: datetime
+    archived_count: int = Field(default=0, ge=0)
+    counts: ArticleQueueStatusCounts

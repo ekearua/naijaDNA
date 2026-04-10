@@ -97,6 +97,7 @@ class _AdminArticlesManagementPageState
   bool _settingsSaving = false;
   bool _runningArchiveNow = false;
   bool _autoArchiveEnabled = true;
+  String? _queueSettingsNotice;
   String? _errorMessage;
 
   @override
@@ -134,13 +135,12 @@ class _AdminArticlesManagementPageState
       if (!mounted) {
         return;
       }
-      final names =
-          items
-              .map((item) => item.name.trim())
-              .where((item) => item.isNotEmpty)
-              .toSet()
-              .toList()
-            ..sort();
+      final names = <String>{
+        ...items
+            .map((item) => item.name.trim())
+            .where((item) => item.isNotEmpty),
+        ...items.map((item) => item.id.trim()).where((item) => item.isNotEmpty),
+      }.toList()..sort();
       setState(() => _availableSources = names);
     } catch (_) {
       // Keep queue usable even if source metadata cannot be loaded.
@@ -161,6 +161,7 @@ class _AdminArticlesManagementPageState
       setState(() {
         _autoArchiveEnabled = response.settings.autoArchiveEnabled;
         _queueCounts = response.counts;
+        _queueSettingsNotice = null;
         _draftArchiveController.text = response.settings.archiveDraftAfterDays
             .toString();
         _reviewArchiveController.text = response.settings.archiveReviewAfterDays
@@ -170,13 +171,70 @@ class _AdminArticlesManagementPageState
             .archiveRejectedAfterDays
             .toString();
       });
-    } catch (_) {
-      // Keep the queue usable even if settings fail to load.
+    } catch (error) {
+      final failure = mapFailure(error);
+      AdminArticleQueueCountsModel? fallbackCounts;
+      try {
+        fallbackCounts = await _loadQueueCountsFallback();
+      } catch (_) {
+        fallbackCounts = null;
+      }
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        if (fallbackCounts != null) {
+          _queueCounts = fallbackCounts;
+        }
+        _queueSettingsNotice =
+            failure is ServerFailure && failure.statusCode == 404
+            ? 'Queue policy controls need the latest backend deploy. Counts below are using article-list fallbacks for now.'
+            : failure.message;
+      });
     } finally {
       if (mounted) {
         setState(() => _settingsLoading = false);
       }
     }
+  }
+
+  Future<AdminArticleQueueCountsModel> _loadQueueCountsFallback() async {
+    Future<int> fetchStatusTotal(String status) async {
+      final page = await _remote.fetchAdminArticlesPage(
+        status: status,
+        offset: 0,
+        limit: 1,
+      );
+      return page.total;
+    }
+
+    final counts = await Future.wait<int>([
+      fetchStatusTotal('draft'),
+      fetchStatusTotal('submitted'),
+      fetchStatusTotal('in_review'),
+      fetchStatusTotal('approved'),
+      fetchStatusTotal('published'),
+      fetchStatusTotal('rejected'),
+      fetchStatusTotal('archived'),
+    ]);
+
+    return AdminArticleQueueCountsModel(
+      draft: counts[0],
+      submitted: counts[1],
+      inReview: counts[2],
+      approved: counts[3],
+      published: counts[4],
+      rejected: counts[5],
+      archived: counts[6],
+    );
+  }
+
+  String _queueSettingsFailureMessage(Object error) {
+    final failure = mapFailure(error);
+    if (failure is ServerFailure && failure.statusCode == 404) {
+      return 'Queue policy controls are not available on the current backend deploy yet. Redeploy the backend, then try again.';
+    }
+    return failure.message;
   }
 
   Future<void> _saveQueueSettings() async {
@@ -227,9 +285,9 @@ class _AdminArticlesManagementPageState
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_queueSettingsFailureMessage(error))),
+      );
     } finally {
       if (mounted) {
         setState(() => _settingsSaving = false);
@@ -263,9 +321,9 @@ class _AdminArticlesManagementPageState
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(mapFailure(error).message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_queueSettingsFailureMessage(error))),
+      );
     } finally {
       if (mounted) {
         setState(() => _runningArchiveNow = false);
@@ -281,7 +339,10 @@ class _AdminArticlesManagementPageState
     try {
       final selectedTab = _selectedTab;
       final page = await _remote.fetchAdminArticlesPage(
-        statuses: selectedTab.statuses.isEmpty ? null : selectedTab.statuses,
+        status: selectedTab.statuses.length == 1
+            ? selectedTab.statuses.first
+            : null,
+        statuses: selectedTab.statuses.length > 1 ? selectedTab.statuses : null,
         query: _searchController.text,
         source: _selectedSource,
         tag: _tagController.text,
@@ -520,6 +581,35 @@ class _AdminArticlesManagementPageState
             onSave: _saveQueueSettings,
             onRunNow: _runArchiveNow,
           ),
+          if (_queueSettingsNotice != null) ...[
+            const SizedBox(height: 12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF7E8),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE0C98F)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _queueSettingsNotice!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF6A5431),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 18),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,

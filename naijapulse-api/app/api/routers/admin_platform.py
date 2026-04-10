@@ -6,6 +6,8 @@ from app.api.deps import (
     get_response_cache_service,
 )
 from app.schemas.admin import (
+    AdminArticleQueueArchiveRunResponse,
+    AdminArticleQueueSettingsResponse,
     AdminHomepageConfigResponse,
     AdminCreateSourceRequest,
     AdminNewsroomAccessRequestItem,
@@ -22,6 +24,7 @@ from app.schemas.admin import (
     ArticleWorkflowHistoryResponse,
     CacheDiagnosticsResponse,
     DashboardSummaryResponse,
+    ArticleQueueSettingsPatchRequest,
     HomepageCategoryPatchRequest,
     HomepagePlacementPatchRequest,
     HomepageSettingsPatchRequest,
@@ -44,6 +47,64 @@ from app.services.news_service import NewsArticleNotFoundError
 from app.services.response_cache_service import ResponseCacheService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.get("/article-queue/settings", response_model=AdminArticleQueueSettingsResponse)
+async def get_admin_article_queue_settings(
+    x_user_id: str | None = Header(default=None),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+) -> AdminArticleQueueSettingsResponse:
+    try:
+        return await admin_platform_service.get_article_queue_settings(
+            actor_user_id=x_user_id,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+
+
+@router.patch("/article-queue/settings", response_model=AdminArticleQueueSettingsResponse)
+async def update_admin_article_queue_settings(
+    payload: ArticleQueueSettingsPatchRequest,
+    x_user_id: str | None = Header(default=None),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+) -> AdminArticleQueueSettingsResponse:
+    try:
+        return await admin_platform_service.update_article_queue_settings(
+            actor_user_id=x_user_id,
+            payload=payload,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    except AdminValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.post(
+    "/article-queue/run-auto-archive",
+    response_model=AdminArticleQueueArchiveRunResponse,
+)
+async def run_admin_article_queue_auto_archive(
+    x_user_id: str | None = Header(default=None),
+    admin_platform_service: AdminPlatformService = Depends(get_admin_platform_service),
+) -> AdminArticleQueueArchiveRunResponse:
+    try:
+        return await admin_platform_service.run_article_queue_auto_archive(
+            actor_user_id=x_user_id,
+        )
+    except MissingAdminContextError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+    except AdminEntityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except AdminPermissionError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
 
 
 @router.get("/homepage", response_model=AdminHomepageConfigResponse)

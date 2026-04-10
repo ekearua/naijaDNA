@@ -99,7 +99,7 @@ class GNewsNewsSourceAdapter:
         page_size: int,
     ) -> dict:
         params = {
-            "token": self._api_key,
+            "apikey": self._api_key,
             "country": "ng",
             "lang": "en",
             "category": category,

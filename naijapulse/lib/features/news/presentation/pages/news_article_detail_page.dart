@@ -501,13 +501,26 @@ class _ArticleDetailScaffold extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: () => context.push(
                     AppRouter.articleDiscussionPath(story.id),
                     extra: story,
                   ),
-                  icon: const Icon(Icons.forum_outlined),
-                  label: Text('Discuss ${story.commentCount ?? 0}'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.forum_outlined),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'Discuss ${story.commentCount ?? 0}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: false,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -975,6 +988,7 @@ class _ActionPills extends StatelessWidget {
           selected: true,
           selectedColor: mutedBackground,
           selectedForegroundColor: mutedForeground,
+          textMaxLines: 1,
           onTap: onDiscuss,
         ),
         AppActionChip(

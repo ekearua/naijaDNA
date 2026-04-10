@@ -331,6 +331,12 @@ class _NewsHomePageState extends State<NewsHomePage> {
         .toList(growable: false);
   }
 
+  List<NewsArticle> _sortStoriesNewestFirst(List<NewsArticle> stories) {
+    final sorted = stories.toList(growable: true);
+    sorted.sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+    return sorted;
+  }
+
   List<Widget> _buildCategorySectionWidgets(
     HomepageCategoryFeedModel categorySection,
   ) {
@@ -383,15 +389,16 @@ class _NewsHomePageState extends State<NewsHomePage> {
             )
         ? _selectedCategoryFilter
         : null;
-    final latestStories = _filterStoriesByCategory(
-      unfilteredLatestStories,
-      selectedCategoryFilter,
+    final latestStories = _sortStoriesNewestFirst(
+      _filterStoriesByCategory(unfilteredLatestStories, selectedCategoryFilter),
     );
     final latestStoriesArePersonalized =
         isSignedIn && personalizedLatestStories.isNotEmpty;
-    final topStories = _filterStoriesByCategory(
-      homepage?.topStories.toList(growable: false) ?? const <NewsArticle>[],
-      selectedCategoryFilter,
+    final topStories = _sortStoriesNewestFirst(
+      _filterStoriesByCategory(
+        homepage?.topStories.toList(growable: false) ?? const <NewsArticle>[],
+        selectedCategoryFilter,
+      ),
     );
     final topStoryIds = topStories.map((story) => story.id).toSet();
     final dedupedLatestStories = _excludeStoriesById(

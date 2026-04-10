@@ -134,6 +134,7 @@ class AdminUpdateNewsArticleRequest(BaseModel):
 
 class AdminArticleWorkflowRequest(BaseModel):
     notes: Optional[str] = Field(default=None, max_length=5000)
+    target_status: Optional[str] = Field(default=None, min_length=4, max_length=32)
 
 
 class NewsReadableTextResponse(BaseModel):

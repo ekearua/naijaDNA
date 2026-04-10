@@ -13,6 +13,7 @@ from sqlalchemy.orm import selectinload
 from app.core.config import Settings, get_settings
 from app.db.models import (
     AdminAccessRequestRecord,
+    ArticleQueueSettingsRecord,
     ArticleCommentRecord,
     ArticleWorkflowEventRecord,
     CommentReportRecord,
@@ -29,6 +30,8 @@ from app.db.models import (
 )
 from app.schemas.admin import (
     AdminHomepageConfigResponse,
+    AdminArticleQueueSettingsResponse,
+    AdminArticleQueueArchiveRunResponse,
     AdminCreateSourceRequest,
     AdminNewsroomAccessRequestItem,
     AdminNewsroomAccessRequestsResponse,
@@ -52,6 +55,9 @@ from app.schemas.admin import (
     DashboardKpiItem,
     DashboardSummaryResponse,
     HomepageCategoryConfigItem,
+    ArticleQueueSettingsConfigItem,
+    ArticleQueueSettingsPatchRequest,
+    ArticleQueueStatusCounts,
     HomepageCategoryPatchRequest,
     HomepagePlacementPatchRequest,
     HomepageSettingsConfigItem,
@@ -1029,6 +1035,16 @@ class AdminPlatformService:
                 direct_gnews_top_publish_enabled=settings_record.direct_gnews_top_publish_enabled,
                 category_autofill_enabled=settings_record.category_autofill_enabled,
                 category_window_hours=settings_record.category_window_hours,
+                stale_general_hours=settings_record.stale_general_hours,
+                stale_world_hours=settings_record.stale_world_hours,
+                stale_business_hours=settings_record.stale_business_hours,
+                stale_technology_hours=settings_record.stale_technology_hours,
+                stale_entertainment_hours=settings_record.stale_entertainment_hours,
+                stale_science_hours=settings_record.stale_science_hours,
+                stale_sports_hours=settings_record.stale_sports_hours,
+                stale_health_hours=settings_record.stale_health_hours,
+                stale_breaking_hours=settings_record.stale_breaking_hours,
+                stale_opinion_hours=settings_record.stale_opinion_hours,
             ),
             categories=[
                 HomepageCategoryConfigItem(
@@ -1082,6 +1098,66 @@ class AdminPlatformService:
             ],
         )
 
+    async def get_article_queue_settings(
+        self,
+        *,
+        actor_user_id: str | None,
+    ) -> AdminArticleQueueSettingsResponse:
+        async with self._session_factory() as session:
+            await self._load_actor(session, actor_user_id, admin_only=False)
+            settings_record = await self._load_article_queue_settings(session)
+            status_counts = await self._article_status_counts(session)
+
+        return AdminArticleQueueSettingsResponse(
+            generated_at=datetime.utcnow(),
+            settings=ArticleQueueSettingsConfigItem(
+                auto_archive_enabled=settings_record.auto_archive_enabled,
+                archive_draft_after_days=settings_record.archive_draft_after_days,
+                archive_review_after_days=settings_record.archive_review_after_days,
+                archive_rejected_after_days=settings_record.archive_rejected_after_days,
+            ),
+            counts=self._to_article_queue_status_counts(status_counts),
+        )
+
+    async def update_article_queue_settings(
+        self,
+        *,
+        actor_user_id: str | None,
+        payload: ArticleQueueSettingsPatchRequest,
+    ) -> AdminArticleQueueSettingsResponse:
+        async with self._session_factory() as session:
+            await self._load_actor(session, actor_user_id, admin_only=False)
+            settings_record = await self._load_article_queue_settings(session)
+            settings_record.auto_archive_enabled = payload.auto_archive_enabled
+            settings_record.archive_draft_after_days = payload.archive_draft_after_days
+            settings_record.archive_review_after_days = payload.archive_review_after_days
+            settings_record.archive_rejected_after_days = (
+                payload.archive_rejected_after_days
+            )
+            settings_record.updated_at = datetime.utcnow()
+            await session.commit()
+
+        return await self.get_article_queue_settings(actor_user_id=actor_user_id)
+
+    async def run_article_queue_auto_archive(
+        self,
+        *,
+        actor_user_id: str | None,
+    ) -> AdminArticleQueueArchiveRunResponse:
+        async with self._session_factory() as session:
+            await self._load_actor(session, actor_user_id, admin_only=False)
+
+        archived_count = await self._news_service.auto_archive_stale_queue_items()
+
+        async with self._session_factory() as session:
+            status_counts = await self._article_status_counts(session)
+
+        return AdminArticleQueueArchiveRunResponse(
+            generated_at=datetime.utcnow(),
+            archived_count=archived_count,
+            counts=self._to_article_queue_status_counts(status_counts),
+        )
+
     async def update_homepage_settings(
         self,
         *,
@@ -1103,6 +1179,18 @@ class AdminPlatformService:
             )
             settings_record.category_autofill_enabled = payload.category_autofill_enabled
             settings_record.category_window_hours = payload.category_window_hours
+            settings_record.stale_general_hours = payload.stale_general_hours
+            settings_record.stale_world_hours = payload.stale_world_hours
+            settings_record.stale_business_hours = payload.stale_business_hours
+            settings_record.stale_technology_hours = payload.stale_technology_hours
+            settings_record.stale_entertainment_hours = (
+                payload.stale_entertainment_hours
+            )
+            settings_record.stale_science_hours = payload.stale_science_hours
+            settings_record.stale_sports_hours = payload.stale_sports_hours
+            settings_record.stale_health_hours = payload.stale_health_hours
+            settings_record.stale_breaking_hours = payload.stale_breaking_hours
+            settings_record.stale_opinion_hours = payload.stale_opinion_hours
             settings_record.updated_at = datetime.utcnow()
             await session.commit()
 
@@ -1219,6 +1307,20 @@ class AdminPlatformService:
         )
         return {status: count for status, count in result.all()}
 
+    def _to_article_queue_status_counts(
+        self,
+        counts: dict[str, int],
+    ) -> ArticleQueueStatusCounts:
+        return ArticleQueueStatusCounts(
+            draft=counts.get("draft", 0),
+            submitted=counts.get("submitted", 0),
+            in_review=counts.get("in_review", 0),
+            approved=counts.get("approved", 0),
+            published=counts.get("published", 0),
+            rejected=counts.get("rejected", 0),
+            archived=counts.get("archived", 0),
+        )
+
     async def _load_homepage_categories(
         self,
         session: AsyncSession,
@@ -1256,6 +1358,53 @@ class AdminPlatformService:
                 self._settings.homepage_category_autofill_enabled
             ),
             category_window_hours=max(1, self._settings.homepage_category_window_hours),
+            stale_general_hours=max(1, self._settings.homepage_stale_general_hours),
+            stale_world_hours=max(1, self._settings.homepage_stale_world_hours),
+            stale_business_hours=max(1, self._settings.homepage_stale_business_hours),
+            stale_technology_hours=max(
+                1,
+                self._settings.homepage_stale_technology_hours,
+            ),
+            stale_entertainment_hours=max(
+                1,
+                self._settings.homepage_stale_entertainment_hours,
+            ),
+            stale_science_hours=max(1, self._settings.homepage_stale_science_hours),
+            stale_sports_hours=max(1, self._settings.homepage_stale_sports_hours),
+            stale_health_hours=max(1, self._settings.homepage_stale_health_hours),
+            stale_breaking_hours=max(1, self._settings.homepage_stale_breaking_hours),
+            stale_opinion_hours=max(1, self._settings.homepage_stale_opinion_hours),
+            created_at=now,
+            updated_at=now,
+        )
+        session.add(row)
+        await session.commit()
+        return row
+
+    async def _load_article_queue_settings(
+        self,
+        session: AsyncSession,
+    ) -> ArticleQueueSettingsRecord:
+        row = await session.get(ArticleQueueSettingsRecord, 1)
+        if row is not None:
+            return row
+
+        now = datetime.utcnow()
+        row = ArticleQueueSettingsRecord(
+            id=1,
+            auto_archive_enabled=self._settings.article_queue_auto_archive_enabled,
+            archive_draft_after_days=max(
+                1,
+                self._settings.article_queue_archive_draft_after_days,
+            ),
+            archive_review_after_days=max(
+                1,
+                self._settings.article_queue_archive_review_after_days,
+            ),
+            archive_rejected_after_days=max(
+                1,
+                self._settings.article_queue_archive_rejected_after_days,
+            ),
             created_at=now,
             updated_at=now,
         )

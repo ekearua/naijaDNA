@@ -292,6 +292,9 @@ class AppActionChip extends StatelessWidget {
     this.compact = false,
     this.inverse = false,
     this.enableHaptics = false,
+    this.textMaxLines,
+    this.textOverflow = TextOverflow.ellipsis,
+    this.textSoftWrap = false,
     super.key,
   });
 
@@ -305,6 +308,9 @@ class AppActionChip extends StatelessWidget {
   final bool compact;
   final bool inverse;
   final bool enableHaptics;
+  final int? textMaxLines;
+  final TextOverflow textOverflow;
+  final bool textSoftWrap;
 
   @override
   Widget build(BuildContext context) {
@@ -373,6 +379,9 @@ class AppActionChip extends StatelessWidget {
               ],
               Text(
                 label,
+                maxLines: textMaxLines,
+                overflow: textOverflow,
+                softWrap: textSoftWrap,
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: foreground,
                   fontWeight: FontWeight.w700,

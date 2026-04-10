@@ -28,11 +28,13 @@ router = APIRouter(prefix="/admin/articles", tags=["admin-articles"])
 async def list_admin_articles(
     x_user_id: str | None = Header(default=None),
     status_filter: str | None = Query(default=None, alias="status"),
+    statuses_filter: str | None = Query(default=None, alias="statuses"),
     query: str | None = Query(default=None, alias="q"),
     source: str | None = Query(default=None),
     tag: str | None = Query(default=None),
     published_from: str | None = Query(default=None),
     published_to: str | None = Query(default=None),
+    sort: str | None = Query(default=None),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     news_service: NewsService = Depends(get_news_service),
@@ -40,14 +42,23 @@ async def list_admin_articles(
     try:
         parsed_from = None if published_from is None else _parse_iso_datetime(published_from)
         parsed_to = None if published_to is None else _parse_iso_datetime(published_to)
+        parsed_statuses = None
+        if statuses_filter is not None and statuses_filter.strip():
+            parsed_statuses = [
+                item.strip()
+                for item in statuses_filter.split(",")
+                if item.strip()
+            ]
         items, total = await news_service.list_admin_articles(
             actor_user_id=x_user_id or "",
             status=status_filter,
+            statuses=parsed_statuses,
             query=query,
             source=source,
             tag=tag,
             published_from=parsed_from,
             published_to=parsed_to,
+            sort=sort,
             offset=offset,
             limit=limit,
         )
@@ -135,6 +146,7 @@ async def transition_admin_article(
             article_id=article_id,
             action=action,
             notes=payload.notes,
+            target_status=payload.target_status,
         )
         await response_cache_service.invalidate_namespace("news")
         return article

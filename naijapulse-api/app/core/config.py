@@ -74,6 +74,21 @@ class Settings(BaseSettings):
     homepage_direct_gnews_top_publish_enabled: bool = False
     homepage_category_autofill_enabled: bool = False
     homepage_category_window_hours: int = 12
+    homepage_stale_general_hours: int = 36
+    homepage_stale_world_hours: int = 48
+    homepage_stale_business_hours: int = 48
+    homepage_stale_technology_hours: int = 72
+    homepage_stale_entertainment_hours: int = 72
+    homepage_stale_science_hours: int = 72
+    homepage_stale_sports_hours: int = 30
+    homepage_stale_health_hours: int = 72
+    homepage_stale_breaking_hours: int = 18
+    homepage_stale_opinion_hours: int = 168
+    article_queue_auto_archive_enabled: bool = True
+    article_queue_archive_draft_after_days: int = 30
+    article_queue_archive_review_after_days: int = 14
+    article_queue_archive_rejected_after_days: int = 14
+    article_queue_archive_job_interval_seconds: int = 3600
     cors_origins: List[str] = Field(
         default_factory=lambda: [
             "http://localhost:3000",

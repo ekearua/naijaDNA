@@ -262,6 +262,32 @@ class HomepageSettingsRecord(Base):
     )
     category_autofill_enabled: Mapped[bool] = mapped_column(Boolean(), default=False)
     category_window_hours: Mapped[int] = mapped_column(Integer(), default=12)
+    stale_general_hours: Mapped[int] = mapped_column(Integer(), default=36)
+    stale_world_hours: Mapped[int] = mapped_column(Integer(), default=48)
+    stale_business_hours: Mapped[int] = mapped_column(Integer(), default=48)
+    stale_technology_hours: Mapped[int] = mapped_column(Integer(), default=72)
+    stale_entertainment_hours: Mapped[int] = mapped_column(Integer(), default=72)
+    stale_science_hours: Mapped[int] = mapped_column(Integer(), default=72)
+    stale_sports_hours: Mapped[int] = mapped_column(Integer(), default=30)
+    stale_health_hours: Mapped[int] = mapped_column(Integer(), default=72)
+    stale_breaking_hours: Mapped[int] = mapped_column(Integer(), default=18)
+    stale_opinion_hours: Mapped[int] = mapped_column(Integer(), default=168)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), default=datetime.utcnow
+    )
+
+
+class ArticleQueueSettingsRecord(Base):
+    __tablename__ = "article_queue_settings"
+
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=False)
+    auto_archive_enabled: Mapped[bool] = mapped_column(Boolean(), default=True)
+    archive_draft_after_days: Mapped[int] = mapped_column(Integer(), default=30)
+    archive_review_after_days: Mapped[int] = mapped_column(Integer(), default=14)
+    archive_rejected_after_days: Mapped[int] = mapped_column(Integer(), default=14)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=False), default=datetime.utcnow
     )

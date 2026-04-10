@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.core.config import Settings, get_settings
 from app.core.text import plain_text_excerpt
 from app.db.models import (
+    ArticleQueueSettingsRecord,
     ArticleTagRecord,
     ArticleWorkflowEventRecord,
     HomepageCategoryRecord,
@@ -105,8 +106,40 @@ class NewsService:
         self._homepage_category_window = timedelta(
             hours=max(1, resolved_settings.homepage_category_window_hours)
         )
+        self._homepage_stale_windows = {
+            "general": timedelta(hours=max(1, resolved_settings.homepage_stale_general_hours)),
+            "world": timedelta(hours=max(1, resolved_settings.homepage_stale_world_hours)),
+            "business": timedelta(
+                hours=max(1, resolved_settings.homepage_stale_business_hours)
+            ),
+            "technology": timedelta(
+                hours=max(1, resolved_settings.homepage_stale_technology_hours)
+            ),
+            "entertainment": timedelta(
+                hours=max(1, resolved_settings.homepage_stale_entertainment_hours)
+            ),
+            "science": timedelta(hours=max(1, resolved_settings.homepage_stale_science_hours)),
+            "sports": timedelta(hours=max(1, resolved_settings.homepage_stale_sports_hours)),
+            "health": timedelta(hours=max(1, resolved_settings.homepage_stale_health_hours)),
+            "breaking": timedelta(
+                hours=max(1, resolved_settings.homepage_stale_breaking_hours)
+            ),
+            "opinion": timedelta(hours=max(1, resolved_settings.homepage_stale_opinion_hours)),
+        }
         self._homepage_top_story_limit = 5
         self._homepage_category_item_limit = 6
+        self._article_queue_auto_archive_enabled = (
+            resolved_settings.article_queue_auto_archive_enabled
+        )
+        self._article_queue_archive_draft_after = timedelta(
+            days=max(1, resolved_settings.article_queue_archive_draft_after_days)
+        )
+        self._article_queue_archive_review_after = timedelta(
+            days=max(1, resolved_settings.article_queue_archive_review_after_days)
+        )
+        self._article_queue_archive_rejected_after = timedelta(
+            days=max(1, resolved_settings.article_queue_archive_rejected_after_days)
+        )
 
     async def initialize_defaults(self) -> None:
         """Seed homepage category defaults for a consistent client taxonomy."""
@@ -246,6 +279,7 @@ class NewsService:
             direct_gnews_publish_enabled=homepage_settings[
                 "direct_gnews_top_publish_enabled"
             ],
+            stale_windows=homepage_settings["stale_windows"],
         )
         top_story_ids = {story.id for story in top_stories}
         latest_placement_stories = self._exclude_story_ids(
@@ -259,6 +293,7 @@ class NewsService:
             autofill_enabled=homepage_settings["latest_autofill_enabled"],
             recent_window=homepage_settings["latest_window"],
             fallback_window=homepage_settings["latest_fallback_window"],
+            stale_windows=homepage_settings["stale_windows"],
         )
         occupied_ids = top_story_ids | {story.id for story in latest_stories}
         for row in category_rows:
@@ -273,6 +308,7 @@ class NewsService:
                 limit=self._homepage_category_item_limit,
                 autofill_enabled=homepage_settings["category_autofill_enabled"],
                 recent_window=homepage_settings["category_window"],
+                stale_windows=homepage_settings["stale_windows"],
             )
             occupied_ids = occupied_ids | {story.id for story in items}
             categories.append(
@@ -318,6 +354,7 @@ class NewsService:
             return []
 
         async with self._session_factory() as session:
+            freshness_settings = await self._resolve_homepage_settings(session)
             statement = (
                 select(NewsArticleRecord)
                 .where(
@@ -346,7 +383,14 @@ class NewsService:
 
             result = await session.execute(statement)
             rows = result.scalars().all()
-            fresh_rows = [row for row in rows if not self._is_row_stale(row)]
+            fresh_rows = [
+                row
+                for row in rows
+                if not self._is_row_stale(
+                    row,
+                    stale_windows=freshness_settings["stale_windows"],
+                )
+            ]
             return [self._to_schema(row) for row in fresh_rows[:limit]]
 
     async def ingest_articles(self, articles: List[NewsArticle]) -> Tuple[int, int]:
@@ -609,11 +653,13 @@ class NewsService:
         *,
         actor_user_id: str,
         status: str | None = None,
+        statuses: list[str] | None = None,
         query: str | None = None,
         source: str | None = None,
         tag: str | None = None,
         published_from: datetime | None = None,
         published_to: datetime | None = None,
+        sort: str | None = None,
         offset: int = 0,
         limit: int = 50,
     ) -> tuple[list[NewsArticle], int]:
@@ -629,8 +675,28 @@ class NewsService:
             if status and status.strip():
                 normalized_status = self._validate_status(status)
                 filters.append(NewsArticleRecord.status == normalized_status)
+            elif statuses:
+                normalized_statuses = [
+                    self._validate_status(item) for item in statuses if item.strip()
+                ]
+                if normalized_statuses:
+                    filters.append(NewsArticleRecord.status.in_(normalized_statuses))
             if source and source.strip():
-                filters.append(NewsArticleRecord.source.ilike(source.strip()))
+                normalized_source = source.strip()
+                normalized_source_query = f"%{normalized_source}%"
+                normalized_source_key = normalized_source.lower()
+                filters.append(
+                    or_(
+                        NewsArticleRecord.source.ilike(normalized_source_query),
+                        NewsArticleRecord.source_domain.ilike(normalized_source_query),
+                        func.lower(
+                            func.coalesce(NewsArticleRecord.ingestion_provider, "")
+                        )
+                        == normalized_source_key,
+                        func.lower(func.coalesce(NewsArticleRecord.source_type, ""))
+                        == normalized_source_key,
+                    )
+                )
             if tag and tag.strip():
                 filters.append(self._tag_equals_condition(tag.strip().lower()))
             if published_from is not None:
@@ -656,9 +722,9 @@ class NewsService:
             total_result = await session.execute(total_statement)
             total = int(total_result.scalar() or 0)
 
+            order_by = self._admin_article_sort_order(sort)
             statement = select(NewsArticleRecord).order_by(
-                NewsArticleRecord.updated_at.desc(),
-                NewsArticleRecord.created_at.desc(),
+                *order_by,
             )
             if filters:
                 statement = statement.where(*filters)
@@ -847,12 +913,20 @@ class NewsService:
         article_id: str,
         action: str,
         notes: str | None = None,
+        target_status: str | None = None,
     ) -> NewsArticle:
         normalized_actor_id = self._normalize_user_id(actor_user_id)
         normalized_action = action.strip().lower()
         if not normalized_actor_id:
             raise InvalidNewsPayloadError("User id is required.")
-        if normalized_action not in {"submit", "approve", "publish", "reject", "archive"}:
+        if normalized_action not in {
+            "submit",
+            "approve",
+            "publish",
+            "reject",
+            "archive",
+            "restore",
+        }:
             raise InvalidNewsPayloadError("Unsupported article workflow action.")
 
         async with self._lock:
@@ -861,11 +935,15 @@ class NewsService:
                 self._assert_admin(actor)
                 record = await self._load_article_or_raise(session, article_id)
                 previous_status = record.status
-                next_status = self._next_status(previous_status, normalized_action)
+                next_status = self._next_status(
+                    previous_status,
+                    normalized_action,
+                    target_status=target_status,
+                )
 
-                if normalized_action in {"approve", "reject"}:
+                if normalized_action in {"approve", "reject"} or next_status == "approved":
                     record.reviewed_by_user_id = normalized_actor_id
-                if normalized_action == "publish":
+                if normalized_action == "publish" or next_status == "published":
                     record.reviewed_by_user_id = normalized_actor_id
                     record.published_by_user_id = normalized_actor_id
                     if record.published_at is None:
@@ -900,6 +978,72 @@ class NewsService:
                 await self._notifications_service.deliver_push(pending_notification)
                 return self._to_schema(record)
 
+    async def auto_archive_stale_queue_items(self) -> int:
+        async with self._lock:
+            async with self._session_factory() as session:
+                policy = await self._resolve_article_queue_settings(session)
+                if not policy["auto_archive_enabled"]:
+                    return 0
+
+                now = datetime.utcnow()
+                draft_cutoff = now - policy["draft_after"]
+                review_cutoff = now - policy["review_after"]
+                rejected_cutoff = now - policy["rejected_after"]
+
+                result = await session.execute(
+                    select(NewsArticleRecord).where(
+                        or_(
+                            and_(
+                                NewsArticleRecord.status == "draft",
+                                NewsArticleRecord.updated_at <= draft_cutoff,
+                            ),
+                            and_(
+                                NewsArticleRecord.status.in_(
+                                    ["submitted", "in_review", "approved"]
+                                ),
+                                NewsArticleRecord.updated_at <= review_cutoff,
+                            ),
+                            and_(
+                                NewsArticleRecord.status == "rejected",
+                                NewsArticleRecord.updated_at <= rejected_cutoff,
+                            ),
+                        )
+                    )
+                )
+                rows = result.scalars().all()
+                if not rows:
+                    return 0
+
+                events: list[ArticleWorkflowEventRecord] = []
+                for row in rows:
+                    previous_status = row.status
+                    age_days = max(1, (now - row.updated_at).days)
+                    threshold_days = self._article_queue_archive_threshold_days_for_status(
+                        previous_status,
+                        policy=policy,
+                    )
+                    row.status = "archived"
+                    row.updated_at = now
+                    events.append(
+                        ArticleWorkflowEventRecord(
+                            article_id=row.id,
+                            actor_user_id=None,
+                            event_type="auto_archive",
+                            from_status=previous_status,
+                            to_status="archived",
+                            notes=(
+                                "Auto-archived after "
+                                f"{age_days} days without queue activity "
+                                f"(threshold: {threshold_days} days)."
+                            ),
+                            created_at=now,
+                        )
+                    )
+
+                session.add_all(events)
+                await session.commit()
+                return len(rows)
+
     async def _query_stories(
         self,
         *,
@@ -926,16 +1070,22 @@ class NewsService:
         autofill_enabled: bool,
         recent_window: timedelta,
         fallback_window: timedelta,
+        stale_windows: dict[str, timedelta],
     ) -> list[NewsArticle]:
         if limit <= 0:
             return []
 
-        selected = pinned_latest[:limit]
+        selected = self._sort_stories_newest_first(
+            self._exclude_stale_story_schemas(
+                pinned_latest,
+                stale_windows=stale_windows,
+            )
+        )[:limit]
         selected_ids = {story.id for story in selected}
         effective_excluded = excluded_ids | selected_ids
         remaining = limit - len(selected)
         if remaining <= 0 or not autofill_enabled:
-            return selected
+            return self._sort_stories_newest_first(selected)
 
         auto_latest_primary = await self._query_recent_published_stories(
             limit=remaining,
@@ -951,14 +1101,14 @@ class NewsService:
             remaining <= 0
             or fallback_window <= recent_window
         ):
-            return selected
+            return self._sort_stories_newest_first(selected)
 
         auto_latest_fallback = await self._query_recent_published_stories(
             limit=remaining,
             recent_window=fallback_window,
             excluded_ids=effective_excluded,
         )
-        return [*selected, *auto_latest_fallback]
+        return self._sort_stories_newest_first([*selected, *auto_latest_fallback])
 
     async def _build_homepage_top_stories(
         self,
@@ -966,13 +1116,19 @@ class NewsService:
         pinned_top: list[NewsArticle],
         limit: int,
         direct_gnews_publish_enabled: bool,
+        stale_windows: dict[str, timedelta],
     ) -> list[NewsArticle]:
         if limit <= 0:
             return []
 
-        selected = pinned_top[:limit]
+        selected = self._sort_stories_newest_first(
+            self._exclude_stale_story_schemas(
+                pinned_top,
+                stale_windows=stale_windows,
+            )
+        )[:limit]
         if len(selected) >= limit or not direct_gnews_publish_enabled:
-            return selected
+            return self._sort_stories_newest_first(selected)
 
         auto_top = await self._query_recent_published_stories(
             limit=limit - len(selected),
@@ -980,7 +1136,7 @@ class NewsService:
             excluded_ids={story.id for story in selected},
             provider="gnews",
         )
-        return [*selected, *auto_top]
+        return self._sort_stories_newest_first([*selected, *auto_top])
 
     async def _build_homepage_category_stories(
         self,
@@ -991,13 +1147,19 @@ class NewsService:
         limit: int,
         autofill_enabled: bool,
         recent_window: timedelta,
+        stale_windows: dict[str, timedelta],
     ) -> list[NewsArticle]:
         if limit <= 0:
             return []
 
-        selected = pinned_items[:limit]
+        selected = self._sort_stories_newest_first(
+            self._exclude_stale_story_schemas(
+                pinned_items,
+                stale_windows=stale_windows,
+            )
+        )[:limit]
         if len(selected) >= limit or not autofill_enabled:
-            return selected
+            return self._sort_stories_newest_first(selected)
 
         auto_items = await self._query_recent_published_stories(
             limit=limit - len(selected),
@@ -1006,7 +1168,7 @@ class NewsService:
             category=category_label,
             exclude_provider="gnews",
         )
-        return [*selected, *auto_items]
+        return self._sort_stories_newest_first([*selected, *auto_items])
 
     async def _query_recent_published_stories(
         self,
@@ -1025,6 +1187,7 @@ class NewsService:
         published_after = now - recent_window
 
         async with self._session_factory() as session:
+            freshness_settings = await self._resolve_homepage_settings(session)
             statement = (
                 select(NewsArticleRecord)
                 .where(
@@ -1056,14 +1219,21 @@ class NewsService:
             rows = result.scalars().all()
 
         fresh_rows = [
-            row for row in rows if row.id not in excluded_ids and not self._is_row_stale(row, now=now)
+            row
+            for row in rows
+            if row.id not in excluded_ids
+            and not self._is_row_stale(
+                row,
+                now=now,
+                stale_windows=freshness_settings["stale_windows"],
+            )
         ]
         return [self._to_schema(row) for row in fresh_rows[:limit]]
 
     async def _resolve_homepage_settings(
         self,
         session: AsyncSession,
-    ) -> dict[str, bool | int | timedelta]:
+    ) -> dict[str, object]:
         homepage_settings = await session.get(HomepageSettingsRecord, 1)
         latest_window_hours = max(
             1,
@@ -1083,6 +1253,7 @@ class NewsService:
             if homepage_settings is not None
             else int(self._homepage_category_window.total_seconds() // 3600),
         )
+        stale_windows = self._resolve_stale_windows(homepage_settings)
         return {
             "latest_autofill_enabled": (
                 homepage_settings.latest_autofill_enabled
@@ -1108,13 +1279,37 @@ class NewsService:
                 else self._homepage_category_autofill_enabled
             ),
             "category_window": timedelta(hours=category_window_hours),
+            "stale_windows": stale_windows,
+        }
+
+    def _resolve_stale_windows(
+        self,
+        homepage_settings: HomepageSettingsRecord | None,
+    ) -> dict[str, timedelta]:
+        if homepage_settings is None:
+            return dict(self._homepage_stale_windows)
+        return {
+            "general": timedelta(hours=max(1, homepage_settings.stale_general_hours)),
+            "world": timedelta(hours=max(1, homepage_settings.stale_world_hours)),
+            "business": timedelta(hours=max(1, homepage_settings.stale_business_hours)),
+            "technology": timedelta(
+                hours=max(1, homepage_settings.stale_technology_hours)
+            ),
+            "entertainment": timedelta(
+                hours=max(1, homepage_settings.stale_entertainment_hours)
+            ),
+            "science": timedelta(hours=max(1, homepage_settings.stale_science_hours)),
+            "sports": timedelta(hours=max(1, homepage_settings.stale_sports_hours)),
+            "health": timedelta(hours=max(1, homepage_settings.stale_health_hours)),
+            "breaking": timedelta(hours=max(1, homepage_settings.stale_breaking_hours)),
+            "opinion": timedelta(hours=max(1, homepage_settings.stale_opinion_hours)),
         }
 
     def _should_auto_publish_ingested_article(
         self,
         *,
         provider: str,
-        homepage_settings: dict[str, bool | int | timedelta],
+        homepage_settings: dict[str, object],
     ) -> bool:
         normalized_provider = (provider or "").strip().lower()
         if normalized_provider == "gnews":
@@ -1130,6 +1325,7 @@ class NewsService:
         # Pull a wider window and interleave by provider id to avoid RSS-only top slices.
         fetch_limit = max(limit * 10, 120)
         async with self._session_factory() as session:
+            freshness_settings = await self._resolve_homepage_settings(session)
             statement = (
                 select(NewsArticleRecord)
                 .where(NewsArticleRecord.status == "published")
@@ -1143,7 +1339,14 @@ class NewsService:
             result = await session.execute(statement)
             rows = result.scalars().all()
 
-        rows = [row for row in rows if not self._is_row_stale(row)]
+        rows = [
+            row
+            for row in rows
+            if not self._is_row_stale(
+                row,
+                stale_windows=freshness_settings["stale_windows"],
+            )
+        ]
         if len(rows) <= limit:
             return [self._to_schema(row) for row in rows]
 
@@ -1182,6 +1385,7 @@ class NewsService:
         # Prioritize freshness and source diversity for the RSS-first rollout.
         fetch_limit = max(limit * 8, 120)
         async with self._session_factory() as session:
+            freshness_settings = await self._resolve_homepage_settings(session)
             statement = (
                 select(NewsArticleRecord)
                 .where(NewsArticleRecord.status == "published")
@@ -1195,7 +1399,14 @@ class NewsService:
             result = await session.execute(statement)
             rows = result.scalars().all()
 
-        rows = [row for row in rows if not self._is_row_stale(row)]
+        rows = [
+            row
+            for row in rows
+            if not self._is_row_stale(
+                row,
+                stale_windows=freshness_settings["stale_windows"],
+            )
+        ]
         if not rows:
             return []
 
@@ -1411,8 +1622,46 @@ class NewsService:
             raise InvalidNewsPayloadError("Invalid verification status.")
         return normalized
 
-    def _next_status(self, current: str, action: str) -> str:
+    def _validate_admin_article_sort(self, value: str | None) -> str:
+        normalized = (value or "").strip().lower() or "updated_desc"
+        allowed = {"updated_desc", "published_desc", "created_desc", "title_asc"}
+        if normalized not in allowed:
+            raise InvalidNewsPayloadError("Invalid article sort option.")
+        return normalized
+
+    def _admin_article_sort_order(self, value: str | None):
+        normalized = self._validate_admin_article_sort(value)
+        if normalized == "published_desc":
+            return (
+                NewsArticleRecord.published_at.desc(),
+                NewsArticleRecord.updated_at.desc(),
+            )
+        if normalized == "created_desc":
+            return (
+                NewsArticleRecord.created_at.desc(),
+                NewsArticleRecord.updated_at.desc(),
+            )
+        if normalized == "title_asc":
+            return (
+                NewsArticleRecord.title.asc(),
+                NewsArticleRecord.updated_at.desc(),
+            )
+        return (
+            NewsArticleRecord.updated_at.desc(),
+            NewsArticleRecord.created_at.desc(),
+        )
+
+    def _next_status(
+        self,
+        current: str,
+        action: str,
+        *,
+        target_status: str | None = None,
+    ) -> str:
         current_status = self._validate_status(current)
+        normalized_target_status = (
+            None if target_status is None else self._validate_status(target_status)
+        )
         transitions = {
             "submit": {
                 "draft": "submitted",
@@ -1443,7 +1692,21 @@ class NewsService:
                 "rejected": "archived",
                 "in_review": "archived",
             },
+            "restore": {
+                "archived": "draft",
+            },
         }
+        if action == "restore" and normalized_target_status is not None:
+            if normalized_target_status not in {"draft", "approved", "published"}:
+                raise NewsStateError(
+                    "Archived articles can only be restored to draft, approved, or published."
+                )
+            if current_status != "archived":
+                raise NewsStateError(
+                    f"Cannot restore an article from status '{current_status}'."
+                )
+            return normalized_target_status
+
         next_status = transitions.get(action, {}).get(current_status)
         if next_status is None:
             raise NewsStateError(
@@ -1451,10 +1714,55 @@ class NewsService:
             )
         return next_status
 
+    async def _resolve_article_queue_settings(
+        self,
+        session: AsyncSession,
+    ) -> dict[str, bool | timedelta]:
+        row = await session.get(ArticleQueueSettingsRecord, 1)
+        if row is None:
+            return {
+                "auto_archive_enabled": self._article_queue_auto_archive_enabled,
+                "draft_after": self._article_queue_archive_draft_after,
+                "review_after": self._article_queue_archive_review_after,
+                "rejected_after": self._article_queue_archive_rejected_after,
+            }
+
+        return {
+            "auto_archive_enabled": row.auto_archive_enabled,
+            "draft_after": timedelta(days=max(1, row.archive_draft_after_days)),
+            "review_after": timedelta(days=max(1, row.archive_review_after_days)),
+            "rejected_after": timedelta(days=max(1, row.archive_rejected_after_days)),
+        }
+
+    def _article_queue_archive_threshold_days_for_status(
+        self,
+        status: str,
+        *,
+        policy: dict[str, bool | timedelta],
+    ) -> int:
+        normalized = (status or "").strip().lower()
+        if normalized == "draft":
+            threshold = policy["draft_after"]
+        elif normalized == "rejected":
+            threshold = policy["rejected_after"]
+        else:
+            threshold = policy["review_after"]
+        return max(1, int(getattr(threshold, "days", 1)))
+
     def _provider_for_row(self, row: NewsArticleRecord) -> str:
         if row.ingestion_provider and row.ingestion_provider.strip():
             return row.ingestion_provider.strip().lower()
         return self._provider_from_article_id(row.id)
+
+    def _sort_stories_newest_first(
+        self,
+        stories: list[NewsArticle],
+    ) -> list[NewsArticle]:
+        return sorted(
+            stories,
+            key=lambda story: (story.published_at, story.id),
+            reverse=True,
+        )
 
     async def _create_editorial_notification(
         self,
@@ -1475,6 +1783,7 @@ class NewsService:
             "publish": "article_published",
             "reject": "article_rejected",
             "archive": "article_archived",
+            "restore": "article_restored",
             "submit": "article_submitted",
         }.get(action)
         if notification_type is None:
@@ -1485,6 +1794,7 @@ class NewsService:
             "article_published": "Your article is now live",
             "article_rejected": "Your article was rejected",
             "article_archived": "Your article was archived",
+            "article_restored": "Your article was restored",
             "article_submitted": "Your article moved to review",
         }[notification_type]
 
@@ -1493,6 +1803,7 @@ class NewsService:
             "article_published": f"{self._user_display_name(actor)} published \"{record.title}\".",
             "article_rejected": f"{self._user_display_name(actor)} rejected \"{record.title}\".",
             "article_archived": f"{self._user_display_name(actor)} archived \"{record.title}\".",
+            "article_restored": f"{self._user_display_name(actor)} restored \"{record.title}\" to draft.",
             "article_submitted": f"\"{record.title}\" moved from {previous_status} to {next_status}.",
         }[notification_type]
 
@@ -1730,6 +2041,44 @@ class NewsService:
             return stories
         return [story for story in stories if story.id not in excluded_ids]
 
+    def _exclude_stale_story_schemas(
+        self,
+        stories: list[NewsArticle],
+        *,
+        stale_windows: dict[str, timedelta],
+        now: datetime | None = None,
+    ) -> list[NewsArticle]:
+        current_time = now or datetime.utcnow()
+        return [
+            story
+            for story in stories
+            if not self._is_story_stale(
+                story,
+                now=current_time,
+                stale_windows=stale_windows,
+            )
+        ]
+
+    def _is_story_stale(
+        self,
+        story: NewsArticle,
+        *,
+        now: datetime | None = None,
+        stale_windows: dict[str, timedelta] | None = None,
+    ) -> bool:
+        published_at = story.published_at
+        if published_at is None:
+            return True
+
+        current_time = now or datetime.utcnow()
+        if published_at > current_time:
+            return False
+        age = current_time - published_at
+        return age > self._stale_window_for_category(
+            story.category,
+            stale_windows=stale_windows,
+        )
+
     def _tag_contains_condition(self, normalized_query: str):
         return (
             select(ArticleTagRecord.id)
@@ -1784,7 +2133,13 @@ class NewsService:
         normalized = re.sub(r"[^a-z0-9]+", " ", normalized)
         return re.sub(r"\s+", " ", normalized).strip()
 
-    def _is_row_stale(self, row: NewsArticleRecord, *, now: datetime | None = None) -> bool:
+    def _is_row_stale(
+        self,
+        row: NewsArticleRecord,
+        *,
+        now: datetime | None = None,
+        stale_windows: dict[str, timedelta] | None = None,
+    ) -> bool:
         published_at = row.published_at
         if published_at is None:
             return True
@@ -1793,25 +2148,42 @@ class NewsService:
         if published_at > current_time:
             return False
         age = current_time - published_at
-        return age > self._stale_window_for_category(row.category)
+        return age > self._stale_window_for_category(
+            row.category,
+            stale_windows=stale_windows,
+        )
 
-    def _stale_window_for_category(self, category: str | None) -> timedelta:
+    def _stale_window_for_category(
+        self,
+        category: str | None,
+        *,
+        stale_windows: dict[str, timedelta] | None = None,
+    ) -> timedelta:
+        windows = stale_windows or self._homepage_stale_windows
         normalized = (category or "").strip().lower()
         if "breaking" in normalized:
-            return timedelta(hours=18)
-        if "politic" in normalized or "election" in normalized:
-            return timedelta(hours=48)
+            return windows["breaking"]
+        if (
+            "world" in normalized
+            or "politic" in normalized
+            or "election" in normalized
+        ):
+            return windows["world"]
         if "business" in normalized or "econom" in normalized or "finance" in normalized:
-            return timedelta(hours=48)
+            return windows["business"]
         if "sport" in normalized:
-            return timedelta(hours=30)
+            return windows["sports"]
         if "tech" in normalized:
-            return timedelta(hours=72)
+            return windows["technology"]
+        if "science" in normalized:
+            return windows["science"]
+        if "health" in normalized:
+            return windows["health"]
         if "entertain" in normalized or "music" in normalized or "lifestyle" in normalized:
-            return timedelta(hours=72)
+            return windows["entertainment"]
         if "opinion" in normalized or "analysis" in normalized:
-            return timedelta(days=7)
-        return timedelta(hours=36)
+            return windows["opinion"]
+        return windows["general"]
 
     def _extract_comment_count(self, summary: str | None) -> int | None:
         if summary is None or not summary.strip():
