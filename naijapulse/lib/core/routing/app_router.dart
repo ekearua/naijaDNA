@@ -136,17 +136,30 @@ class AppRouter {
     return '$homeLiveFeedPath?tag=$tagParam&label=$labelParam';
   }
 
-  static final GoRouter clientRouter = GoRouter(
-    initialLocation: loadingPath,
+  static final GoRouter clientRouter = clientRouterForUri(
+    Uri(path: loadingPath),
+  );
+
+  static final GoRouter adminRouter = adminRouterForUri(Uri(path: loadingPath));
+
+  static GoRouter clientRouterForUri(Uri uri) => GoRouter(
+    initialLocation: _initialLocationFromUri(uri),
     routes: _clientRoutes(),
     errorBuilder: _errorBuilder,
   );
 
-  static final GoRouter adminRouter = GoRouter(
-    initialLocation: loadingPath,
+  static GoRouter adminRouterForUri(Uri uri) => GoRouter(
+    initialLocation: _initialLocationFromUri(uri),
     routes: _adminRoutes(),
     errorBuilder: _errorBuilder,
   );
+
+  static String _initialLocationFromUri(Uri uri) {
+    final path = uri.path.trim();
+    final normalizedPath = path.isEmpty ? loadingPath : path;
+    final query = uri.hasQuery ? '?${uri.query}' : '';
+    return '$normalizedPath$query';
+  }
 
   static Widget _errorBuilder(BuildContext context, GoRouterState state) {
     return Scaffold(
